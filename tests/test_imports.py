@@ -498,3 +498,37 @@ def test_oversized_child_asset_does_not_discard_recoverable_text_or_other_zip_fo
     assert len(failed) == 1 and failed[0]["name"] == "bad-image/场景图.png"
     assert failed[0]["error_code"] == "archive_member_limit"
     assert next(file for file in result["files"] if not file["parent_id"])["state"] == "ready"
+
+
+def test_zip_ignores_macos_resource_forks_instead_of_creating_extra_cards_and_failed_media(admin):
+    from .content_helpers import key, picture, process_jobs, recording
+
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "zip"}).json()
+    response = admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/files?kind=zip",
+        headers=key(),
+        files={
+            "file": (
+                "mac.zip",
+                archive(
+                    [
+                        ("card/内容.docx", document("活动计划")),
+                        ("card/场景图.png", picture()),
+                        ("card/完整音频.wav", recording()),
+                        ("__MACOSX/card/._内容.docx", b"resource fork"),
+                        ("__MACOSX/card/._完整音频.wav", b"resource fork"),
+                        ("card/._场景图.png", b"resource fork"),
+                        ("card/.DS_Store", b"finder metadata"),
+                    ]
+                ),
+                "application/zip",
+            )
+        },
+    )
+    assert response.status_code == 201, response.text
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()
+    assert len(result["items"]) == 1
+    assert result["items"][0]["readable"]
+    assert len(result["files"]) == 4
+    assert all(file["state"] == "ready" for file in result["files"])

@@ -89,10 +89,26 @@ def decoded_image(data: bytes):
         ) from None
 
 
+def bounded_wave_input(data: bytes) -> bytes:
+    """Resolve a streamed WAV's explicit unknown lengths from its bounded upload bytes."""
+    if data[:4] != b"RIFF" or data[4:8] != b"\xff" * 4 or data[8:12] != b"WAVE":
+        return data
+    offset = 12
+    while offset + 8 <= len(data):
+        size = int.from_bytes(data[offset + 4 : offset + 8], "little")
+        if data[offset : offset + 4] == b"data" and size == 0xFFFFFFFF:
+            resolved = bytearray(data)
+            resolved[4:8] = (len(data) - 8).to_bytes(4, "little")
+            resolved[offset + 4 : offset + 8] = (len(data) - offset - 8).to_bytes(4, "little")
+            return bytes(resolved)
+        offset += 8 + size + (size & 1)
+    return data
+
+
 def decoded_audio(data: bytes):
     """Verify complete PCM frames or fully decode a bounded, explicitly allowed demuxer."""
     try:
-        with wave.open(io.BytesIO(data), "rb") as recording:
+        with wave.open(io.BytesIO(bounded_wave_input(data)), "rb") as recording:
             rate, channels, frames, width = (
                 recording.getframerate(),
                 recording.getnchannels(),

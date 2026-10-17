@@ -324,7 +324,15 @@ def prepare_parse(settings, sessions, job):
             data, expanded_limit=settings.archive_expanded_limit_mb * 1024 * 1024
         ) as archive:
             members = sorted(
-                (i for i in archive.infolist() if not i.is_dir()), key=lambda i: i.filename
+                (
+                    i
+                    for i in archive.infolist()
+                    if not i.is_dir()
+                    and "__MACOSX" not in PurePosixPath(i.filename).parts
+                    and not any(part.startswith("._") for part in PurePosixPath(i.filename).parts)
+                    and PurePosixPath(i.filename).name != ".DS_Store"
+                ),
+                key=lambda i: i.filename,
             )
             folders = {
                 str(PurePosixPath(i.filename).parent)

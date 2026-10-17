@@ -45,3 +45,20 @@ def test_playlist_content_is_rejected_before_any_external_decoder_is_invoked(mon
     monkeypatch.setattr("juya_api.media_api.subprocess.run", forbidden)
     with pytest.raises(DomainError, match="audio_invalid"):
         decoded_audio(b"#EXTM3U\nhttps://not-an-audio-file.invalid/private\n")
+
+
+def test_streamed_pcm_wav_with_unknown_riff_and_data_lengths_uses_actual_complete_frames():
+    data = bytearray(recording())
+    data[4:8] = b"\xff" * 4
+    offset = data.index(b"data") + 4
+    data[offset : offset + 4] = b"\xff" * 4
+    assert decoded_audio(bytes(data)) == ("audio/wav", 1.0)
+
+
+def test_unknown_length_pcm_wav_still_rejects_an_incomplete_sample_frame():
+    data = bytearray(recording())
+    data[4:8] = b"\xff" * 4
+    offset = data.index(b"data") + 4
+    data[offset : offset + 4] = b"\xff" * 4
+    with pytest.raises(DomainError, match="audio_invalid"):
+        decoded_audio(bytes(data[:-1]))
