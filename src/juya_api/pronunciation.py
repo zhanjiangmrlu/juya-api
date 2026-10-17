@@ -26,7 +26,7 @@ def configuration(settings):
         "VoiceType": settings.tts_voice_type,
         "PrimaryLanguage": 2,
         "SampleRate": 16000,
-        "Codec": "mp3",
+        "Codec": settings.tts_codec,
         "Speed": 0,
         "Volume": 0,
         "ModelType": 1,

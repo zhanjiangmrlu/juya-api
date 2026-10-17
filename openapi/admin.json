@@ -7053,6 +7053,17 @@
               }
             ],
             "title": "Image Id"
+          },
+          "thumbnail_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Id"
           }
         },
         "type": "object",

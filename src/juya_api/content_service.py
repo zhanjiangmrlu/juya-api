@@ -168,8 +168,8 @@ def card_view(db, card: Card) -> dict:
     }
 
 
-def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: str, now):
-    """Activate exactly the candidate that was previewed; keep old publications immutable."""
+def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
+    """Validate the exact saved review without publishing or replacing its content."""
     draft = db.get(CardDraft, card.id)
     assert draft is not None
     revision_matches(draft, revision)
@@ -187,6 +187,12 @@ def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: st
     issues = validate_publication(db, draft.payload)
     if issues:
         raise DomainError(422, "publication_invalid", "请先补充发布资料", issues)
+    return draft, content_hash
+
+
+def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: str, now):
+    """Activate exactly the candidate that was previewed; keep old publications immutable."""
+    draft, content_hash = reviewed_candidate(db, card, admin_id, revision, preview_id, now)
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
     if current and current.content_hash == content_hash:
         card.status = "published"

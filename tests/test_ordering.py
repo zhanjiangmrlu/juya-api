@@ -39,3 +39,12 @@ def test_only_complete_published_set_can_be_sorted_and_stale_window_conflicts(ad
         ).status_code
         == 409
     )
+
+
+def test_catalog_order_uses_derived_thumbnails_instead_of_loading_all_originals(admin):
+    card = draft(admin)
+    publish(admin, card)
+    image = admin.get(f"/api/admin/v1/media/{card['content']['image_id']}/status").json()
+    listed = admin.get("/api/admin/v1/catalog-order").json()["items"][0]
+    assert listed["thumbnail_id"] == image["thumbnail_id"]
+    assert listed["thumbnail_id"] != listed["image_id"]

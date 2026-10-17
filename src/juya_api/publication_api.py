@@ -7,8 +7,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .content_models import Card, CardDraft, CardVersion
-from .content_service import require_card
+from .content_models import Card, CardDraft, CardVersion, Media
+from .content_service import require_card, reviewed_candidate
 from .database import timestamp
 from .dependencies import administrator, database, operation_key
 from .errors import DomainError
@@ -23,6 +23,7 @@ class OrderedCard(BaseModel):
     id: str
     name: str
     image_id: str | None
+    thumbnail_id: str | None = None
 
 
 class CatalogOrder(BaseModel):
@@ -72,10 +73,23 @@ def catalog(db):
         .where(Card.status == "published", Card.deleted_at.is_(None))
         .order_by(Card.sort_order, Card.id)
     ).all()
+    thumbnails = dict(
+        db.execute(
+            select(Media.id, Media.thumbnail_id).where(
+                Media.id.in_([r.payload["image_id"] for r in rows if r.payload["image_id"]])
+            )
+        ).all()
+    )
     return {
         "version": fingerprint([(r.id, r.sort_order) for r in rows]),
         "items": [
-            {"id": r.id, "name": r.payload["name"], "image_id": r.payload["image_id"]} for r in rows
+            {
+                "id": r.id,
+                "name": r.payload["name"],
+                "image_id": r.payload["image_id"],
+                "thumbnail_id": thumbnails.get(r.payload["image_id"]),
+            }
+            for r in rows
         ],
     }
 
@@ -184,9 +198,9 @@ def routes():
             db.add(batch)
             db.flush()
             for position, value in enumerate(body.items):
-                require_card(db, value.card_id)
                 draft = db.get(CardDraft, value.card_id)
-                assert draft is not None
+                if draft is None:
+                    raise DomainError(422, "batch_reference_invalid", "请选择可以核对的卡片")
                 item = PublicationItem(
                     batch_id=batch.id,
                     card_id=value.card_id,
@@ -239,7 +253,19 @@ def routes():
                 .join(Job, PublicationItem.job_id == Job.id)
                 .where(PublicationItem.batch_id == batch.id, Job.state == "failed")
             ).all()
-            for item, _ in rows:
+            for item, previous in rows:
+                try:
+                    reviewed_candidate(
+                        db,
+                        require_card(db, item.card_id),
+                        admin.id,
+                        item.revision,
+                        item.preview_id,
+                        now,
+                    )
+                except DomainError as error:
+                    previous.error_code = error.code
+                    continue
                 publication_job(db, request.app.state.settings, admin.id, item, now)
             db.flush()
             return batch_view(db, batch)

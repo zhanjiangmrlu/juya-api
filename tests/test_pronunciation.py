@@ -153,3 +153,12 @@ def test_real_mysql_different_learners_merge_the_same_synthesis(admin, system):
         results = list(pool.map(attempt, tokens))
     assert [r.status_code for r in results] == [200] * 4
     assert len({r.json()["job_id"] for r in results}) == 1
+
+
+def test_synthesis_codec_is_part_of_the_actual_server_configuration_and_cache(admin, system):
+    card = draft(admin)
+    path = f"/api/admin/v1/cards/{card['id']}/words/word-1/pronunciation"
+    first = admin.post(path, headers=key(), json={"revision": 1}).json()
+    system["settings"].tts_codec = "wav"
+    second = admin.post(path, headers=key(), json={"revision": 1}).json()
+    assert second["job_id"] != first["job_id"]

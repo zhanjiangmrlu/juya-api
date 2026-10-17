@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     tts_secret_id: str = Field(default="", repr=False)
     tts_secret_key: str = Field(default="", repr=False)
     tts_voice_type: int = 101050
+    tts_codec: Literal["mp3", "wav"] = "mp3"
     tts_daily_budget: int = 2000
     image_limit_mb: int = 10
     audio_limit_mb: int = 50
