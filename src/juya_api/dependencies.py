@@ -15,10 +15,13 @@ ADMIN_COOKIE = "juya_admin_session"
 def database(request: Request):
     """Commit all business records together, or roll back the entire failed request."""
     with request.app.state.sessions.begin() as session:
+        session.info["settings"] = request.app.state.settings
         yield session
 
 
-def administrator(request: Request, db: Session = Depends(database)) -> Administrator:
+def administrator(
+    request: Request, db: Session = Depends(database, scope="function")
+) -> Administrator:
     """Require an unexpired administrator cookie and CSRF on every mutation."""
     value = request.cookies.get(ADMIN_COOKIE, "")
     session = db.get(AdminSession, digest(value)) if value.startswith("adm_") else None
@@ -37,7 +40,7 @@ def administrator(request: Request, db: Session = Depends(database)) -> Administ
     return admin
 
 
-def learner(request: Request, db: Session = Depends(database)) -> User:
+def learner(request: Request, db: Session = Depends(database, scope="function")) -> User:
     """Require this application's revocable learner token, never an admin cookie."""
     value = request.headers.get("Authorization", "").removeprefix("Bearer ")
     session = db.get(MiniSession, digest(value)) if value.startswith("mini_") else None

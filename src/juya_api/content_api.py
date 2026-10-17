@@ -32,7 +32,7 @@ def admin_routes():
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=100),
         admin=Depends(administrator),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         query = select(Card).join(CardDraft).where(Card.deleted_at.is_(None))
         if status in {"draft", "published", "offline"}:
@@ -58,7 +58,7 @@ def admin_routes():
         request: Request,
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
 
@@ -79,10 +79,23 @@ def admin_routes():
             db.flush()
             return card_view(db, card)
 
-        return operate(db, admin, "admin", key, "cards.create", body.model_dump(), now, execute)
+        return operate(
+            db,
+            admin,
+            "admin",
+            key,
+            "cards.create",
+            body.model_dump(exclude_unset=True),
+            now,
+            execute,
+        )
 
     @router.get("/cards/{card_id}")
-    def detail(card_id: str, admin=Depends(administrator), db: Session = Depends(database)):
+    def detail(
+        card_id: str,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
         return card_view(db, require_card(db, card_id))
 
     @router.put("/cards/{card_id}")
@@ -92,7 +105,7 @@ def admin_routes():
         request: Request,
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
 
@@ -107,7 +120,14 @@ def admin_routes():
             return card_view(db, card)
 
         return operate(
-            db, admin, "admin", key, f"cards.{card_id}.save", body.model_dump(), now, execute
+            db,
+            admin,
+            "admin",
+            key,
+            f"cards.{card_id}.save",
+            body.model_dump(exclude_unset=True),
+            now,
+            execute,
         )
 
     @router.post("/cards/{card_id}/preview")
@@ -117,7 +137,7 @@ def admin_routes():
         request: Request,
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
         return operate(
@@ -126,7 +146,7 @@ def admin_routes():
             "admin",
             key,
             f"cards.{card_id}.preview",
-            body.model_dump(),
+            body.model_dump(exclude_unset=True),
             now,
             lambda: make_preview(db, require_card(db, card_id), admin.id, body.revision, now),
         )
@@ -138,7 +158,7 @@ def admin_routes():
         request: Request,
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
         return operate(
@@ -147,7 +167,7 @@ def admin_routes():
             "admin",
             key,
             f"cards.{card_id}.publish",
-            body.model_dump(),
+            body.model_dump(exclude_unset=True),
             now,
             lambda: publish_version(
                 db, require_card(db, card_id), admin.id, body.revision, body.preview_id, now
@@ -161,7 +181,7 @@ def admin_routes():
         request: Request,
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
 
@@ -176,7 +196,14 @@ def admin_routes():
             return card_view(db, card)
 
         return operate(
-            db, admin, "admin", key, f"cards.{card_id}.offline", body.model_dump(), now, execute
+            db,
+            admin,
+            "admin",
+            key,
+            f"cards.{card_id}.offline",
+            body.model_dump(exclude_unset=True),
+            now,
+            execute,
         )
 
     @router.delete("/cards/{card_id}")
@@ -186,7 +213,7 @@ def admin_routes():
         request: Request,
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
 
@@ -200,7 +227,14 @@ def admin_routes():
             return {"id": card.id, "deleted": True}
 
         return operate(
-            db, admin, "admin", key, f"cards.{card_id}.delete", body.model_dump(), now, execute
+            db,
+            admin,
+            "admin",
+            key,
+            f"cards.{card_id}.delete",
+            body.model_dump(exclude_unset=True),
+            now,
+            execute,
         )
 
     return router
@@ -214,7 +248,7 @@ def mini_routes():
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
         user=Depends(learner),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
         total = db.scalar(select(func.count()).select_from(query.subquery()))
@@ -241,7 +275,7 @@ def mini_routes():
         card_id: str,
         version_id: str | None = None,
         user=Depends(learner),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         card, version = published_card(db, card_id, version_id)
         return {

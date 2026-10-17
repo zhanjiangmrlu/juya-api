@@ -1,5 +1,6 @@
 """Common lifecycle and health, without mixing role-specific routes."""
 
+import uuid
 from datetime import UTC, datetime
 
 from fastapi import FastAPI
@@ -24,6 +25,16 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
     app.state.clock = lambda: naive_utc(clock() if clock else datetime.now(UTC))
     app.state.role = role
     install_errors(app)
+
+    @app.middleware("http")
+    async def private_responses(request, call_next):
+        request.state.request_id = str(uuid.uuid4())
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Request-ID"] = request.state.request_id
+        return response
+
     if settings.allowed_origins:
         app.add_middleware(
             CORSMiddleware,

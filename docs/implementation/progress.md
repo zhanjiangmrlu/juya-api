@@ -4,7 +4,8 @@
 
 Task 1: complete (auth and independent entrypoints; real MySQL 8.4 migration and concurrency verified)
 Task 2: complete
-Task 3: in progress
+Task 3: complete
+Tasks 5/6 core screens: next (before advanced task4, per the approved vertical delivery order)
 Tasks 4—8: pending
 
 ## Pre-flight
@@ -57,3 +58,18 @@ Tasks 4—8: pending
 - Full real MySQL suite: 32 passed in 86.39s; local: 29 passed, 3 MySQL-only skipped; Ruff/mypy clean
 - Ruling: initial media processing is synchronous in Task2; Task4 will move expensive media/import/TTS work behind durable workers before release — avoids shipping a temporary non-durable BackgroundTasks path — interim upload calls are blocking
 - User directed rechecking account-related.txt; its explicitly supplied Alibaba AccessKey also returns AccessDenied for both known bucket names. No extra key was requested or printed in logs.
+
+## Task 3 in-progress findings
+
+- Local suite after learning/profiles: 48 passed, 4 real-MySQL-only skipped
+- Actual MySQL reproduced two concurrent card completions colliding on the same checkin day despite a user-row lock: the default repeatable-read snapshot was created during authentication
+- Fix: explicit READ COMMITTED plus actor serialization; coherent statistics take a shared actor lock. The reproducing concurrency test passed after the change
+- Actual commit-failure injection initially received HTTP 200 before persistence; fixed every database yield dependency to function scope so commit finishes before any success response starts
+- Durable operation results are now encrypted JSON strings; operation request fingerprints are keyed HMACs so known phone values cannot be guessed offline from a plain body hash
+- Source/generated-ID defaults excluded from idempotency fingerprints, so replaying the same raw card request never regenerates identities
+- History thumbnails have a separate, ownership-checked resource purpose; neither a last-published original nor audio becomes accessible after deletion
+- Task3 tests cover phone/WeChat atomicity, no contact removal, separate versions, no identity merging, encrypted persistence and operation recovery
+
+Task 3: complete — full MySQL8.4 suite 52 passed in 182.92s, including fresh migration0003, concurrent identities, different-card completion race and commit-failure rollback; local 48 passed/4 MySQL-only skips; Ruff/mypy clean
+
+Ruling: implement core admin/mini screens now before advanced imports/TTS tasks — follows the user-approved end-to-end sequence rather than finishing all backends first — generated contracts may expand when advanced features land

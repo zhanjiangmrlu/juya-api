@@ -23,6 +23,7 @@ from .content_service import published_card
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
 from .errors import DomainError
+from .media_permissions import summary_thumbnail
 from .models import MiniSession, identifier
 from .security import digest, token
 from .storage import ObjectStorage
@@ -236,7 +237,7 @@ def admin_routes():
         file: UploadFile = File(...),
         admin=Depends(administrator),
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
         limit = (
@@ -261,7 +262,7 @@ def admin_routes():
         media_id: str,
         request: Request,
         admin=Depends(administrator),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         medium = db.get(Media, media_id)
         if not medium or medium.state != "ready":
@@ -269,7 +270,11 @@ def admin_routes():
         return deliver(medium, request)
 
     @router.get("/media/{media_id}/status")
-    def status(media_id: str, admin=Depends(administrator), db: Session = Depends(database)):
+    def status(
+        media_id: str,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
         medium = db.get(Media, media_id)
         if not medium:
             raise DomainError(404, "media_missing", "素材不可用")
@@ -285,20 +290,28 @@ def mini_routes():
     def issue(
         card_id: str,
         media_id: str,
-        version_id: str,
         request: Request,
+        version_id: str | None = None,
+        purpose: Literal["content", "summary"] = "content",
         user=Depends(learner),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
-        _, version = published_card(db, card_id, version_id)
         medium = db.get(Media, media_id)
-        image = db.get(Media, version.payload["image_id"])
-        allowed = {
-            version.payload["image_id"],
-            version.payload["audio_id"],
-            image.thumbnail_id if image else None,
-        }
-        if not medium or medium.id not in allowed or medium.state != "ready":
+        if purpose == "summary":
+            version = summary_thumbnail(db, user.id, card_id, media_id, version_id)
+        else:
+            if not version_id:
+                raise DomainError(422, "version_required", "请刷新后重新获取资源")
+            _, version = published_card(db, card_id, version_id)
+            image = db.get(Media, version.payload["image_id"])
+            allowed = {
+                version.payload["image_id"],
+                version.payload["audio_id"],
+                image.thumbnail_id if image else None,
+            }
+            if media_id not in allowed:
+                raise DomainError(404, "media_missing", "素材不可用")
+        if not medium or medium.state != "ready":
             raise DomainError(404, "media_missing", "素材不可用")
         credential = token("med_")
         expires = request.app.state.clock() + timedelta(minutes=5)
@@ -310,13 +323,14 @@ def mini_routes():
                 card_id=card_id,
                 version_id=version.id,
                 media_id=medium.id,
+                purpose=purpose,
                 expires_at=expires,
             )
         )
         return {"url": "/api/mini/v1/media/" + credential, "expires_at": timestamp(expires)}
 
     @router.api_route("/media/{credential}", methods=["GET", "HEAD"])
-    def read(credential: str, request: Request, db: Session = Depends(database)):
+    def read(credential: str, request: Request, db: Session = Depends(database, scope="function")):
         now = request.app.state.clock()
         ticket = db.get(MediaTicket, digest(credential))
         if not ticket or ticket.expires_at <= now:
@@ -324,7 +338,14 @@ def mini_routes():
         session = db.get(MiniSession, ticket.session_digest)
         if not session or session.expires_at <= now or session.user_id != ticket.user_id:
             raise DomainError(401, "login_required", "请主动登录后继续")
-        published_card(db, ticket.card_id, ticket.version_id)
+        if ticket.purpose == "summary":
+            summary_thumbnail(
+                db, ticket.user_id, ticket.card_id, ticket.media_id, ticket.version_id
+            )
+        elif ticket.purpose == "content":
+            published_card(db, ticket.card_id, ticket.version_id)
+        else:
+            raise DomainError(404, "media_missing", "素材不可用")
         medium = db.get(Media, ticket.media_id)
         if not medium or medium.state != "ready":
             raise DomainError(404, "media_missing", "素材不可用")

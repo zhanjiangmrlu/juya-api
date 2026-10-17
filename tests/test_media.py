@@ -64,3 +64,31 @@ def test_logout_revokes_previously_issued_media_tickets(admin, mini):
     ).json()["url"]
     assert mini.post("/api/mini/v1/auth/logout").status_code == 200
     assert mini.get(url).status_code == 401
+
+
+def test_deleted_history_permits_only_its_safe_thumbnail_not_the_original(admin, mini):
+    card = draft(admin)
+    version = publish(admin, card)["current_version_id"]
+    assert (
+        mini.post(
+            f"/api/mini/v1/cards/{card['id']}/complete", headers=key(), json={"version_id": version}
+        ).status_code
+        == 200
+    )
+    image_id = card["content"]["image_id"]
+    thumb = admin.get(f"/api/admin/v1/media/{image_id}/status").json()["thumbnail_id"]
+    assert (
+        admin.request(
+            "DELETE", f"/api/admin/v1/cards/{card['id']}", headers=key(), json={"revision": 1}
+        ).status_code
+        == 200
+    )
+    response = mini.get(f"/api/mini/v1/cards/{card['id']}/media/{thumb}/url?purpose=summary")
+    assert response.status_code == 200, response.text
+    assert mini.get(response.json()["url"]).status_code == 200
+    assert (
+        mini.get(
+            f"/api/mini/v1/cards/{card['id']}/media/{image_id}/url?purpose=summary"
+        ).status_code
+        == 404
+    )

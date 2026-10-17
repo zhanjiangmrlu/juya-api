@@ -137,3 +137,14 @@ def test_offline_and_delete_block_new_access_and_stale_revival(admin, mini):
 
 def test_learner_cannot_create_or_edit_cards(mini):
     assert mini.post("/api/admin/v1/cards", json={"content": {}}).status_code == 404
+
+
+def test_operation_replay_does_not_regenerate_missing_dialogue_or_word_ids(admin):
+    payload = content(admin)
+    del payload["dialogue"][0]["id"]
+    del payload["vocabulary"][0]["id"]
+    headers = key()
+    first = admin.post("/api/admin/v1/cards", headers=headers, json={"content": payload})
+    second = admin.post("/api/admin/v1/cards", headers=headers, json={"content": payload})
+    assert first.status_code == second.status_code == 201
+    assert first.json() == second.json()

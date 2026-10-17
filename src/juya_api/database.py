@@ -30,11 +30,13 @@ class Base(DeclarativeBase):
 
 def make_database(settings: Settings):
     """Create a bounded connection pool; SQLite is only for isolated local tests."""
-    options: dict[str, Any] = {"pool_pre_ping": True}
+    options: dict[str, Any] = {"pool_pre_ping": True, "hide_parameters": True}
     if settings.database_url.startswith("sqlite"):
         options["connect_args"] = {"check_same_thread": False}
     else:
-        options.update(pool_size=5, max_overflow=3, pool_recycle=1800)
+        options.update(
+            pool_size=5, max_overflow=3, pool_recycle=1800, isolation_level="READ COMMITTED"
+        )
     engine = create_engine(settings.database_url, **options)
     if engine.dialect.name == "sqlite":
 

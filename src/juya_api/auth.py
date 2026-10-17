@@ -104,7 +104,10 @@ def admin_routes() -> APIRouter:
 
     @router.post("/login")
     def login(
-        body: AdminLogin, request: Request, response: Response, db: Session = Depends(database)
+        body: AdminLogin,
+        request: Request,
+        response: Response,
+        db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
         origin = request.headers.get("origin")
@@ -164,7 +167,7 @@ def admin_routes() -> APIRouter:
     def session(
         request: Request,
         admin: Administrator = Depends(administrator),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         current = db.get(AdminSession, digest(request.cookies[ADMIN_COOKIE]))
         assert current is not None
@@ -179,7 +182,7 @@ def admin_routes() -> APIRouter:
         request: Request,
         response: Response,
         admin=Depends(administrator),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         db.delete(db.get(AdminSession, digest(request.cookies[ADMIN_COOKIE])))
         response.delete_cookie(ADMIN_COOKIE, path="/api/admin/v1")
@@ -196,7 +199,7 @@ def mini_routes() -> APIRouter:
         body: WechatLogin,
         request: Request,
         key: str = Depends(operation_key),
-        db: Session = Depends(database),
+        db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
         key_hash, request_hash = digest(key), fingerprint(body.model_dump())
@@ -279,7 +282,11 @@ def mini_routes() -> APIRouter:
         return user_view(user, request.app.state.settings)
 
     @router.post("/auth/logout")
-    def logout(request: Request, user: User = Depends(learner), db: Session = Depends(database)):
+    def logout(
+        request: Request,
+        user: User = Depends(learner),
+        db: Session = Depends(database, scope="function"),
+    ):
         value = request.headers["Authorization"].removeprefix("Bearer ")
         db.delete(db.get(MiniSession, digest(value)))
         return {"logged_out": True}

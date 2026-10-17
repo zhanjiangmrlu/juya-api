@@ -74,6 +74,7 @@ class MediaTicket(Base):
     card_id: Mapped[str] = mapped_column(ForeignKey("cards.id"))
     version_id: Mapped[str] = mapped_column(ForeignKey("card_versions.id"))
     media_id: Mapped[str] = mapped_column(ForeignKey("media.id"))
+    purpose: Mapped[str] = mapped_column(String(16), default="content", server_default="content")
     expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
 
 
@@ -83,7 +84,7 @@ class Operation(Base):
     key_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
     action: Mapped[str] = mapped_column(String(160))
     fingerprint: Mapped[str] = mapped_column(String(64))
-    result: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[str] = mapped_column(JSON)
     accepted_at: Mapped[datetime] = mapped_column(DateTime, index=True)
 
 
