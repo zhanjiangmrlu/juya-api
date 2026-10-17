@@ -69,6 +69,67 @@ def test_cache_separates_confirmed_reading_and_preview_revision(admin, system):
     assert second.json()["job_id"] != first.json()["job_id"]
 
 
+def test_import_staging_speech_never_creates_a_card_and_revokes_old_review_grants(
+    admin, mini, system
+):
+    from juya_api.worker import run_job
+
+    from .content_helpers import process_jobs
+    from .test_imports import document
+
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "docx"}).json()
+    admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/files?kind=docx",
+        headers=key(),
+        files={"file": ("speech.docx", document("核对发音"), "application/octet-stream")},
+    )
+    process_jobs(admin)
+    item = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()["items"][0]
+    word = item["content"]["vocabulary"][0]["id"]
+    path = f"/api/admin/v1/imports/{batch['id']}/items/{item['id']}/words/{word}/pronunciation"
+    response = admin.post(path, headers=key(), json={"revision": item["revision"]})
+    assert response.status_code == 200, response.text
+    assert (
+        admin.post(
+            path, headers=key(), json={"revision": item["revision"], "text": "arbitrary"}
+        ).status_code
+        == 422
+    )
+    assert admin.get(path, params={"revision": 0}).status_code == 422
+    assert (
+        mini.get(
+            path.replace("/admin/", "/mini/"), params={"revision": item["revision"]}
+        ).status_code
+        == 404
+    )
+
+    class Provider:
+        def synthesize(self, *_):
+            return recording()
+
+    run_job(
+        system["settings"],
+        system["sessions"],
+        response.json()["job_id"],
+        clock=admin.app.state.clock,
+        tts=Provider(),
+    )
+    state = admin.get(path, params={"revision": item["revision"]})
+    assert state.json()["state"] == "ready", state.text
+    url = state.json()["url"]
+    assert admin.get(url, headers={"Range": "bytes=0-15"}).status_code == 206
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 0
+    item["content"]["vocabulary"][0]["pronunciation_text"] = "lat tay"
+    changed = admin.patch(
+        f"/api/admin/v1/imports/{batch['id']}/items/{item['id']}",
+        headers=key(),
+        json={"revision": item["revision"], "content": item["content"], "selected": True},
+    )
+    assert changed.status_code == 200, changed.text
+    assert admin.get(url).status_code == 409
+    assert admin.post(path, headers=key(), json={"revision": item["revision"]}).status_code == 409
+
+
 def test_daily_budget_counts_actual_provider_attempts_and_manual_retry_has_cooldown(
     admin, mini, system
 ):

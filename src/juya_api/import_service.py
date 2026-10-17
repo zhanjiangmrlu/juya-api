@@ -77,7 +77,7 @@ def file_view(db, row):
     )
     state = (
         "failed"
-        if job and job.state == "failed"
+        if row.error_code or (job and job.state == "failed")
         else medium.state
         if medium
         else "ready"
@@ -92,13 +92,14 @@ def file_view(db, row):
         "media_id": row.media_id,
         "state": state,
         "job_id": job.id if job else None,
-        "error_code": job.error_code if job and job.state == "failed" else None,
+        "error_code": row.error_code or (job.error_code if job and job.state == "failed" else None),
         "parent_id": row.parent_id,
     }
 
 
 def item_view(db, item):
     job = item_job(db, item)
+    image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
     hashed = content_hash(db, item.content)
     identity = db.get(ImportIdentity, object_key(db, item))
     issues = list(item.parser_issues) + validate_publication(db, item.content)
@@ -122,6 +123,7 @@ def item_view(db, item):
         "id": item.id,
         "revision": item.revision,
         "content": item.content,
+        "thumbnail_id": image.thumbnail_id if image and image.state == "ready" else None,
         "selected": item.selected,
         "readable": item.readable,
         "state": state,
@@ -201,7 +203,9 @@ def confirmation(db, batch):
         "incomplete": sum(bool(i["issues"]) for i in selected),
         "saved": sum(i["state"] == "saved" for i in values),
         "duplicates": sum(i["state"] == "duplicate" for i in values),
-        "excluded": sum(not i["selected"] for i in values),
+        "excluded": sum(
+            not i["selected"] and i["readable"] and i["state"] != "duplicate" for i in values
+        ),
         "unreadable": sum(not i["readable"] for i in values),
     }
 
@@ -348,9 +352,28 @@ def prepare_parse(settings, sessions, job):
                     * 1024
                     * 1024
                 )
-                body = member_bytes(archive, member.filename, limit)
-                sha = hashlib.sha256(body).hexdigest()
                 file_id = str(uuid5(NAMESPACE_URL, source["id"] + ":" + member.filename))
+                try:
+                    body = member_bytes(archive, member.filename, limit)
+                except DomainError as error:
+                    entry = {
+                        "id": file_id,
+                        "name": member.filename,
+                        "kind": kind,
+                        "storage_key": "",
+                        "size": member.file_size,
+                        "sha256": "",
+                        "media_id": None,
+                        "error_code": "archive_member_limit"
+                        if error.code == "archive_limit"
+                        else "archive_member_invalid",
+                    }
+                    prepared_files.append(entry)
+                    by_folder.setdefault(str(PurePosixPath(member.filename).parent), []).append(
+                        entry
+                    )
+                    continue
+                sha = hashlib.sha256(body).hexdigest()
                 key = f"{settings.environment}/imports/{file_id}/{sha}"
                 storage.put(key, body, "application/octet-stream")
                 entry = {
@@ -376,6 +399,12 @@ def prepare_parse(settings, sessions, job):
                             422,
                             "zip_folder_docx_count",
                             "一张卡片一个文件夹，每个文件夹只放一份内容DOCX",
+                        )
+                    if document.get("error_code"):
+                        raise DomainError(
+                            422,
+                            document["error_code"],
+                            "此文件夹内容DOCX无法读取或超过限制，请修正文件",
                         )
                     contents = parse_docx(
                         storage.read(document["storage_key"]), card_limit=settings.import_card_limit

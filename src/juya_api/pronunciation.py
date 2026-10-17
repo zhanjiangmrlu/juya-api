@@ -11,6 +11,8 @@ from sqlalchemy import select
 from .content_models import CardDraft, Media, SettingCounter
 from .content_service import published_card, require_card, revision_matches
 from .errors import DomainError
+from .import_models import ImportItem
+from .import_service import owned_batch
 from .job_models import Job
 from .jobs import enqueue
 from .learning_service import business_date
@@ -43,6 +45,22 @@ def reference(db, settings, role, card_id, word_id, version_id=None, revision=No
     else:
         require_card(db, card_id)
         content = revision_matches(db.get(CardDraft, card_id), revision).payload
+    return word_reference(settings, content, word_id)
+
+
+def import_reference(db, settings, admin_id, batch_id, item_id, word_id, revision):
+    """Resolve only an administrator's saved review revision without creating a Card."""
+    owned_batch(db, batch_id, admin_id)
+    item = db.get(ImportItem, item_id)
+    if not item or item.batch_id != batch_id or not item.readable:
+        raise DomainError(404, "word_missing", "未找到这条核对词汇")
+    if item.revision != revision:
+        raise DomainError(409, "import_changed", "核对资料已变化，请重新试听")
+    return word_reference(settings, item.content, word_id)
+
+
+def word_reference(settings, content, word_id):
+    """Share cache rules across saved cards and controlled import staging references."""
     word = next((w for w in content["vocabulary"] if w["id"] == word_id), None)
     if not word:
         raise DomainError(404, "word_missing", "未找到这条词汇")

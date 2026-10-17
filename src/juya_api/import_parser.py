@@ -5,6 +5,7 @@ import re
 import stat
 import unicodedata
 import zipfile
+import zlib
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -67,7 +68,7 @@ def member_bytes(archive, name, limit):
             if len(data) > limit:
                 raise DomainError(422, "archive_limit", "文件超过读取限制")
             return data
-    except (KeyError, zipfile.BadZipFile, RuntimeError, EOFError, OSError):
+    except (KeyError, zipfile.BadZipFile, RuntimeError, EOFError, OSError, zlib.error):
         raise DomainError(422, "docx_invalid", "DOCX无法读取，请检查文件后重试") from None
 
 

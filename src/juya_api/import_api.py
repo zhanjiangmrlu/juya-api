@@ -56,6 +56,7 @@ class ImportItemView(BaseModel):
     id: str
     revision: int
     content: SceneContent
+    thumbnail_id: str | None
     selected: bool
     readable: bool
     state: str
@@ -269,6 +270,10 @@ def routes():
             row = db.get(ImportFile, file_id)
             if not row or row.batch_id != batch_id:
                 raise DomainError(404, "import_file_missing", "未找到本次导入文件")
+            if row.error_code:
+                raise DomainError(
+                    422, "import_file_invalid", "包内文件无法读取，请修正后重新上传资料包"
+                )
             medium = db.get(Media, row.media_id) if row.media_id else None
             previous = db.get(Job, medium.job_id if medium else row.job_id)
             if not previous or previous.state != "failed":

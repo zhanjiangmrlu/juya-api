@@ -5,8 +5,11 @@
 Task 1: complete (auth and independent entrypoints; real MySQL 8.4 migration and concurrency verified)
 Task 2: complete
 Task 3: complete
-Tasks 5/6 core screens: next (before advanced task4, per the approved vertical delivery order)
-Tasks 4—8: pending
+Task 4: in progress — durable jobs, async media, controlled speech, recoverable imports, ordering/batch and matching admin UI implemented; runtime decoding and remaining import hardening/acceptance continue
+Task 5: admin screens implemented through advanced import/sort/batch/speech; final revision12 visual and branch review pending
+Task 6: mini core and controlled speech implemented; native three-choice return and actual WeChat device acceptance pending
+Task 7: exact old SQL/runtime/local backup reset done; OSS reset, deployment and CLI pending
+Task 8: final integrated review/acceptance pending
 
 ## Pre-flight
 
@@ -141,3 +144,11 @@ Task4 latest: actual CUA batch acceptance published both reviewed cards through 
 Import follow-up: actor-scoped batch_id card filtering and retained-file retry endpoint added; single-card batches reject non-DOCX uploads. New behavior tests RED→GREEN, local full backend90 passed/7 external-only skipped; real MySQL import suite16 passed in53.59s; Ruff/mypy clean. Admin same-page three-step import UI, persisted staging with late-edit/unknown-receipt protection, explicit target comparison and asset selection are now wired. Admin27 tests/full checks/build pass. Real CUA mixed ZIP returned one complete, one incomplete and one unreadable multi-card folder; leave/resume preserved both edited names and explicit update target. Formal cards were unchanged before step-three confirmation. First actual two-item save is currently processing; browser result/filter proof and import/single-DOCX/voice hardening are ongoing.
 
 Local verification stack restarted for these APIs; parent exec session31321 replaces23928. New PIDs recorded in workspace .private/local-stack-pids.json. Live admin currently at /imports?batch=3e7d2d2e-1d23-4611-a1e8-92b174f16d8e, first save already accepted; inspect result rather than submit again.
+
+Task4 import end-to-end evidence: the accepted mixed ZIP saved two actual drafts (one explicit existing-card update plus one incomplete new card), with one unreadable folder. Batch-filtered A02 lists exactly those two; the existing publication remains unchanged. A03 single-DOCX UI rejected multiple H1 cards, then previewed a legal candidate, explicitly replaced only dialogue/vocabulary/chunks and persisted the retained hand-written title. CUA screenshots in admin docs/verification. No unsaved editor remains open.
+
+Controlled import-staging speech now uses owner/batch/item/revision/word references, shares the synthesis cache, creates no Card and rechecks staging revision on every audio request. New grant revocation and arbitrary-text rejection tests RED→GREEN; real browser staging audition reached playing/replay. GET revision validation now returns422 for zero. Individual oversized/corrupt ZIP members persist their own safe error via additive migration0008; readable text and sibling folders survive. New oversized-image regression RED→GREEN. Import thumbnails now use processed thumbnails and unreadable vs excluded counts are distinct. Backend local92 passed/7 external-only skips, Ruff/mypy clean; actual MySQL import+speech+fresh0008/check24 passed in98.80s.
+
+Admin latest29 tests/full checks/build passed: full three-step import, independent per-card staging, late typing/unknown-receipt retention, target diff selection, bounded file processing/results, actual per-item saves/retry confirmation, recent resume, asset pickers and explicit single-DOCX text replacement. A target confirmation is invalidated if reviewed content changes. Upload, review-list, target/asset pickers and save results are separate components. Whole-branch review and complete visual QA still pending.
+
+Local stack latest restart: exec session51210 replaces31321; APIs now include0008 and staging speech; PIDs private. IAB admin tab1 is /cards (saved synthetic data only), mini tab2 remains the new published-card detail. Viewport override reset. Account file mtime is1792216641 (13:57); reviewed added RAM section safely: login/short incomplete AccessKey field does not provide a usable full OSS key pair. Prior403 is not treated as empty buckets, and no further repeated permission request was sent.

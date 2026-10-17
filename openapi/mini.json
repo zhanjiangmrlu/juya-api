@@ -3688,7 +3688,8 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "type": "string",
+                  "maxLength": 36
                 },
                 {
                   "type": "null"
@@ -3704,7 +3705,8 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1
                 },
                 {
                   "type": "null"

@@ -3,7 +3,7 @@
 import json
 from datetime import UTC, timedelta
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,7 @@ from .dependencies import ADMIN_COOKIE, administrator, database, learner, operat
 from .errors import DomainError
 from .media_api import deliver
 from .models import AdminSession, MiniSession
-from .pronunciation import reference, status
+from .pronunciation import import_reference, reference, status
 from .pronunciation import request as request_speech
 from .pronunciation_models import Pronunciation
 from .security import decrypt, digest, encrypt
@@ -33,6 +33,11 @@ class SpeechState(BaseModel):
     retry_after: int | None
 
 
+class ImportSpeechReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    revision: int = Field(ge=1)
+
+
 def session_digest(request, role):
     value = (
         request.cookies.get(ADMIN_COOKIE, "")
@@ -42,7 +47,9 @@ def session_digest(request, role):
     return digest(value)
 
 
-def with_grant(value, request, role, actor_id, card_id, word_id, ref, cache_key):
+def with_grant(
+    value, request, role, actor_id, card_id, word_id, ref, cache_key, *, import_context=None
+):
     """Issue a short-lived opaque audio reference without exposing a storage URL."""
     if value["state"] == "ready":
         payload = {
@@ -54,6 +61,7 @@ def with_grant(value, request, role, actor_id, card_id, word_id, ref, cache_key)
             "version_id": ref.version_id,
             "revision": ref.revision,
             "cache_key": cache_key,
+            "import_context": import_context,
             "expires": int(
                 (request.app.state.clock() + timedelta(minutes=5)).replace(tzinfo=UTC).timestamp()
             ),
@@ -100,8 +108,8 @@ def routes(role):
         card_id: str,
         word_id: str,
         request: Request,
-        version_id: str | None = None,
-        revision: int | None = None,
+        version_id: str | None = Query(None, max_length=36),
+        revision: int | None = Query(None, ge=1),
         actor=Depends(authorize),
         db: Session = Depends(database, scope="function"),
     ):
@@ -112,6 +120,78 @@ def routes(role):
         return with_grant(
             status(db, cache_key), request, role, actor.id, card_id, word_id, ref, cache_key
         )
+
+    if role == "admin":
+
+        @router.post(
+            "/imports/{batch_id}/items/{item_id}/words/{word_id}/pronunciation",
+            response_model=SpeechState,
+        )
+        def generate_import(
+            batch_id: str,
+            item_id: str,
+            word_id: str,
+            body: ImportSpeechReference,
+            request: Request,
+            actor=Depends(administrator),
+            key: str = Depends(operation_key),
+            db: Session = Depends(database, scope="function"),
+        ):
+            settings, now = request.app.state.settings, request.app.state.clock()
+            word, reading, config, cache_key = import_reference(
+                db, settings, actor.id, batch_id, item_id, word_id, body.revision
+            )
+            value = operate(
+                db,
+                actor,
+                "admin",
+                key,
+                "import.word:" + item_id + ":" + word_id,
+                body.model_dump(),
+                now,
+                lambda: request_speech(
+                    db, settings, actor, "admin", word, reading, config, cache_key, now
+                ),
+            )
+            return with_grant(
+                value,
+                request,
+                "admin",
+                actor.id,
+                None,
+                word_id,
+                SpeechReference(revision=body.revision),
+                cache_key,
+                import_context={"batch_id": batch_id, "item_id": item_id},
+            )
+
+        @router.get(
+            "/imports/{batch_id}/items/{item_id}/words/{word_id}/pronunciation",
+            response_model=SpeechState,
+        )
+        def read_import(
+            batch_id: str,
+            item_id: str,
+            word_id: str,
+            request: Request,
+            revision: int = Query(..., ge=1),
+            actor=Depends(administrator),
+            db: Session = Depends(database, scope="function"),
+        ):
+            _, _, _, cache_key = import_reference(
+                db, request.app.state.settings, actor.id, batch_id, item_id, word_id, revision
+            )
+            return with_grant(
+                status(db, cache_key),
+                request,
+                "admin",
+                actor.id,
+                None,
+                word_id,
+                SpeechReference(revision=revision),
+                cache_key,
+                import_context={"batch_id": batch_id, "item_id": item_id},
+            )
 
     @router.head("/pronunciation/{credential}", include_in_schema=False)
     @router.get("/pronunciation/{credential}")
@@ -137,15 +217,29 @@ def routes(role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
         if role == "admin" and payload["session"] != session_digest(request, role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
-        _, _, _, cache_key = reference(
-            db,
-            settings,
-            role,
-            payload.get("card_id"),
-            payload.get("word_id"),
-            payload.get("version_id"),
-            payload.get("revision"),
-        )
+        context = payload.get("import_context")
+        if context:
+            if role != "admin":
+                raise DomainError(401, "speech_grant_invalid", "请重新点击词汇试听")
+            _, _, _, cache_key = import_reference(
+                db,
+                settings,
+                actor_id,
+                context["batch_id"],
+                context["item_id"],
+                payload.get("word_id"),
+                payload.get("revision"),
+            )
+        else:
+            _, _, _, cache_key = reference(
+                db,
+                settings,
+                role,
+                payload.get("card_id"),
+                payload.get("word_id"),
+                payload.get("version_id"),
+                payload.get("revision"),
+            )
         if cache_key != payload.get("cache_key"):
             raise DomainError(409, "pronunciation_changed", "词汇读音已变化，请重新试听")
         cache = db.get(Pronunciation, cache_key)

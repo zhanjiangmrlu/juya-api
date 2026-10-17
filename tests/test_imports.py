@@ -147,6 +147,7 @@ def test_docx_batch_restores_staging_matches_only_exact_names_and_saves_drafts(a
     assert matched.status_code == 200, matched.text
     items = matched.json()["items"]
     assert len(items) == 2 and items[0]["content"]["image_id"]
+    assert items[0]["thumbnail_id"]
     assert items[1]["content"]["image_id"] is None
     # Persisted staging survives a new read and changes invalidate an old confirmation.
     confirmation = admin.get(f"/api/admin/v1/imports/{batch_id}/confirmation").json()
@@ -230,6 +231,7 @@ def test_zip_keeps_other_folders_when_one_docx_has_multiple_cards_and_never_merg
     assert len(result["items"]) == 3
     assert sum(not i["readable"] for i in result["items"]) == 1
     confirmation = admin.get(f"/api/admin/v1/imports/{batch['id']}/confirmation").json()
+    assert confirmation["unreadable"] == 1 and confirmation["excluded"] == 0
     admin.post(
         f"/api/admin/v1/imports/{batch['id']}/save",
         headers=key(),
@@ -416,3 +418,37 @@ def test_failed_import_file_retries_retained_bytes_without_duplicating_successfu
     result = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()
     assert len(result["items"]) == 1 and result["files"][0]["state"] == "ready"
     assert admin.post(path + "/unknown/retry", headers=key()).status_code == 404
+
+
+def test_oversized_child_asset_does_not_discard_recoverable_text_or_other_zip_folders(
+    admin, system
+):
+    import os
+
+    from .content_helpers import key, picture, process_jobs, recording
+
+    system["settings"].image_limit_mb = 1
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "zip"}).json()
+    package = archive(
+        [
+            ("bad-image/内容.docx", document("缺图可恢复")),
+            ("bad-image/场景图.png", os.urandom(1_100_000)),
+            ("good/内容.docx", document("独立完整")),
+            ("good/场景图.png", picture()),
+            ("good/完整音频.wav", recording()),
+        ]
+    )
+    response = admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/files?kind=zip",
+        headers=key(),
+        files={"file": ("mixed.zip", package, "application/zip")},
+    )
+    assert response.status_code == 201, response.text
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()
+    assert [item["state"] for item in result["items"]] == ["incomplete", "ready"]
+    assert result["items"][0]["content"]["dialogue"]
+    failed = [file for file in result["files"] if file["state"] == "failed"]
+    assert len(failed) == 1 and failed[0]["name"] == "bad-image/场景图.png"
+    assert failed[0]["error_code"] == "archive_member_limit"
+    assert next(file for file in result["files"] if not file["parent_id"])["state"] == "ready"
