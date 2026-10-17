@@ -91,3 +91,12 @@ def test_mini_configuration_reports_avatar_budget_without_administrator_capabili
         "avatar_limit_bytes": system["settings"].image_limit_mb * 1024 * 1024
     }
     assert mini.get("/api/admin/v1/media/configuration").status_code == 404
+
+
+def test_published_scene_exposes_inspected_audio_duration_for_native_controls(admin, mini):
+    card = draft(admin)
+    publish(admin, card)
+    duration = admin.get(f"/api/admin/v1/media/{card['content']['audio_id']}/status").json()[
+        "duration"
+    ]
+    assert mini.get(f"/api/mini/v1/cards/{card['id']}").json()["audio_duration"] == duration

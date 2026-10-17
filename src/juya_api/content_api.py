@@ -351,7 +351,9 @@ def mini_routes():
         db: Session = Depends(database, scope="function"),
     ):
         card, version = published_card(db, card_id, version_id)
+        audio = db.get(Media, version.payload["audio_id"])
         return {
+            "audio_duration": audio.duration if audio else None,
             "card_id": card.id,
             "version_id": version.id,
             "content": version.payload,

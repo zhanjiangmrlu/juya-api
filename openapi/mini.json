@@ -3815,6 +3815,17 @@
       },
       "PublishedDetail": {
         "properties": {
+          "audio_duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Duration"
+          },
           "card_id": {
             "type": "string",
             "title": "Card Id"
@@ -3836,6 +3847,7 @@
         },
         "type": "object",
         "required": [
+          "audio_duration",
           "card_id",
           "version_id",
           "content",
