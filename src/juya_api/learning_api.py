@@ -1,6 +1,5 @@
 """Authenticated learner actions and read-only personal learning records."""
 
-import json
 from datetime import date
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -8,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .content_models import Card, Operation
+from .content_models import Card
 from .content_service import published_card
 from .dependencies import database, learner, operation_key
 from .errors import DomainError
@@ -29,12 +28,10 @@ from .response_contracts import (
     DailyRecords,
     FavoriteResponse,
     LearningRecord,
-    OperationResponse,
     Page,
     PersonalSummary,
     Statistics,
 )
-from .security import decrypt, digest
 from .transactions import operate
 
 
@@ -196,20 +193,5 @@ def routes():
         day: date, user=Depends(learner), db: Session = Depends(database, scope="function")
     ):
         return day_records(db, user.id, day)
-
-    @router.get("/operations/{key}", response_model=OperationResponse)
-    def operation(
-        key: str,
-        request: Request,
-        user=Depends(learner),
-        db: Session = Depends(database, scope="function"),
-    ):
-        row = db.get(Operation, ("mini:" + user.id, digest(key)))
-        if not row:
-            raise DomainError(404, "operation_unknown", "尚未查询到成功结果，请核对后重试")
-        return {
-            "status": "succeeded",
-            "result": json.loads(decrypt(request.app.state.settings, row.result) or "{}"),
-        }
 
     return router

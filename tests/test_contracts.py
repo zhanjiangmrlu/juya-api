@@ -100,3 +100,39 @@ def test_published_scene_exposes_inspected_audio_duration_for_native_controls(ad
         "duration"
     ]
     assert mini.get(f"/api/mini/v1/cards/{card['id']}").json()["audio_duration"] == duration
+
+
+def test_unexpected_faults_return_safe_json_without_logging_submitted_personal_values(
+    system, mini, monkeypatch, caplog
+):
+    from starlette.testclient import TestClient
+
+    from juya_api import learning_api
+
+    def fault(*args, **kwargs):
+        raise RuntimeError("private-contact-13800138000")
+
+    monkeypatch.setattr(learning_api, "statistics", fault)
+    client = TestClient(
+        system["mini"].app,
+        base_url="https://testserver",
+        raise_server_exceptions=False,
+        headers=dict(mini.headers),
+    )
+    response = client.get("/api/mini/v1/me/statistics")
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "internal_error"
+    assert "private-contact-13800138000" not in response.text + caplog.text
+
+
+def test_administrator_can_query_only_its_own_durable_write_result(admin, mini):
+    operation = key()
+    created = admin.post(
+        "/api/admin/v1/cards", headers=operation, json={"content": {"name": "结果查询测试"}}
+    )
+    assert created.status_code == 201
+    original_key = operation["Idempotency-Key"]
+    response = admin.get("/api/admin/v1/operations/" + original_key)
+    assert response.status_code == 200
+    assert response.json()["result"]["id"] == created.json()["id"]
+    assert mini.get("/api/mini/v1/operations/" + original_key).status_code == 404
