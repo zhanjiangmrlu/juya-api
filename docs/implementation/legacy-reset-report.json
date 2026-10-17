@@ -23,7 +23,17 @@
   ],
   "removed_release_dump_count": 0,
   "retired_runtime_profiles": true,
-  "oss_status": "blocked_access_denied",
+  "oss_status": "test_reset_verified_production_deferred",
   "production_old_database_found": false,
-  "shared_old_database": "juya"
+  "shared_old_database": "juya",
+  "test_oss": {
+    "bucket": "juya-test",
+    "deleted_versions": 801,
+    "remaining_objects": 0,
+    "remaining_versions_or_delete_markers": 0,
+    "remaining_multipart_uploads": 0,
+    "inventory_sha256": "446a66b80d7aab093058585608962ae8680c4f050edcf58d6e3b2cc49d557f2e",
+    "checked_before_new_qa_content": true
+  },
+  "production_oss": "deferred_by_user"
 }

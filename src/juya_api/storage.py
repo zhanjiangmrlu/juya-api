@@ -94,12 +94,19 @@ class ObjectStorage:
         def chunks():
             remaining = end - start + 1
             try:
-                while remaining > 0:
-                    data = source.read(min(64 * 1024, remaining))
+                blocks = (
+                    source.iter_bytes(block_size=64 * 1024)
+                    if self.client
+                    else iter(lambda: source.read(64 * 1024), b"")
+                )
+                for block in blocks:
+                    data = block[:remaining]
                     if not data:
                         break
                     remaining -= len(data)
                     yield data
+                    if remaining == 0:
+                        break
             finally:
                 source.close()
 

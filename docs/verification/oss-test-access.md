@@ -1,13 +1,12 @@
-# 测试OSS权限核对 — 2026-10-17
+# 测试 OSS 验证 — 2026-10-17
 
-用户已在账号文件的RAM访问控制下补充完整、独立的AccessKey ID/Secret。密钥仅用于本地进程及ECS根用户私密检查文件，不进入Git、普通日志或聊天。
+用户补齐完整 RAM 凭证及桶、对象授权后，juya-test 实际上传、读取、删除均已通过。凭证不进入 Git、日志或聊天。
 
-使用新凭证从本机及ECS访问juya-test，公网Endpoint为https://oss-cn-shenzhen.aliyuncs.com。ListObjectsV2、ListObjectVersions、ListMultipartUploads均返回403 AccessDenied，EC0003-00000001；不能把失败结果中的零长度列表当作空桶。可选的juya前缀Bucket发现也被oss:ListBuckets拒绝；运行和清理不要求开放此账号级权限。
+- 地域 cn-shenzhen，私有 ACL，版本控制未启用。公网 Endpoint https://oss-cn-shenzhen.aliyuncs.com 已连通；当前 ECS 到该地域内网 Endpoint 不通。
+- 精确清单列举旧对象/空版本号版本各801项、分片0项；按清单删除后，对象、历史版本/删除标记、分片均复查为0。
+- 清单SHA256：446a66b80d7aab093058585608962ae8680c4f050edcf58d6e3b2cc49d557f2e。根用户清单和报告位于 /root/juya-rebuild/legacy-oss-test-reset-{manifest,report}.json。
+- 清空验收后才创建联调素材；后续非零对象不代表旧数据残留。
 
-官方说明：此错误可能与凭证或对目标Bucket/Object的授权有关，不能仅凭英文not belong to you断定Bucket归属错误。[错误说明](https://www.alibabacloud.com/help/tc/oss/user-guide/0003-00000001)。请核对真实Bucket名称、地域及该RAM用户对资源的授权；若juya-test实际是目录，应提供所属Bucket及目录前缀。
+授权文件仅覆盖juya-test及其对象，没有通过程序扩大RAM权限。真实API图片/缩略图/音频异步处理及卡片发布通过。Range联调发现SDK StreamBody.read不接受size参数；三个安装的真实SDK流类型回归先复现同一TypeError，再验证有界iter_bytes、完整分块和提前关闭。修复镜像的真实传输验收仍待完成。
 
-[oss-rebuild-policy.json](../../deploy/oss-rebuild-policy.json)现仅覆盖juya-test及其对象，包含重置需要的版本/分片列举删除，以及运行需要的对象读写。未授予其他Bucket、账号级ListBuckets或RAM管理权限。由有权限的账号绑定给所提供AccessKey所属用户后再实测；未自动扩大RAM权限。
-
-动作名称依据[OSS授权映射](https://www.alibabacloud.com/help/en/oss/user-guide/authorization-syntax-and-elements)和[Bucket ACL权限](https://www.alibabacloud.com/help/en/oss/developer-reference/getbucketacl)。ECS到当前深圳内网Endpoint实测不通，外网Endpoint可到达并返回明确403；不能在授权修复后仍沿用未经连通验证的内网地址。当前两套新业务API尚未启用。
-
-按用户最新范围，只推进测试juya-test；生产juya的素材清理与新应用发布暂不处理。
+按用户最新要求，生产juya的OSS清理和新应用发布暂不处理。
