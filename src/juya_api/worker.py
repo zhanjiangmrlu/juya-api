@@ -83,7 +83,7 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
         elif job["kind"] == "import.parse":
             from .import_service import prepare_parse
 
-            result, apply = prepare_parse(settings, sessions, job)
+            result, apply = prepare_parse(settings, sessions, job, clock=now)
         elif job["kind"] == "import.save":
             from .import_service import prepare_save
 

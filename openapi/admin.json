@@ -5078,6 +5078,25 @@
               "type": "string",
               "title": "Batch Id"
             }
+          },
+          {
+            "name": "item_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Item Ids"
+            }
           }
         ],
         "responses": {
@@ -6255,6 +6274,22 @@
             "type": "boolean",
             "const": true,
             "title": "Confirmed"
+          },
+          "item_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 50,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Ids"
           }
         },
         "additionalProperties": false,
@@ -7135,6 +7170,16 @@
           "parent_id": {
             "type": "string",
             "title": "Parent Id"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImportProgress"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -7197,6 +7242,39 @@
           "source_file_id": {
             "type": "string",
             "title": "Source File Id"
+          },
+          "source_zip_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Zip Id"
+          },
+          "source_zip_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Zip Name"
+          },
+          "source_folder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Folder"
           },
           "target_card_id": {
             "anyOf": [
@@ -7296,6 +7374,34 @@
           "error_code"
         ],
         "title": "ImportItemView"
+      },
+      "ImportProgress": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "reading",
+              "parsing",
+              "parsed"
+            ],
+            "title": "Phase"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase",
+          "processed",
+          "total"
+        ],
+        "title": "ImportProgress"
       },
       "ImportSpeechReference": {
         "properties": {

@@ -19,11 +19,11 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
         db.merge(SettingCounter(name="schema_contract", value=1))
     assert client.get("/health/ready").status_code == 503
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0010'"))
+        db.execute(text("UPDATE alembic_version SET version_num='0011'"))
     assert client.get("/health/ready").status_code == 200
     # A newer additive migration remains usable without restarting the other API.
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0011'"))
+        db.execute(text("UPDATE alembic_version SET version_num='0012'"))
     assert client.get("/health/ready").status_code == 200
     assert system["mini"].get("/health/ready").status_code == 200
     with sessions.begin() as db:
@@ -82,3 +82,42 @@ def test_runtime_preflight_rejects_cross_environment_dependencies(system):
     ]:
         with pytest.raises(ValueError):
             module.check_target(Settings(**{**values, key: wrong}), "test", "admin", "test-private")
+
+
+@pytest.mark.parametrize("role,expected", [("admin", 1), ("mini", 0)])
+def test_worker_probe_checks_the_selected_roles_schema(system, monkeypatch, role, expected):
+    import importlib.util
+    from pathlib import Path
+
+    from redis import Redis
+
+    from juya_api import config, database
+    from juya_api.content_models import SettingCounter
+
+    with system["sessions"].begin() as db:
+        db.execute(text("DROP TABLE IF EXISTS alembic_version"))
+        db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
+        db.execute(text("INSERT INTO alembic_version VALUES ('0010')"))
+        db.merge(SettingCounter(name="schema_contract", value=1))
+    settings = config.Settings(
+        **{**system["settings"].model_dump(), "image_role": role, "worker_role": role}
+    )
+
+    class Broker:
+        def ping(self):
+            return True
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(Redis, "from_url", lambda *args, **kwargs: Broker())
+    monkeypatch.setattr(config, "Settings", lambda: settings)
+    monkeypatch.setattr(
+        database, "make_database", lambda settings: (system["engine"], system["sessions"])
+    )
+    monkeypatch.setattr("sys.argv", ["container-health.py", "worker"])
+    path = Path(__file__).resolve().parents[1] / "deploy/container-health.py"
+    spec = importlib.util.spec_from_file_location("worker_health", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.main() == expected

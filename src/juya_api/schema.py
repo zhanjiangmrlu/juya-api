@@ -11,7 +11,7 @@ MINIMUM_REVISION = 10
 CODE_CONTRACT = 1
 
 
-def require_compatible_schema(db):
+def require_compatible_schema(db, *, minimum_revision=MINIMUM_REVISION):
     """Allow newer expansion revisions but reject an incomplete schema or retired code contract."""
     inspector = inspect(db.get_bind())
     if not all(
@@ -23,7 +23,7 @@ def require_compatible_schema(db):
     if (
         len(revisions) != 1
         or not re.fullmatch(r"\d{4}", revisions[0])
-        or int(revisions[0]) < MINIMUM_REVISION
+        or int(revisions[0]) < minimum_revision
         or not contract
         or not 1 <= contract.value <= CODE_CONTRACT
     ):

@@ -57,14 +57,67 @@ def content_hash(db, content):
 
 
 def object_key(db, item):
-    """Deduplicate across batches only when both source and complete media match."""
+    """Missing media has a stable identity too; filenames never identify a card."""
     image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
     audio = db.get(Media, item.content["audio_id"]) if item.content["audio_id"] else None
-    return (
-        fingerprint({"source": item.source_identity, "image": image.sha256, "audio": audio.sha256})
-        if image and audio
-        else fingerprint({"incomplete_item": item.id})
+    return fingerprint(
+        {
+            "source": item.source_identity,
+            "image": image.sha256 if image else None,
+            "audio": audio.sha256 if audio else None,
+        }
     )
+
+
+def find_identity(db, item):
+    """Retain complete identities and recognize incomplete drafts saved by older releases."""
+    identity = db.get(ImportIdentity, object_key(db, item))
+    if identity:
+        return identity
+    previous = db.scalars(
+        select(ImportItem).where(
+            ImportItem.source_identity == item.source_identity,
+            ImportItem.saved_card_id.is_not(None),
+        )
+    ).all()
+    hashed = content_hash(db, item.content)
+    for candidate in previous:
+        legacy = db.get(ImportIdentity, fingerprint({"incomplete_item": candidate.id}))
+        if legacy and (
+            legacy.content_hash == hashed or object_key(db, candidate) == object_key(db, item)
+        ):
+            return legacy
+    return None
+
+
+def source_view(db, item):
+    """Derive archive provenance from retained source relationships, including full folder paths."""
+    source = db.get(ImportFile, item.source_file_id)
+    root = db.get(ImportFile, source.parent_id) if source and source.parent_id else None
+    return {
+        "source_zip_id": root.id if root else None,
+        "source_zip_name": root.name if root else None,
+        "source_folder": str(PurePosixPath(source.name).parent) if root else None,
+    }
+
+
+def validate_source_media(db, batch, item, content):
+    """ZIP staging cannot bind attachments from another archive or card folder."""
+    if batch.mode != "zip":
+        return
+    source = db.get(ImportFile, item.source_file_id)
+    for field in ["image_id", "audio_id"]:
+        if not content[field]:
+            continue
+        attachment = db.scalar(select(ImportFile).where(ImportFile.media_id == content[field]))
+        if attachment and (
+            attachment.batch_id != batch.id
+            or attachment.parent_id != source.parent_id
+            or PurePosixPath(attachment.name).parent != PurePosixPath(source.name).parent
+        ):
+            raise DomainError(
+                422, "import_media_source", "请选择当前ZIP同一卡片文件夹的素材，或单独上传补充资料"
+            )
 
 
 def file_view(db, row):
@@ -94,6 +147,7 @@ def file_view(db, row):
         "job_id": job.id if job else None,
         "error_code": row.error_code or (job.error_code if job and job.state == "failed" else None),
         "parent_id": row.parent_id,
+        "progress": row.progress,
     }
 
 
@@ -101,7 +155,7 @@ def item_view(db, item):
     job = item_job(db, item)
     image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
     hashed = content_hash(db, item.content)
-    identity = db.get(ImportIdentity, object_key(db, item))
+    identity = find_identity(db, item)
     issues = list(item.parser_issues) + validate_publication(db, item.content)
     if not item.readable:
         state = "unreadable"
@@ -109,6 +163,14 @@ def item_view(db, item):
         state = "saving"
     elif job and job.state == "failed":
         state = "failed"
+    elif (
+        job
+        and job.result
+        and job.result.get("skipped")
+        and item.last_saved_hash == hashed
+        and not item.target_card_id
+    ):
+        state = "duplicate"
     elif (
         item.saved_card_id
         and item.last_saved_hash == hashed
@@ -129,6 +191,7 @@ def item_view(db, item):
         "state": state,
         "issues": issues,
         "source_file_id": item.source_file_id,
+        **source_view(db, item),
         "target_card_id": item.target_card_id,
         "target_revision": item.target_revision,
         "saved_card_id": item.saved_card_id,
@@ -170,32 +233,47 @@ def batch_view(db, batch):
     }
 
 
-def confirmation(db, batch):
+def confirmation(db, batch, item_ids=None):
     items = db.scalars(
         select(ImportItem)
         .where(ImportItem.batch_id == batch.id)
         .order_by(ImportItem.position, ImportItem.id)
     ).all()
-    version = fingerprint(
-        [
-            (
-                i.id,
-                i.revision,
-                i.selected,
-                i.target_card_id,
-                i.target_revision,
-                i.saved_card_id,
-                i.last_saved_hash,
-                i.job_id,
-            )
-            for i in items
-        ]
-    )
+    if item_ids is not None and (
+        not item_ids or len(item_ids) > 50 or not set(item_ids) <= {i.id for i in items}
+    ):
+        raise DomainError(422, "import_selection_invalid", "重试范围已失效，请重新核对本次卡片")
+    files = db.scalars(
+        select(ImportFile).where(ImportFile.batch_id == batch.id).order_by(ImportFile.id)
+    ).all()
     values = [item_view(db, item) for item in items]
+    version = fingerprint(
+        {
+            "scope": sorted(set(item_ids)) if item_ids is not None else None,
+            "files": [(f.id, f.job_id, file_view(db, f)["state"], f.error_code) for f in files],
+            "states": [(i["id"], i["state"], i["issues"]) for i in values],
+            "items": [
+                (
+                    i.id,
+                    i.revision,
+                    i.selected,
+                    i.target_card_id,
+                    i.target_revision,
+                    i.saved_card_id,
+                    i.last_saved_hash,
+                    i.job_id,
+                )
+                for i in items
+            ],
+        }
+    )
     selected = [
         i
         for i in values
-        if i["selected"] and i["readable"] and i["state"] not in {"saved", "duplicate"}
+        if i["selected"]
+        and i["readable"]
+        and i["state"] not in {"saved", "duplicate", "saving"}
+        and (item_ids is None or i["id"] in item_ids)
     ]
     return {
         "version": version,
@@ -267,7 +345,24 @@ def asset_kind(name):
     return "unused"
 
 
-def prepare_parse(settings, sessions, job):
+def parse_progress(sessions, job, now, phase, processed, total):
+    """Persist counters only for the current live lease; stale workers cannot overwrite progress."""
+    with sessions.begin() as db:
+        current = db.scalar(select(Job).where(Job.id == job["id"]).with_for_update())
+        if (
+            not current
+            or current.state != "running"
+            or current.lease != job["lease"]
+            or current.lease_expires_at <= now
+        ):
+            raise DomainError(409, "import_changed", "导入处理已由其他任务接管")
+        source = db.get(ImportFile, job["payload"]["file_id"])
+        if not source or source.job_id != current.id:
+            raise DomainError(409, "import_changed", "导入文件状态已变化")
+        source.progress = {"phase": phase, "processed": processed, "total": total}
+
+
+def prepare_parse(settings, sessions, job, *, clock):
     """Read source data in the Worker, retaining each ZIP folder's independent outcome."""
     with sessions() as db:
         original = db.get(ImportFile, job["payload"]["file_id"])
@@ -285,6 +380,7 @@ def prepare_parse(settings, sessions, job):
             mode=batch.mode,
         )
     storage = ObjectStorage(settings)
+    parse_progress(sessions, job, clock(), "reading", 0, 0)
     data = storage.read(source["storage_key"])
     prepared_files = []
     prepared_items = []
@@ -319,6 +415,7 @@ def prepare_parse(settings, sessions, job):
                 readable=item["readable"],
                 issues=item["issues"],
             )
+        parse_progress(sessions, job, clock(), "parsing", len(items), len(items))
     else:
         with checked_archive(
             data, expanded_limit=settings.archive_expanded_limit_mb * 1024 * 1024
@@ -344,6 +441,7 @@ def prepare_parse(settings, sessions, job):
                     422, "import_card_limit", "压缩包卡片数量超过当前限制，请拆分资料"
                 )
             by_folder: dict[str, list[dict[str, Any]]] = {}
+            parse_progress(sessions, job, clock(), "reading", 0, len(folders))
             for member in members:
                 kind = asset_kind(member.filename)
                 if kind == "unused":
@@ -407,7 +505,7 @@ def prepare_parse(settings, sessions, job):
                 }
                 prepared_files.append(entry)
                 by_folder.setdefault(str(PurePosixPath(member.filename).parent), []).append(entry)
-            for folder in sorted(folders):
+            for folder_index, folder in enumerate(sorted(folders)):
                 files = by_folder.get(folder, [])
                 documents = [f for f in files if f["kind"] == "docx"]
                 document = documents[0]
@@ -449,6 +547,7 @@ def prepare_parse(settings, sessions, job):
                         readable=False,
                         issues=[{"field": "source", "code": error.code, "message": error.message}],
                     )
+                parse_progress(sessions, job, clock(), "parsing", folder_index + 1, len(folders))
     if not prepared_items:
         raise DomainError(422, "import_empty", "没有读取到可恢复卡片，请检查文件夹结构或一级标题")
 
@@ -465,7 +564,8 @@ def prepare_parse(settings, sessions, job):
             )
             or 0
         )
-        if existing + len(prepared_items) > settings.import_card_limit:
+        new_items = [value for value in prepared_items if not db.get(ImportItem, value["id"])]
+        if existing + len(new_items) > settings.import_card_limit:
             raise DomainError(422, "import_card_limit", "本批卡片总数超过当前限制，请开始新的导入")
         for value in prepared_files:
             if db.get(ImportFile, value["id"]):
@@ -506,13 +606,18 @@ def prepare_parse(settings, sessions, job):
                 )
             )
         db.flush()
-        for index, value in enumerate(prepared_items):
+        for index, value in enumerate(new_items):
             if not db.get(ImportItem, value["id"]):
                 db.add(
                     ImportItem(
                         **value, batch_id=source["batch_id"], revision=1, position=existing + index
                     )
                 )
+        current.progress = {
+            "phase": "parsed",
+            "processed": len(prepared_items),
+            "total": len(prepared_items),
+        }
 
     return {"file_id": source["id"], "items": len(prepared_items)}, apply
 
@@ -530,7 +635,7 @@ def prepare_save(settings, sessions, job, now):
         content = SceneContent.model_validate(payload["content"])
         hashed = content_hash(db, payload["content"])
         identity_key = object_key(db, item)
-        identity = db.get(ImportIdentity, identity_key)
+        identity = find_identity(db, item)
         target = payload.get("target_card_id") or item.saved_card_id
         target_revision = (
             payload.get("target_revision")

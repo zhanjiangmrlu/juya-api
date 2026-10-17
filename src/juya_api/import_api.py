@@ -2,12 +2,12 @@
 
 import hashlib
 from pathlib import Path, PurePosixPath
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from sqlalchemy import select, true
 from sqlalchemy.orm import Session
 
 from .content_contracts import SceneContent
@@ -24,6 +24,7 @@ from .import_service import (
     item_view,
     owned_batch,
     resolve,
+    validate_source_media,
 )
 from .job_models import Job
 from .jobs import enqueue
@@ -40,6 +41,12 @@ class CreateImport(BaseModel):
     single_card: bool = False
 
 
+class ImportProgress(BaseModel):
+    phase: Literal["reading", "parsing", "parsed"]
+    processed: int
+    total: int
+
+
 class ImportFileView(BaseModel):
     id: str
     name: str
@@ -50,6 +57,7 @@ class ImportFileView(BaseModel):
     job_id: str | None
     error_code: str | None
     parent_id: str
+    progress: ImportProgress | None = None
 
 
 class ImportItemView(BaseModel):
@@ -62,6 +70,9 @@ class ImportItemView(BaseModel):
     state: str
     issues: list[FieldIssue]
     source_file_id: str
+    source_zip_id: str | None = None
+    source_zip_name: str | None = None
+    source_folder: str | None = None
     target_card_id: str | None
     target_revision: int | None
     saved_card_id: str | None
@@ -104,6 +115,7 @@ class AcceptSave(BaseModel):
     model_config = ConfigDict(extra="forbid")
     version: str = Field(min_length=64, max_length=64)
     confirmed: Literal[True]
+    item_ids: list[str] | None = Field(default=None, min_length=1, max_length=50)
 
 
 def routes():
@@ -199,7 +211,8 @@ def routes():
                 select(ImportFile).where(
                     ImportFile.batch_id == batch_id,
                     ImportFile.parent_id == "",
-                    ImportFile.name == name,
+                    true() if kind == "zip" else ImportFile.name == name,
+                    ImportFile.kind == kind if kind == "zip" else true(),
                     ImportFile.sha256 == sha,
                 )
             )
@@ -342,7 +355,7 @@ def routes():
         now = request.app.state.clock()
 
         def execute():
-            owned_batch(db, batch_id, admin.id)
+            batch = owned_batch(db, batch_id, admin.id)
             item = db.get(ImportItem, item_id)
             if not item or item.batch_id != batch_id or not item.readable:
                 raise DomainError(404, "import_item_missing", "此资料无法核对，请更换文件")
@@ -360,7 +373,9 @@ def routes():
                     )
                 require_card(db, body.target_card_id)
                 revision_matches(db.get(CardDraft, body.target_card_id), body.target_revision)
-            item.content = normalize(body.content)
+            content = normalize(body.content)
+            validate_source_media(db, batch, item, content)
+            item.content = content
             item.selected = body.selected
             item.target_card_id = body.target_card_id
             item.target_revision = body.target_revision
@@ -383,10 +398,11 @@ def routes():
     @router.get("/imports/{batch_id}/confirmation", response_model=ImportConfirmation)
     def review(
         batch_id: str,
+        item_ids: Annotated[list[str] | None, Query()] = None,
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
-        return confirmation(db, owned_batch(db, batch_id, admin.id))
+        return confirmation(db, owned_batch(db, batch_id, admin.id), item_ids)
 
     @router.post("/imports/{batch_id}/save", response_model=ImportBatchView)
     def save(
@@ -401,7 +417,7 @@ def routes():
 
         def execute():
             batch = owned_batch(db, batch_id, admin.id)
-            current = confirmation(db, batch)
+            current = confirmation(db, batch, body.item_ids)
             if current["version"] != body.version:
                 raise DomainError(409, "import_changed", "核对资料或范围已变化，请重新确认")
             if not current["count"]:
@@ -414,7 +430,8 @@ def routes():
             for item in items:
                 value = item_view(db, item)
                 if (
-                    not item.selected
+                    (body.item_ids is not None and item.id not in body.item_ids)
+                    or not item.selected
                     or not item.readable
                     or value["state"] in {"saved", "duplicate", "saving"}
                 ):
@@ -438,7 +455,14 @@ def routes():
             return batch_view(db, batch)
 
         return operate(
-            db, admin, "admin", key, "import.save:" + batch_id, body.model_dump(), now, execute
+            db,
+            admin,
+            "admin",
+            key,
+            "import.save:" + batch_id,
+            body.model_dump(exclude_unset=True),
+            now,
+            execute,
         )
 
     return router

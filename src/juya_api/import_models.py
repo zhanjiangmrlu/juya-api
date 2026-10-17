@@ -33,6 +33,7 @@ class ImportFile(Base):
     media_id: Mapped[str | None] = mapped_column(ForeignKey("media.id"))
     job_id: Mapped[str | None] = mapped_column(ForeignKey("jobs.id"))
     error_code: Mapped[str | None] = mapped_column(String(64))
+    progress: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
