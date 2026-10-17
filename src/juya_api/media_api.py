@@ -3,6 +3,7 @@
 import hashlib
 import io
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -89,17 +90,41 @@ def decoded_image(data: bytes):
 
 
 def decoded_audio(data: bytes):
-    """Read real PCM WAV or use bounded FFprobe decoding for supported whole audio files."""
+    """Verify complete PCM frames or fully decode a bounded, explicitly allowed demuxer."""
     try:
         with wave.open(io.BytesIO(data), "rb") as recording:
-            duration = recording.getnframes() / recording.getframerate()
-            if duration <= 0 or recording.getnchannels() not in {1, 2}:
-                raise ValueError("empty or unsupported recording")
+            rate, channels, frames, width = (
+                recording.getframerate(),
+                recording.getnchannels(),
+                recording.getnframes(),
+                recording.getsampwidth(),
+            )
+            if rate <= 0 or channels not in {1, 2} or width not in {1, 2, 3, 4} or frames <= 0:
+                raise DomainError(422, "audio_invalid", "音频帧或格式无效，请更换完整音频")
+            expected = frames * channels * width
+            if expected > len(data):
+                raise DomainError(422, "audio_invalid", "音频不完整，请重新上传原始文件")
+            received = 0
+            while block := recording.readframes(65536):
+                received += len(block)
+            if received != expected:
+                raise DomainError(422, "audio_invalid", "音频不完整，请重新上传原始文件")
+            duration = frames / rate
             return "audio/wav", duration
     except (wave.Error, EOFError, ValueError):
         pass
-    executable = shutil.which("ffprobe")
-    if not executable:
+    if data[:4] == b"RIFF" and data[8:12] == b"WAVE":
+        demuxer = "wav"
+    elif len(data) >= 12 and data[4:8] == b"ftyp":
+        demuxer = "mov"
+    elif len(data) >= 2 and data[0] == 255 and data[1] & 0xF6 == 0xF0:
+        demuxer = "aac"
+    elif data.startswith(b"ID3") or (len(data) >= 2 and data[0] == 255 and data[1] & 0xE0 == 0xE0):
+        demuxer = "mp3"
+    else:
+        raise DomainError(422, "audio_invalid", "音频真实格式不支持，请选择MP3、M4A、WAV或AAC")
+    executable, decoder = shutil.which("ffprobe"), shutil.which("ffmpeg")
+    if not executable or not decoder:
         raise DomainError(
             422, "audio_decoder_unavailable", "音频暂时无法解码，请稍后重试或选择有效的 WAV 文件"
         )
@@ -112,6 +137,10 @@ def decoded_audio(data: bytes):
                     executable,
                     "-v",
                     "error",
+                    "-protocol_whitelist",
+                    "file,pipe",
+                    "-f",
+                    demuxer,
                     "-show_entries",
                     "format=duration,format_name:stream=codec_type",
                     "-of",
@@ -123,12 +152,47 @@ def decoded_audio(data: bytes):
                 check=True,
             )
             info = json.loads(result.stdout)
-            if not any(s.get("codec_type") == "audio" for s in info.get("streams", [])):
+            streams = info.get("streams", [])
+            if not any(s.get("codec_type") == "audio" for s in streams) or any(
+                s.get("codec_type") == "video" for s in streams
+            ):
                 raise ValueError("no audio stream")
             duration = float(info["format"]["duration"])
-            if duration <= 0:
+            if not math.isfinite(duration) or duration <= 0:
                 raise ValueError("invalid duration")
+            subprocess.run(
+                [
+                    decoder,
+                    "-nostdin",
+                    "-v",
+                    "error",
+                    "-xerror",
+                    "-err_detect",
+                    "explode",
+                    "-threads",
+                    "1",
+                    "-protocol_whitelist",
+                    "file,pipe",
+                    "-f",
+                    demuxer,
+                    "-i",
+                    str(path),
+                    "-map",
+                    "0:a:0",
+                    "-vn",
+                    "-sn",
+                    "-dn",
+                    "-f",
+                    "null",
+                    "-",
+                ],
+                capture_output=True,
+                timeout=60,
+                check=True,
+            )
             name = info["format"]["format_name"]
+            if name == "wav":
+                return "audio/wav", duration
             if "mp3" in name:
                 return "audio/mpeg", duration
             if "mov" in name or "m4a" in name:
