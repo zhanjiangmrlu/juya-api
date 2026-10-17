@@ -2,10 +2,10 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .database import Base
+from .database import Base, UTCDateTime
 from .models import identifier
 
 
@@ -13,7 +13,7 @@ class PublicationBatch(Base):
     __tablename__ = "publication_batches"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=identifier)
     admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"), index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class PublicationItem(Base):

@@ -19,11 +19,11 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
         db.merge(SettingCounter(name="schema_contract", value=1))
     assert client.get("/health/ready").status_code == 503
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0009'"))
+        db.execute(text("UPDATE alembic_version SET version_num='0010'"))
     assert client.get("/health/ready").status_code == 200
     # A newer additive migration remains usable without restarting the other API.
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0010'"))
+        db.execute(text("UPDATE alembic_version SET version_num='0011'"))
     assert client.get("/health/ready").status_code == 200
     assert system["mini"].get("/health/ready").status_code == 200
     with sessions.begin() as db:

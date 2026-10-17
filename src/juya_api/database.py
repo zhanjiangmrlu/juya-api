@@ -3,7 +3,8 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import DateTime, create_engine, event
+from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from .config import Settings
@@ -22,6 +23,9 @@ def naive_utc(value: datetime) -> datetime:
 def timestamp(value: datetime | None) -> str | None:
     """Serialize persisted UTC timestamps without depending on host timezone."""
     return value.isoformat(timespec="microseconds") + "Z" if value else None
+
+
+UTCDateTime = DateTime().with_variant(DATETIME(fsp=6), "mysql")
 
 
 class Base(DeclarativeBase):

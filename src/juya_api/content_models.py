@@ -2,10 +2,10 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import JSON, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .database import Base, utc_now
+from .database import Base, UTCDateTime, utc_now
 from .models import identifier
 
 
@@ -15,8 +15,8 @@ class Card(Base):
     status: Mapped[str] = mapped_column(String(16), default="draft", index=True)
     current_version_id: Mapped[str | None] = mapped_column(String(36))
     sort_order: Mapped[int] = mapped_column(Integer, default=0, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
+    deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
 
 
 class CardDraft(Base):
@@ -24,7 +24,7 @@ class CardDraft(Base):
     card_id: Mapped[str] = mapped_column(ForeignKey("cards.id"), primary_key=True)
     revision: Mapped[int] = mapped_column(Integer, default=1)
     payload: Mapped[dict] = mapped_column(JSON)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
 
 
 class CardVersion(Base):
@@ -35,7 +35,7 @@ class CardVersion(Base):
     number: Mapped[int] = mapped_column(Integer)
     payload: Mapped[dict] = mapped_column(JSON)
     content_hash: Mapped[str] = mapped_column(String(64))
-    published_at: Mapped[datetime] = mapped_column(DateTime)
+    published_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class Preview(Base):
@@ -45,7 +45,7 @@ class Preview(Base):
     draft_revision: Mapped[int] = mapped_column(Integer)
     content_hash: Mapped[str] = mapped_column(String(64))
     admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"))
-    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class Media(Base):
@@ -64,7 +64,7 @@ class Media(Base):
     height: Mapped[int | None] = mapped_column(Integer)
     duration: Mapped[float | None] = mapped_column(Float)
     thumbnail_id: Mapped[str | None] = mapped_column(String(36))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
 
 
 class MediaTicket(Base):
@@ -76,7 +76,7 @@ class MediaTicket(Base):
     version_id: Mapped[str] = mapped_column(ForeignKey("card_versions.id"))
     media_id: Mapped[str] = mapped_column(ForeignKey("media.id"))
     purpose: Mapped[str] = mapped_column(String(16), default="content", server_default="content")
-    expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
 
 
 class Operation(Base):
@@ -86,7 +86,7 @@ class Operation(Base):
     action: Mapped[str] = mapped_column(String(160))
     fingerprint: Mapped[str] = mapped_column(String(64))
     result: Mapped[str] = mapped_column(JSON)
-    accepted_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    accepted_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
 
 
 class SettingCounter(Base):

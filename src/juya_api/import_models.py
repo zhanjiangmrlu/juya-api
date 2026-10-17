@@ -2,10 +2,10 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .database import Base
+from .database import Base, UTCDateTime
 from .models import identifier
 
 
@@ -14,7 +14,7 @@ class ImportBatch(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=identifier)
     admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"), index=True)
     mode: Mapped[str] = mapped_column(String(16))
-    created_at: Mapped[datetime] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class ImportFile(Base):
@@ -33,7 +33,7 @@ class ImportFile(Base):
     media_id: Mapped[str | None] = mapped_column(ForeignKey("media.id"))
     job_id: Mapped[str | None] = mapped_column(ForeignKey("jobs.id"))
     error_code: Mapped[str | None] = mapped_column(String(64))
-    created_at: Mapped[datetime] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class ImportItem(Base):

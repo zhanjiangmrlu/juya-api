@@ -3,10 +3,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .database import Base, utc_now
+from .database import Base, UTCDateTime, utc_now
 
 
 def identifier() -> str:
@@ -30,10 +30,10 @@ class User(Base):
     wechat_source: Mapped[str | None] = mapped_column(String(32))
     profile_version: Mapped[int] = mapped_column(Integer, default=1)
     contact_version: Mapped[int] = mapped_column(Integer, default=1)
-    registered_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
-    last_login_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
-    profile_updated_at: Mapped[datetime | None] = mapped_column(DateTime)
-    contact_updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+    registered_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now, index=True)
+    last_login_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
+    profile_updated_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    contact_updated_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class Administrator(Base):
@@ -49,14 +49,14 @@ class AdminSession(Base):
     admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"))
     csrf_digest: Mapped[str] = mapped_column(String(64))
     csrf_cipher: Mapped[str] = mapped_column(Text)
-    expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
 
 
 class MiniSession(Base):
     __tablename__ = "mini_sessions"
     token_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
-    expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
 
 
 class LoginOperation(Base):
@@ -64,7 +64,7 @@ class LoginOperation(Base):
     key_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
     fingerprint: Mapped[str] = mapped_column(String(64))
     result_cipher: Mapped[str] = mapped_column(Text)
-    expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
 
 
 class Consent(Base):
@@ -73,14 +73,14 @@ class Consent(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
     purpose: Mapped[str] = mapped_column(String(32))
     version: Mapped[str] = mapped_column(String(64))
-    accepted_at: Mapped[datetime] = mapped_column(DateTime)
+    accepted_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class LoginThrottle(Base):
     __tablename__ = "login_throttles"
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
     count: Mapped[int] = mapped_column(Integer, default=0)
-    window_at: Mapped[datetime] = mapped_column(DateTime)
+    window_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class Audit(Base):
@@ -89,4 +89,4 @@ class Audit(Base):
     admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"))
     action: Mapped[str] = mapped_column(String(64))
     object_id: Mapped[str | None] = mapped_column(String(128))
-    occurred_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    occurred_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
