@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     oss_access_key_secret: str = Field(default="", repr=False)
     redis_url: str = Field(default="redis://127.0.0.1:6379/0", repr=False)
     worker_role: Literal["admin", "mini"] | None = None
+    image_role: Literal["admin", "mini"] | None = None
     tts_secret_id: str = Field(default="", repr=False)
     tts_secret_key: str = Field(default="", repr=False)
     tts_voice_type: int = 101050
@@ -49,6 +50,8 @@ class Settings(BaseSettings):
         Fernet(self.field_encryption_key.encode())
         if len(self.lookup_key) < 32:
             raise ValueError("lookup key must contain at least 32 characters")
+        if self.image_role and self.worker_role and self.image_role != self.worker_role:
+            raise ValueError("Worker role must match the image role")
         if self.environment == "production":
             if not self.database_url.startswith("mysql+pymysql://"):
                 raise ValueError("production requires MySQL")

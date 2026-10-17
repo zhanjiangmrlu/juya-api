@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "project": "juya-admin-api",
+  "kind": "api",
+  "dockerfile": "Dockerfile",
+  "docker_target": "admin",
+  "checks": [
+    [
+      "{python}",
+      "-m",
+      "ruff",
+      "check",
+      "."
+    ],
+    [
+      "{python}",
+      "-m",
+      "ruff",
+      "format",
+      "--check",
+      "."
+    ],
+    [
+      "{python}",
+      "-m",
+      "mypy",
+      "src"
+    ],
+    [
+      "{python}",
+      "-m",
+      "pytest",
+      "-q"
+    ]
+  ],
+  "compose_files": {
+    "test": [
+      "compose-admin.yml"
+    ],
+    "production": [
+      "compose-admin.yml"
+    ]
+  },
+  "deploy_files": [
+    "runtime-preflight.py"
+  ],
+  "services": [
+    "admin-api",
+    "admin-worker",
+    "admin-dispatcher"
+  ],
+  "api_service": "admin-api",
+  "worker_services": [
+    "admin-worker"
+  ],
+  "dispatcher_services": [
+    "admin-dispatcher"
+  ],
+  "migration_service": "migrate"
+}

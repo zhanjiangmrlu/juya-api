@@ -1,0 +1,98 @@
+services:
+  mysql:
+    image: ${JUYA_MYSQL_IMAGE:?Select the verified MySQL8.4 image}
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql-root-password
+    secrets: [mysql-root-password]
+    command: [--character-set-server=utf8mb4, --collation-server=utf8mb4_0900_ai_ci, --innodb-buffer-pool-size=768M, --max-connections=80, --max-allowed-packet=32M]
+    volumes: [mysql-data:/var/lib/mysql]
+    networks: [database]
+    mem_limit: 1536m
+    cpus: 1
+    cpu_shares: 2048
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD=$$(cat /run/secrets/mysql-root-password) mysqladmin ping -h127.0.0.1 -uroot --silent']
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "3"}
+  redis-test:
+    image: ${JUYA_REDIS_IMAGE:?Select the verified Redis7.4 image}
+    pull_policy: never
+    restart: unless-stopped
+    command: [redis-server, /run/secrets/redis.conf]
+    volumes: [redis-test-data:/data]
+    secrets:
+      - source: redis-test-config
+        target: redis.conf
+      - source: redis-test-password
+        target: redis-password
+    networks: [test]
+    mem_limit: 128m
+    cpus: 0.1
+    cpu_shares: 256
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH=$$(cat /run/secrets/redis-password) redis-cli -e --no-auth-warning ping']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "3"}
+  redis-production:
+    image: ${JUYA_REDIS_IMAGE:?Select the verified Redis7.4 image}
+    pull_policy: never
+    restart: unless-stopped
+    command: [redis-server, /run/secrets/redis.conf]
+    volumes: [redis-production-data:/data]
+    secrets:
+      - source: redis-production-config
+        target: redis.conf
+      - source: redis-production-password
+        target: redis-password
+    networks: [production]
+    mem_limit: 192m
+    cpus: 0.15
+    cpu_shares: 1024
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH=$$(cat /run/secrets/redis-password) redis-cli -e --no-auth-warning ping']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "3"}
+
+volumes:
+  mysql-data:
+    name: juya-rebuild-mysql-data
+  redis-test-data:
+    name: juya-rebuild-redis-test-data
+  redis-production-data:
+    name: juya-rebuild-redis-production-data
+
+networks:
+  database:
+    name: juya-rebuild-database
+    internal: true
+  test:
+    name: juya-rebuild-test
+  production:
+    name: juya-rebuild-production
+
+secrets:
+  mysql-root-password:
+    file: ${JUYA_SECRETS_DIRECTORY:?Select the root-owned secrets directory}/mysql-root-password
+  redis-test-password:
+    file: ${JUYA_SECRETS_DIRECTORY:?Select the root-owned secrets directory}/redis-test-password
+  redis-production-password:
+    file: ${JUYA_SECRETS_DIRECTORY:?Select the root-owned secrets directory}/redis-production-password
+  redis-test-config:
+    file: ${JUYA_SECRETS_DIRECTORY:?Select the root-owned secrets directory}/redis-test.conf
+  redis-production-config:
+    file: ${JUYA_SECRETS_DIRECTORY:?Select the root-owned secrets directory}/redis-production.conf

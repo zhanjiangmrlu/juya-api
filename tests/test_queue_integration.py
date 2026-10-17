@@ -59,6 +59,9 @@ def test_committed_upload_survives_missing_dispatch_and_duplicate_broker_deliver
     celery.send_task("juya.execute", args=[medium["job_id"]])
     env = dict(os.environ)
     for name, value in settings.model_dump(mode="json").items():
+        if value is None:
+            env.pop("JUYA_" + name.upper(), None)
+            continue
         env["JUYA_" + name.upper()] = (
             json.dumps(value)
             if isinstance(value, (list, dict))

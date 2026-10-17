@@ -1,0 +1,72 @@
+x-admin: &admin
+  image: ${JUYA_ADMIN_API_IMAGE:?Select an immutable admin image}
+  pull_policy: never
+  env_file: ${JUYA_RUNTIME_ENV_FILE:?Select the admin runtime file}
+  environment:
+    JUYA_ENVIRONMENT: ${JUYA_ENVIRONMENT:?Select test or production}
+    JUYA_EXPECTED_OSS_BUCKET: ${JUYA_EXPECTED_OSS_BUCKET:?Select the verified bucket}
+  read_only: true
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
+  restart: unless-stopped
+  pids_limit: 128
+  networks: [environment, database]
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "3"}
+
+services:
+  admin-api:
+    <<: *admin
+    ports: ["127.0.0.1:${JUYA_API_PORT:?Select the admin loopback port}:8000"]
+    mem_limit: ${JUYA_API_MEMORY:-448m}
+    cpus: ${JUYA_API_CPUS:-0.4}
+    cpu_shares: ${JUYA_CPU_SHARES:-1024}
+    stop_grace_period: 30s
+  admin-worker:
+    <<: *admin
+    command: [python, -m, juya_api.worker_main]
+    environment:
+      JUYA_ENVIRONMENT: ${JUYA_ENVIRONMENT:?Select test or production}
+      JUYA_EXPECTED_OSS_BUCKET: ${JUYA_EXPECTED_OSS_BUCKET:?Select the verified bucket}
+      JUYA_WORKER_ROLE: admin
+    mem_limit: ${JUYA_WORKER_MEMORY:-768m}
+    cpus: ${JUYA_WORKER_CPUS:-0.45}
+    cpu_shares: ${JUYA_CPU_SHARES:-1024}
+    stop_grace_period: 300s
+    healthcheck:
+      test: [CMD, python, /app/deploy/container-health.py, worker]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+  admin-dispatcher:
+    <<: *admin
+    command: [python, -m, juya_api.dispatch]
+    environment:
+      JUYA_ENVIRONMENT: ${JUYA_ENVIRONMENT:?Select test or production}
+      JUYA_EXPECTED_OSS_BUCKET: ${JUYA_EXPECTED_OSS_BUCKET:?Select the verified bucket}
+      JUYA_WORKER_ROLE: admin
+    mem_limit: 192m
+    cpus: 0.1
+    cpu_shares: ${JUYA_CPU_SHARES:-1024}
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+  migrate:
+    <<: *admin
+    profiles: [tools]
+    env_file: ${JUYA_MIGRATION_ENV_FILE:?Select the dedicated migration file}
+    command: [python, -m, alembic, upgrade, head]
+    restart: "no"
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck: {disable: true}
+
+networks:
+  environment:
+    external: true
+    name: ${JUYA_ENVIRONMENT_NETWORK:?Select the environment network}
+  database:
+    external: true
+    name: juya-rebuild-database

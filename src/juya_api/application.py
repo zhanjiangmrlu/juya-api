@@ -7,17 +7,20 @@ from datetime import UTC, datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import inspect, text
+from sqlalchemy import text
 
 from . import job_models  # noqa: F401
 from .config import Settings
 from .database import make_database, naive_utc
-from .errors import DomainError, install_errors
+from .errors import install_errors
 from .response_contracts import ErrorResponse
+from .schema import require_compatible_schema
 
 
 def application(role: str, settings: Settings, sessions=None, clock=None) -> FastAPI:
     """Build an isolated entrypoint with explicit dependencies and no implicit schema writes."""
+    if settings.image_role and settings.image_role != role:
+        raise ValueError("API role must match the image role")
     app = FastAPI(
         title=f"Juya {role} API",
         responses={
@@ -90,8 +93,7 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
     def ready():
         with sessions() as db:
             db.execute(text("SELECT 1"))
-            if not inspect(db.get_bind()).has_table("users"):
-                raise DomainError(503, "schema_not_ready", "数据库尚未初始化")
+            require_compatible_schema(db)
         return {"status": "ready", "service": role, "environment": settings.environment}
 
     return app

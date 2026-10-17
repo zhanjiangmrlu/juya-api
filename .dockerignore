@@ -1,0 +1,17 @@
+.git
+.venv
+.env*
+**/*.pem
+**/*.key
+**/__pycache__
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.superpowers
+var
+docs
+tests
+htmlcov
+.coverage
+*.egg-info
+.DS_Store

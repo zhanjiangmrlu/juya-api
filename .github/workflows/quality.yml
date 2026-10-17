@@ -1,0 +1,86 @@
+name: Verify and package independent APIs
+on:
+  push:
+    branches: [main, test, rebuild-v15]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: api-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-disposable-password
+          MYSQL_DATABASE: juya_verify
+        ports: [3306:3306]
+        options: >-
+          --health-cmd="mysqladmin ping -h127.0.0.1 --silent"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+      redis:
+        image: redis:7.4
+        ports: [6379:6379]
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=5s
+          --health-timeout=3s --health-retries=10
+    env:
+      JUYA_TEST_DATABASE_URL: mysql+pymysql://root:ci-disposable-password@127.0.0.1:3306/juya_verify?charset=utf8mb4
+      JUYA_TEST_REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13.16'
+      - run: python -m pip install uv==0.13.1
+      - run: uv sync --frozen
+      - run: uv run ruff check . && uv run ruff format --check . && uv run mypy src
+      - run: uv run pytest -q
+      - run: uv run python scripts/export-openapi.py && git diff --exit-code -- openapi
+  images:
+    needs: quality
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: admin
+            project: juya-admin-api
+          - role: mini
+            project: juya-miniapp-api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build selected role with locked dependencies
+        env:
+          ROLE: ${{ matrix.role }}
+          PROJECT: ${{ matrix.project }}
+        run: |
+          docker build --platform linux/amd64 --target "$ROLE" \
+            --build-arg "JUYA_SOURCE_COMMIT=$GITHUB_SHA" \
+            --tag "$PROJECT:$GITHUB_SHA" .
+          docker run --rm --pull=never --network none --read-only \
+            --memory 256m --cpus 1 --tmpfs /tmp:rw,noexec,nosuid,size=32m \
+            --mount "type=bind,src=$PWD/deploy/verify-image-runtime.py,dst=/verify.py,readonly" \
+            --entrypoint python "$PROJECT:$GITHUB_SHA" /verify.py "$ROLE"
+          mkdir artifact
+          docker save "$PROJECT:$GITHUB_SHA" | gzip > artifact/image.tar.gz
+          IMAGE_ID="$(docker image inspect --format '{{.Id}}' "$PROJECT:$GITHUB_SHA")"
+          python deploy/write-image-artifact.py artifact/image.tar.gz "$PROJECT" \
+            "$GITHUB_SHA" "$PROJECT:$GITHUB_SHA" "$IMAGE_ID"
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: ${{ matrix.project }}-${{ github.sha }}
+          path: artifact/
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,63 @@
+x-mini: &mini
+  image: ${JUYA_MINIAPP_API_IMAGE:?Select an immutable mini image}
+  pull_policy: never
+  env_file: ${JUYA_RUNTIME_ENV_FILE:?Select the mini runtime file}
+  environment:
+    JUYA_ENVIRONMENT: ${JUYA_ENVIRONMENT:?Select test or production}
+    JUYA_EXPECTED_OSS_BUCKET: ${JUYA_EXPECTED_OSS_BUCKET:?Select the verified bucket}
+  read_only: true
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
+  restart: unless-stopped
+  pids_limit: 128
+  networks: [environment, database]
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "3"}
+
+services:
+  mini-api:
+    <<: *mini
+    ports: ["127.0.0.1:${JUYA_API_PORT:?Select the mini loopback port}:8000"]
+    mem_limit: ${JUYA_API_MEMORY:-448m}
+    cpus: ${JUYA_API_CPUS:-0.8}
+    cpu_shares: ${JUYA_CPU_SHARES:-1536}
+    stop_grace_period: 30s
+  mini-worker:
+    <<: *mini
+    command: [python, -m, juya_api.worker_main]
+    environment:
+      JUYA_ENVIRONMENT: ${JUYA_ENVIRONMENT:?Select test or production}
+      JUYA_EXPECTED_OSS_BUCKET: ${JUYA_EXPECTED_OSS_BUCKET:?Select the verified bucket}
+      JUYA_WORKER_ROLE: mini
+    mem_limit: ${JUYA_WORKER_MEMORY:-384m}
+    cpus: ${JUYA_WORKER_CPUS:-0.35}
+    cpu_shares: ${JUYA_CPU_SHARES:-1024}
+    stop_grace_period: 300s
+    healthcheck:
+      test: [CMD, python, /app/deploy/container-health.py, worker]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+  mini-dispatcher:
+    <<: *mini
+    command: [python, -m, juya_api.dispatch]
+    environment:
+      JUYA_ENVIRONMENT: ${JUYA_ENVIRONMENT:?Select test or production}
+      JUYA_EXPECTED_OSS_BUCKET: ${JUYA_EXPECTED_OSS_BUCKET:?Select the verified bucket}
+      JUYA_WORKER_ROLE: mini
+    mem_limit: 192m
+    cpus: 0.1
+    cpu_shares: ${JUYA_CPU_SHARES:-1024}
+    healthcheck:
+      test: [CMD, python, -c, "import os; os.kill(1, 0)"]
+      interval: 30s
+      timeout: 5s
+
+networks:
+  environment:
+    external: true
+    name: ${JUYA_ENVIRONMENT_NETWORK:?Select the environment network}
+  database:
+    external: true
+    name: juya-rebuild-database

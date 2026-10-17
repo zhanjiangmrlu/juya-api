@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "project": "juya-miniapp-api",
+  "kind": "api",
+  "dockerfile": "Dockerfile",
+  "docker_target": "mini",
+  "checks": [
+    [
+      "{python}",
+      "-m",
+      "ruff",
+      "check",
+      "."
+    ],
+    [
+      "{python}",
+      "-m",
+      "ruff",
+      "format",
+      "--check",
+      "."
+    ],
+    [
+      "{python}",
+      "-m",
+      "mypy",
+      "src"
+    ],
+    [
+      "{python}",
+      "-m",
+      "pytest",
+      "-q"
+    ]
+  ],
+  "compose_files": {
+    "test": [
+      "compose-mini.yml"
+    ],
+    "production": [
+      "compose-mini.yml"
+    ]
+  },
+  "deploy_files": [
+    "runtime-preflight.py"
+  ],
+  "services": [
+    "mini-api",
+    "mini-worker",
+    "mini-dispatcher"
+  ],
+  "api_service": "mini-api",
+  "worker_services": [
+    "mini-worker"
+  ],
+  "dispatcher_services": [
+    "mini-dispatcher"
+  ],
+  "migration_service": null
+}
