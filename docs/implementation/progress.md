@@ -3,7 +3,9 @@
 ## Status
 
 Task 1: complete (auth and independent entrypoints; real MySQL 8.4 migration and concurrency verified)
-Tasks 2—8: pending
+Task 2: complete
+Task 3: in progress
+Tasks 4—8: pending
 
 ## Pre-flight
 
@@ -43,3 +45,15 @@ Tasks 2—8: pending
 - Provider configuration preserved root-only at /root/juya-rebuild/preserved-config
 - OSS list versions and multipart both return 403 AccessDenied (EC 0003-00000001); async request sent for corrected bucket/account permissions, not treated as zero objects
 - Ruling: do not substitute unrelated cloud credentials after OSS AccessDenied; continue independent local/DB work — prevents accessing the wrong account — OSS reset and real storage deployment remain pending
+
+## Task 2 evidence
+
+- 12 feature assertions initially failed on missing content/media APIs (role isolation already passed)
+- Published content is an immutable version; edits stay in the candidate; preview binds revision+hash; stale writes, deleted-card revival and mixed resource references rejected
+- Source binding uses explicit UTF-16 ranges for client interoperability; whole-word candidates, manual inflection binding, invalid and overlapping ranges validated
+- Real PNG decode/thumbnail, PCM WAV inspection and authenticated byte-range streaming tested locally and with real MySQL
+- Native image/audio URLs use opaque 5-minute tickets tied to the actual mini session, current card/version/media; logout and offline revoke subsequent reads
+- New migration 0002 verified from an empty MySQL 8.4 schema; Alembic check reports no model drift
+- Full real MySQL suite: 32 passed in 86.39s; local: 29 passed, 3 MySQL-only skipped; Ruff/mypy clean
+- Ruling: initial media processing is synchronous in Task2; Task4 will move expensive media/import/TTS work behind durable workers before release — avoids shipping a temporary non-durable BackgroundTasks path — interim upload calls are blocking
+- User directed rechecking account-related.txt; its explicitly supplied Alibaba AccessKey also returns AccessDenied for both known bucket names. No extra key was requested or printed in logs.

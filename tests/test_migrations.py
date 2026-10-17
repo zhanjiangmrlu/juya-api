@@ -29,5 +29,6 @@ def test_fresh_migration_creates_empty_business_tables(monkeypatch):
     with engine.connect() as db:
         assert db.scalar(text("SELECT count(*) FROM users")) == 0
         assert db.scalar(text("SELECT count(*) FROM administrators")) == 0
-        assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0001"
+        assert db.scalar(text("SELECT version_num FROM alembic_version"))
+    command.check(Config("alembic.ini"))
     engine.dispose()
