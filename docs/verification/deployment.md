@@ -82,3 +82,5 @@ ECS实际采集与故障→告警→去重→恢复演练通过，没有读取�
 更新：生产证书已由既有ACME账号签发，有效期至2027-01-15，覆盖四个production域名。只安装了专属HTTP ACME/503准备配置，未启用新应用HTTPS代理。最终安装production.conf时须移除精确的 `/etc/nginx/conf.d/juya-rebuild-production-acme.conf`，避免重复80端口server_name；不得清理整目录。
 
 第二轮CI112通过/1日志检查失败：实际Worker已完成任务，但默认启动横幅打印无密码测试Redis地址。新增全局quiet参数关闭横幅，保留日志检查；真实有密码及无密码Redis分别通过。无密码容器仅用于本机回环验证，已移除；生产Redis仍须认证。
+
+第三轮CI全部通过：运行39021677527（c699a25），真实MySQL/Redis质量检查及两个角色镜像构建、非root只读运行、四种音频解码和损坏音频拒绝检查成功。两个私有构建产物已下载并核对GitHub ZIP摘要；ECS运行验证继续执行。

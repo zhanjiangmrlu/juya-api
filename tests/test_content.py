@@ -148,3 +148,19 @@ def test_operation_replay_does_not_regenerate_missing_dialogue_or_word_ids(admin
     second = admin.post("/api/admin/v1/cards", headers=headers, json={"content": payload})
     assert first.status_code == second.status_code == 201
     assert first.json() == second.json()
+
+
+def test_card_text_budget_rejects_combined_large_fields_without_creating_a_card(admin):
+    too_large = {
+        "name": "合并大小限制",
+        "dialogue": [
+            {"speaker": "A", "english": "a" * 20000, "chinese": "文" * 20000} for _ in range(8)
+        ],
+    }
+    response = admin.post("/api/admin/v1/cards", headers=key(), json={"content": too_large})
+    assert response.status_code == 422
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 0
+    small = {"name": "合法较长对话", "dialogue": too_large["dialogue"][:1]}
+    assert (
+        admin.post("/api/admin/v1/cards", headers=key(), json={"content": small}).status_code == 201
+    )
