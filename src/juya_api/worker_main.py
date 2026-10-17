@@ -11,7 +11,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pool", choices=["prefork", "solo"], default="prefork")
     arguments = parser.parse_args()
-    app = celery_app(Settings())
+    settings = Settings()
+    if settings.environment != "local" and not settings.worker_role:
+        parser.error("a Worker role is required outside local verification")
+    app = celery_app(settings)
     app.worker_main(
         [
             "worker",

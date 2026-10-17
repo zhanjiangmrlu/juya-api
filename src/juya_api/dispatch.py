@@ -13,6 +13,8 @@ from .worker import celery_app
 def main():
     """Keep scanning after broker/database outages; do not log credential-bearing exceptions."""
     settings = Settings()
+    if settings.environment != "local" and not settings.worker_role:
+        raise RuntimeError("A dispatcher role is required outside local verification")
     engine, sessions = make_database(settings)
     celery = celery_app(settings)
     running = True
@@ -30,6 +32,7 @@ def main():
                     sessions,
                     utc_now(),
                     lambda job_id: celery.send_task("juya.execute", args=[job_id]),
+                    role=settings.worker_role,
                 )
             except Exception:
                 logging.getLogger("juya.jobs").warning("dispatcher_cycle_unavailable")

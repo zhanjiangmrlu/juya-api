@@ -74,7 +74,7 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
     def now():
         return naive_utc(clock() if clock else datetime.now(UTC))
 
-    job = claim(sessions, job_id, now(), settings=settings)
+    job = claim(sessions, job_id, now(), settings=settings, role=settings.worker_role)
     if not job:
         return
     try:
@@ -123,6 +123,8 @@ def celery_app(settings=None):
     """Use JSON-only broker envelopes with no backend results or provider payloads."""
     settings = settings or Settings()
     app = Celery("juya", broker=settings.redis_url)
+    if settings.worker_role:
+        app.conf.task_default_queue = "juya-" + settings.worker_role
     app.conf.update(
         task_serializer="json",
         accept_content=["json"],

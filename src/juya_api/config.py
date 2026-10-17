@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     oss_access_key_id: str = Field(default="", repr=False)
     oss_access_key_secret: str = Field(default="", repr=False)
     redis_url: str = Field(default="redis://127.0.0.1:6379/0", repr=False)
+    worker_role: Literal["admin", "mini"] | None = None
     tts_secret_id: str = Field(default="", repr=False)
     tts_secret_key: str = Field(default="", repr=False)
     tts_voice_type: int = 101050

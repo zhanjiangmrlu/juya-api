@@ -3,7 +3,7 @@
 import json
 from datetime import timedelta
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, or_, select, true
 
 from .job_models import Job
 from .models import identifier
@@ -32,13 +32,14 @@ def enqueue(db, kind, owner_kind, owner_id, payload, now, *, settings):
     return job
 
 
-def dispatch(sessions, now, publish, *, limit=50):
+def dispatch(sessions, now, publish, *, limit=50, role=None):
     """Recover missed deliveries and expired workers; failed broker writes stay due."""
     sent = 0
     with sessions.begin() as db:
         rows = db.scalars(
             select(Job)
             .where(
+                Job.owner_kind == role if role else true(),
                 Job.dispatch_after <= now,
                 or_(
                     and_(Job.state.in_(["queued", "retry"]), Job.available_at <= now),
@@ -60,10 +61,14 @@ def dispatch(sessions, now, publish, *, limit=50):
     return sent
 
 
-def claim(sessions, job_id, now, *, settings):
+def claim(sessions, job_id, now, *, settings, role=None):
     """Claim once under a row lock, recovering a crashed worker after five minutes."""
     with sessions.begin() as db:
-        row = db.scalar(select(Job).where(Job.id == job_id).with_for_update())
+        row = db.scalar(
+            select(Job)
+            .where(Job.id == job_id, Job.owner_kind == role if role else true())
+            .with_for_update()
+        )
         if not row or row.state in {"succeeded", "failed"}:
             return None
         if row.available_at > now or (row.state == "running" and row.lease_expires_at > now):

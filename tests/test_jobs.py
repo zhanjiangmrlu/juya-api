@@ -54,6 +54,36 @@ def test_enqueue_rollback_and_broker_outage_recovery(system):
         assert db.get(Job, job_id).state == "queued"
 
 
+def test_role_scoped_dispatch_and_claim_never_execute_the_other_api_tasks(system):
+    claim, dispatch, enqueue, finish, fail, Job = api()
+    sessions, now = system["sessions"], system["time"][0].replace(tzinfo=None)
+    with sessions.begin() as db:
+        ids = {
+            role: enqueue(
+                db,
+                "media.decode",
+                role,
+                "actor",
+                {"media_id": role},
+                now,
+                settings=system["settings"],
+            ).id
+            for role in ["admin", "mini"]
+        }
+    delivered = []
+    assert dispatch(sessions, now, delivered.append, role="admin") == 1
+    assert delivered == [ids["admin"]]
+    assert claim(sessions, ids["mini"], now, settings=system["settings"], role="admin") is None
+    with sessions() as db:
+        assert db.get(Job, ids["mini"]).state == "queued"
+        assert db.get(Job, ids["mini"]).attempts == 0
+    assert dispatch(sessions, now, delivered.append, role="mini") == 1
+    assert delivered[-1] == ids["mini"]
+    assert (
+        claim(sessions, ids["mini"], now, settings=system["settings"], role="mini")["attempt"] == 1
+    )
+
+
 def test_expired_lease_fences_late_worker_and_recovery_is_idempotent(system):
     claim, dispatch, enqueue, finish, fail, Job = api()
     sessions, now = system["sessions"], system["time"][0].replace(tzinfo=None)

@@ -28,6 +28,7 @@ def test_committed_upload_survives_missing_dispatch_and_duplicate_broker_deliver
     system["time"][0] = datetime.now(UTC)
     settings = system["settings"]
     settings.redis_url = os.environ["JUYA_TEST_REDIS_URL"]
+    settings.worker_role = "admin"
     accepted = admin.post(
         "/api/admin/v1/media?kind=image",
         headers=key(),
@@ -40,13 +41,16 @@ def test_committed_upload_survives_missing_dispatch_and_duplicate_broker_deliver
     now = system["admin"].app.state.clock()
     assert (
         dispatch(
-            system["sessions"], now, lambda job_id: celery.send_task("juya.execute", args=[job_id])
+            system["sessions"],
+            now,
+            lambda job_id: celery.send_task("juya.execute", args=[job_id]),
+            role=settings.worker_role,
         )
         == 1
     )
     # The broker envelope contains only a task identity, not media bytes or credentials.
     redis = Redis.from_url(settings.redis_url)
-    messages = redis.lrange("celery", 0, -1)
+    messages = redis.lrange("juya-admin", 0, -1)
     assert messages
     message = json.loads(messages[-1])
     envelope = json.loads(base64.b64decode(message["body"]))
