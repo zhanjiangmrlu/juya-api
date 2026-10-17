@@ -87,7 +87,7 @@ def save_state(path, state):
         temporary.unlink(missing_ok=True)
 
 
-def collect():
+def collect(environments=("test", "production")):
     now = time.time()
     http = http_metrics("/var/log/nginx/juya-rebuild-access.jsonl", now)
     memory = {
@@ -110,6 +110,8 @@ def collect():
     }
     source = Path(__file__).with_name("metrics.py").read_text()
     for environment, base in [("test", 18000), ("production", 28000)]:
+        if environment not in environments:
+            continue
         prefix = "juya-rebuild-" + environment
         for role, port in [("admin", base + 1), ("mini", base + 2)]:
             name = prefix + "-" + role + "-" + role + "-api-1"
@@ -156,7 +158,7 @@ def collect():
                         input=source,
                         capture_output=True,
                         text=True,
-                        timeout=10,
+                        timeout=30,
                     )
                     data = json.loads(result.stdout)
                 except Exception:
@@ -217,12 +219,13 @@ def main():
         "--state", type=Path, default=Path("/var/lib/juya-rebuild-monitor/state.json")
     )
     parser.add_argument("--notify", action="store_true")
+    parser.add_argument("--environment", action="append", choices=["test", "production"])
     parser.add_argument("--webhook-file", type=Path)
     args = parser.parse_args()
     state = (
         json.loads(args.state.read_text()) if args.state.exists() else {"signals": {}, "outbox": []}
     )
-    metrics, observations = collect()
+    metrics, observations = collect(args.environment or ("test", "production"))
     events = transition(state["signals"], observations)
     if args.notify:
         if not args.webhook_file:

@@ -120,3 +120,52 @@ def test_sql_metrics_count_pending_expired_and_recent_speech_without_payloads(sy
         "tts_failed": 1,
     }
     assert "never-output" not in json.dumps(value)
+
+
+def test_test_only_collection_never_probes_deferred_production(monkeypatch):
+    import io
+    from types import SimpleNamespace
+
+    module = script()
+    original_read = Path.read_text
+    requested = []
+
+    def read_text(path, *args, **kwargs):
+        if str(path) == "/proc/meminfo":
+            return "MemTotal: 8000000 kB\nMemAvailable: 6000000 kB\n"
+        return original_read(path, *args, **kwargs)
+
+    def urlopen(url, **kwargs):
+        requested.append(url)
+        role = "admin" if ":18001/" in url else "mini"
+        return io.BytesIO(
+            json.dumps({"status": "ready", "service": role, "environment": "test"}).encode()
+        )
+
+    def run(args, **kwargs):
+        requested.extend(args)
+        if args[1] == "inspect":
+            return SimpleNamespace(
+                stdout=json.dumps(
+                    [{"State": {"Status": "running", "Health": {"Status": "healthy"}}}]
+                )
+            )
+        return SimpleNamespace(
+            stdout=json.dumps(
+                {
+                    "available": True,
+                    "connections": 2,
+                    "oldest_pending_seconds": 0,
+                    "expired_leases": 0,
+                }
+            )
+        )
+
+    monkeypatch.setattr(Path, "read_text", read_text)
+    monkeypatch.setattr(module, "http_metrics", lambda *args: {})
+    monkeypatch.setattr(module.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(module.subprocess, "run", run)
+    metrics, signals = module.collect(("test",))
+    assert set(metrics["environments"]) == {"test"}
+    assert not any(key.startswith("production.") for key in signals)
+    assert not any("production" in item or ":2800" in item for item in requested)
