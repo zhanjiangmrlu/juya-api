@@ -23,6 +23,8 @@ from .content_service import published_card
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
 from .errors import DomainError
+from .job_models import Job
+from .jobs import enqueue
 from .media_permissions import summary_thumbnail
 from .models import MiniSession, identifier
 from .response_contracts import MediaMetadata, ResourceURL, UploadConfiguration
@@ -31,12 +33,17 @@ from .storage import ObjectStorage
 from .transactions import operate
 
 
-def media_view(medium: Media) -> dict:
+def media_view(medium: Media, db=None) -> dict:
     """Return safe media metadata and controlled identifiers, never OSS object credentials."""
+    job = db.get(Job, medium.job_id) if db is not None and medium.job_id else None
+    failed = job is not None and job.state == "failed"
     return {
+        "job_id": medium.job_id,
+        "error_code": job.error_code if failed and job else None,
+        "error": "素材处理失败，请重试或重新上传" if failed else None,
         "id": medium.id,
         "kind": medium.kind,
-        "state": medium.state,
+        "state": "failed" if failed else medium.state,
         "content_type": medium.content_type,
         "size": medium.size,
         "width": medium.width,
@@ -136,54 +143,51 @@ def decoded_audio(data: bytes):
 def save_media(db, settings, actor, role: str, kind: str, data: bytes, now) -> Media:
     """Persist decoded immutable originals and derived thumbnails as one database unit."""
     storage = ObjectStorage(settings)
-    width = height = duration = None
-    thumbnail_data = thumbnail_size = None
-    if kind in {"image", "avatar"}:
-        content_type, width, height, thumbnail_data, thumbnail_size = decoded_image(data)
-    else:
-        content_type, duration = decoded_audio(data)
     media_id = identifier()
     checksum = hashlib.sha256(data).hexdigest()
     storage_key = f"{settings.environment}/media/{media_id}/{checksum}"
-    storage.put(storage_key, data, content_type)
+    storage.put(storage_key, data, "application/octet-stream")
     medium = Media(
         id=media_id,
         owner_kind=role,
         owner_id=actor.id,
         kind=kind,
+        state="processing",
         storage_key=storage_key,
-        content_type=content_type,
+        content_type="application/octet-stream",
         size=len(data),
         sha256=checksum,
-        width=width,
-        height=height,
-        duration=duration,
         created_at=now,
     )
-    if thumbnail_data is not None:
-        assert thumbnail_size is not None
-        thumb_id = identifier()
-        thumb_hash = hashlib.sha256(thumbnail_data).hexdigest()
-        thumb_key = f"{settings.environment}/media/{thumb_id}/{thumb_hash}"
-        storage.put(thumb_key, thumbnail_data, "image/webp")
-        thumbnail = Media(
-            id=thumb_id,
-            owner_kind=role,
-            owner_id=actor.id,
-            kind="thumbnail",
-            storage_key=thumb_key,
-            content_type="image/webp",
-            size=len(thumbnail_data),
-            sha256=thumb_hash,
-            width=thumbnail_size[0],
-            height=thumbnail_size[1],
-            created_at=now,
-        )
-        db.add(thumbnail)
-        medium.thumbnail_id = thumb_id
     db.add(medium)
+    job = enqueue(
+        db, "media.decode", role, actor.id, {"media_id": media_id}, now, settings=settings
+    )
+    medium.job_id = job.id
     db.flush()
     return medium
+
+
+def retry_media(db, settings, actor, role, media_id, key, now):
+    """Retry a known transient processing failure while retaining the original upload."""
+
+    def execute():
+        medium = db.get(Media, media_id)
+        if not medium or medium.owner_kind != role or medium.owner_id != actor.id:
+            raise DomainError(404, "media_missing", "素材不可用")
+        previous = db.get(Job, medium.job_id) if medium.job_id else None
+        if not previous or previous.state != "failed":
+            return media_view(medium, db)
+        if previous.error_code in {"image_invalid", "audio_invalid", "media_invalid"}:
+            raise DomainError(422, "media_invalid", "素材无法读取，请重新选择文件")
+        job = enqueue(
+            db, "media.decode", role, actor.id, {"media_id": medium.id}, now, settings=settings
+        )
+        medium.job_id, medium.state = job.id, "processing"
+        db.flush()
+        return media_view(medium, db)
+
+    return operate(db, actor, role, key, "media.retry:" + media_id, {}, now, execute)
 
 
 def deliver(medium: Media, request: Request):
@@ -255,7 +259,19 @@ def admin_routes():
             "media.upload",
             {"kind": kind, "sha256": hashlib.sha256(data).hexdigest()},
             now,
-            lambda: media_view(save_media(db, settings, admin, "admin", kind, data, now)),
+            lambda: media_view(save_media(db, settings, admin, "admin", kind, data, now), db),
+        )
+
+    @router.post("/media/{media_id}/retry", response_model=MediaMetadata)
+    def retry(
+        media_id: str,
+        request: Request,
+        admin=Depends(administrator),
+        key: str = Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        return retry_media(
+            db, request.app.state.settings, admin, "admin", media_id, key, request.app.state.clock()
         )
 
     @router.get("/media/configuration", response_model=UploadConfiguration)
@@ -290,7 +306,7 @@ def admin_routes():
         medium = db.get(Media, media_id)
         if not medium:
             raise DomainError(404, "media_missing", "素材不可用")
-        return media_view(medium)
+        return media_view(medium, db)
 
     return router
 

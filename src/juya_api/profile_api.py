@@ -13,9 +13,15 @@ from .auth import user_view
 from .content_models import Media
 from .dependencies import database, learner, operation_key
 from .errors import DomainError
-from .media_api import deliver, save_media
+from .media_api import deliver, media_view, retry_media, save_media
 from .models import Consent, MiniSession, User
-from .response_contracts import AvatarUpload, AvatarURL, ClientConfiguration, UserProfile
+from .response_contracts import (
+    AvatarUpload,
+    AvatarURL,
+    ClientConfiguration,
+    MediaMetadata,
+    UserProfile,
+)
 from .security import decrypt, digest, encrypt, lookup
 from .transactions import operate
 
@@ -177,7 +183,7 @@ def routes():
 
         def execute():
             medium = save_media(db, settings, user, "mini", "avatar", data, now)
-            return {"id": medium.id, "state": medium.state}
+            return {"id": medium.id, "state": medium.state, "job_id": medium.job_id}
 
         return operate(
             db,
@@ -188,6 +194,35 @@ def routes():
             {"sha256": hashlib.sha256(data).hexdigest()},
             now,
             execute,
+        )
+
+    @router.get("/me/avatar/{media_id}/status", response_model=MediaMetadata)
+    def avatar_status(
+        media_id: str, user=Depends(learner), db: Session = Depends(database, scope="function")
+    ):
+        medium = db.get(Media, media_id)
+        if (
+            not medium
+            or medium.kind != "avatar"
+            or medium.owner_kind != "mini"
+            or medium.owner_id != user.id
+        ):
+            raise DomainError(404, "avatar_missing", "头像暂不可用")
+        return media_view(medium, db)
+
+    @router.post("/me/avatar/{media_id}/retry", response_model=MediaMetadata)
+    def retry_avatar(
+        media_id: str,
+        request: Request,
+        user=Depends(learner),
+        key: str = Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        medium = db.get(Media, media_id)
+        if not medium or medium.kind != "avatar":
+            raise DomainError(404, "avatar_missing", "头像暂不可用")
+        return retry_media(
+            db, request.app.state.settings, user, "mini", media_id, key, request.app.state.clock()
         )
 
     @router.get("/me/avatar-url", response_model=AvatarURL)

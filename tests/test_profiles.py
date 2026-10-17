@@ -167,6 +167,10 @@ def test_avatar_is_explicitly_uploaded_saved_and_revoked_on_logout(mini):
         files={"file": ("avatar.png", picture(), "image/png")},
     )
     assert uploaded.status_code == 201
+    assert uploaded.json()["state"] == "processing"
+    from .content_helpers import process_jobs
+
+    process_jobs(mini)
     assert mini.get("/api/mini/v1/me").json()["avatar_id"] is None
     saved = mini.patch(
         "/api/mini/v1/me/profile",

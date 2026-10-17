@@ -38,6 +38,7 @@ def content(admin):
         files={"file": ("dialogue.wav", recording(), "audio/wav")},
     )
     assert audio.status_code == 201, audio.text
+    process_jobs(admin)
     return {
         "name": "在咖啡店点单",
         "image_id": image.json()["id"],
@@ -77,3 +78,16 @@ def publish(admin, card):
     )
     assert response.status_code == 200, response.text
     return response.json()
+
+
+def process_jobs(client):
+    from sqlalchemy import select
+
+    from juya_api.job_models import Job
+    from juya_api.worker import run_job
+
+    app = client.app
+    with app.state.sessions() as db:
+        pending = db.scalars(select(Job.id).where(Job.state == "queued")).all()
+    for job_id in pending:
+        run_job(app.state.settings, app.state.sessions, job_id, clock=app.state.clock)

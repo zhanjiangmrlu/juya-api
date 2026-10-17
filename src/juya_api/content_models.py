@@ -55,6 +55,7 @@ class Media(Base):
     owner_id: Mapped[str] = mapped_column(String(36), index=True)
     kind: Mapped[str] = mapped_column(String(16))
     state: Mapped[str] = mapped_column(String(16), default="ready")
+    job_id: Mapped[str | None] = mapped_column(String(36), index=True)
     storage_key: Mapped[str] = mapped_column(String(255), unique=True)
     content_type: Mapped[str] = mapped_column(String(80))
     size: Mapped[int] = mapped_column(Integer)

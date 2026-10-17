@@ -6,7 +6,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from juya_api import content_models, learning_models, models  # noqa: F401
+from juya_api import (  # noqa: F401
+    content_models,
+    job_models,
+    learning_models,
+    models,
+    pronunciation_models,
+    publication_models,
+)
 from juya_api.database import Base
 
 config = context.config

@@ -8,6 +8,7 @@ from .learning_api import routes as learning_routes
 from .media_api import mini_routes as media_routes
 from .operation_api import routes as operation_routes
 from .profile_api import routes as profile_routes
+from .pronunciation_api import routes as pronunciation_routes
 
 
 def create_app(settings: Settings | None = None, *, sessions=None, clock=None, wechat=None):
@@ -21,4 +22,5 @@ def create_app(settings: Settings | None = None, *, sessions=None, clock=None, w
     app.include_router(learning_routes())
     app.include_router(profile_routes())
     app.include_router(operation_routes("mini"))
+    app.include_router(pronunciation_routes("mini"))
     return app

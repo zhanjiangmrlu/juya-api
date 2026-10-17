@@ -1,4 +1,4 @@
-from .content_helpers import draft, key, picture, publish
+from .content_helpers import draft, key, picture, process_jobs, publish
 
 
 def test_real_image_is_decoded_and_thumbnail_generated(admin):
@@ -9,6 +9,12 @@ def test_real_image_is_decoded_and_thumbnail_generated(admin):
     )
     assert response.status_code == 201
     image = response.json()
+    assert image["state"] == "processing"
+    assert image["width"] is None
+    assert admin.get(f"/api/admin/v1/media/{image['id']}").status_code == 404
+    process_jobs(admin)
+    image = admin.get(f"/api/admin/v1/media/{image['id']}/status").json()
+    assert image["state"] == "ready"
     assert image["width"] == 120
     assert image["height"] == 80
     assert image["thumbnail_id"] != image["id"]
@@ -21,7 +27,11 @@ def test_filename_and_mime_are_not_trusted_for_decode(admin):
         headers=key(),
         files={"file": ("fake.png", b"not an image", "image/png")},
     )
-    assert response.status_code == 422
+    assert response.status_code == 201
+    process_jobs(admin)
+    image = admin.get(f"/api/admin/v1/media/{response.json()['id']}/status").json()
+    assert image["state"] == "failed"
+    assert image["error_code"] == "image_invalid"
 
 
 def test_audio_ticket_streams_ranges_and_is_revoked_by_offline(admin, mini):
@@ -92,3 +102,49 @@ def test_deleted_history_permits_only_its_safe_thumbnail_not_the_original(admin,
         ).status_code
         == 404
     )
+
+
+def test_avatar_processing_status_is_scoped_to_its_owner(mini, system):
+    from fastapi.testclient import TestClient
+
+    response = mini.post(
+        "/api/mini/v1/me/avatar",
+        headers=key(),
+        files={"file": ("avatar.png", picture(), "image/png")},
+    )
+    medium = response.json()["id"]
+    assert mini.get(f"/api/mini/v1/me/avatar/{medium}/status").json()["state"] == "processing"
+    with TestClient(system["mini"].app, base_url="https://testserver") as other:
+        login = other.post(
+            "/api/mini/v1/auth/wechat",
+            headers=key(),
+            json={"code": "bob:avatar", "consent": True, "consent_version": "2026-10-17"},
+        ).json()
+        other.headers["Authorization"] = "Bearer " + login["access_token"]
+        assert other.get(f"/api/mini/v1/me/avatar/{medium}/status").status_code == 404
+    process_jobs(mini)
+    assert mini.get(f"/api/mini/v1/me/avatar/{medium}/status").json()["state"] == "ready"
+
+
+def test_interrupted_media_can_retry_without_reupload_or_duplicate_jobs(admin, system):
+    from juya_api.job_models import Job
+
+    response = admin.post(
+        "/api/admin/v1/media?kind=image",
+        headers=key(),
+        files={"file": ("scene.png", picture(), "image/png")},
+    ).json()
+    with system["sessions"].begin() as db:
+        job = db.get(Job, response["job_id"])
+        job.state, job.error_code = "failed", "worker_interrupted"
+    headers = key()
+    retried = admin.post(f"/api/admin/v1/media/{response['id']}/retry", headers=headers)
+    assert retried.status_code == 200, retried.text
+    assert retried.json()["id"] == response["id"]
+    assert retried.json()["job_id"] != response["job_id"]
+    assert (
+        admin.post(f"/api/admin/v1/media/{response['id']}/retry", headers=headers).json()
+        == retried.json()
+    )
+    process_jobs(admin)
+    assert admin.get(f"/api/admin/v1/media/{response['id']}/status").json()["state"] == "ready"

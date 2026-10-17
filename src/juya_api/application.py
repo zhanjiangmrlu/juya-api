@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import inspect, text
 
+from . import job_models  # noqa: F401
 from .config import Settings
 from .database import make_database, naive_utc
 from .errors import DomainError, install_errors

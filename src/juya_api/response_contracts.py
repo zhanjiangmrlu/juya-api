@@ -133,6 +133,7 @@ class MediaMetadata(PublicModel):
     original_name: str | None = None
     job_id: str | None = None
     error: str | None = None
+    error_code: str | None = None
 
 
 class ResourceURL(PublicModel):
