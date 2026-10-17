@@ -35,5 +35,15 @@
     "inventory_sha256": "446a66b80d7aab093058585608962ae8680c4f050edcf58d6e3b2cc49d557f2e",
     "checked_before_new_qa_content": true
   },
-  "production_oss": "deferred_by_user"
+  "production_oss": "deferred_by_user",
+  "test_qa_cleanup": {
+    "synthetic_users_removed": 20,
+    "cards_removed": 3,
+    "new_oss_objects_removed": 6,
+    "remaining_users": 0,
+    "remaining_cards": 0,
+    "remaining_oss_objects": 0,
+    "administrator_retained": 1,
+    "manifest_sha256": "2dabcfdeac5956a7b6d3ecb28582066d265dd62ae9fc9236fcb58f06d269637e"
+  }
 }

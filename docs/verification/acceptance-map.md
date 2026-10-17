@@ -95,7 +95,7 @@
 | T87 | 保存与发布部分失败重试 | 只处理失败项，成功不重复，不混导入与上线 | 可恢复导入/逐卡保存/发布 | test_imports、test_jobs、test_publication_batches；后台use-import-staging/import-workflow/scene-docx-import；advanced-content.md | 真实MySQL和本地Worker/浏览器有证据；生产OSS及全部失败组合待验收 |
 | T88 | 已删除目标收到陈旧导入更新 | 拒绝复活旧卡，要求重新核对为新对象或排除 | 可恢复导入/逐卡保存/发布 | test_imports、test_jobs、test_publication_batches；后台use-import-staging/import-workflow/scene-docx-import；advanced-content.md | 真实MySQL和本地Worker/浏览器有证据；生产OSS及全部失败组合待验收 |
 | T89 | ZIP非法路径／类型／超限 | 拒绝问题资料，不越界解包或执行 | 可恢复导入/逐卡保存/发布 | test_imports、test_jobs、test_publication_batches；后台use-import-staging/import-workflow/scene-docx-import；advanced-content.md | 真实MySQL和本地Worker/浏览器有证据；生产OSS及全部失败组合待验收 |
-| T90 | 旧账号和可靠完成迁移 | 清除测试与生产旧账号、成绩、内容、任务、旧素材及旧业务备份；无历史迁移，新数据从零开始 | 本次旧系统全量重置（覆盖原迁移条款） | test_reset；docs/implementation/progress.md精确资源清单 | 旧SQL/容器/本地备份已清除；旧OSS对象/版本/分片待授权后清理 |
+| T90 | 旧账号和可靠完成迁移 | 清除测试与生产旧账号、成绩、内容、任务、旧素材及旧业务备份；无历史迁移，新数据从零开始 | 本次旧系统全量重置（覆盖原迁移条款） | test_reset；docs/implementation/progress.md精确资源清单 | 旧SQL/容器/本地备份已清除；测试旧OSS对象/版本/分片已清空；生产OSS按用户要求暂缓 |
 | T91 | U07无联系／单手机／单微信／双联系 | 只读布局正确，无联系提示未填写及补充入口，缺单项不留空行，手机脱敏 | 个人资料/选填联系/未保存返回 | test_profiles、test_media、test_jobs；小程序contact-model/identity-model/use-unsaved-guard/media-processing | API、编辑H5、原生组件编译/事件测试通过；真实系统返回/上传待真机验收 |
 | T92 | U08主动选头像、填昵称并保存 | U07/U01/A05/A06同步，原账号、注册时间、成绩和收藏不变 | 个人资料/选填联系/未保存返回 | test_profiles、test_media、test_jobs；小程序contact-model/identity-model/use-unsaved-guard/media-processing | API、编辑H5、原生组件编译/事件测试通过；真实系统返回/上传待真机验收 |
 | T93 | U08取消、失败、上传未完成及未保存离开 | 旧有效资料保留，三种离开处理正确，失败不离开；不自动读微信头像昵称 | 个人资料/选填联系/未保存返回 | test_profiles、test_media、test_jobs；小程序contact-model/identity-model/use-unsaved-guard/media-processing | API、编辑H5、原生组件编译/事件测试通过；真实系统返回/上传待真机验收 |
@@ -117,8 +117,8 @@
 | T109 | 从U00/U07开隐私说明再关闭 | 回真实来源及原位置，输入／勾选状态不被代改 | 隐私说明/来源恢复 | 小程序登录/只读资料/隐私说明组件；session-service/navigation | 实现及核心流程存在；来源滚动/勾选全组合待真机验收 |
 | T110 | 退出再同身份登录 | 清客户端会话，恢复服务端学习收藏，无联系也可登录 | 账号/会话/本人资料 | test_auth、test_auth_concurrency、test_profiles、test_learning；小程序session-service/navigation/operation-service | API及约束已验证；真实微信登录、换设备和故障流程待真机验收 |
 | T111 | 客户端伪造OpenID或访问他人引用 | 服务端用微信凭证校验和本人会话拒绝越权，联系值不能取代身份 | 账号/会话/本人资料 | test_auth、test_auth_concurrency、test_profiles、test_learning；小程序session-service/navigation/operation-service | API及约束已验证；真实微信登录、换设备和故障流程待真机验收 |
-| T112 | 历史账号缺联系或仅未核实联系 | 旧账号不迁移；重建后的账号无联系方式也可学习，联系方式不作为身份或合并依据 | 本次重置后无历史账号（覆盖迁移条款） | test_reset、test_auth、test_profiles | 不迁移旧账号；重建后无联系可学习，不按联系合并。旧OSS清理尚待完成 |
-| T113 | 全文及后续原型同步核对 | 旧手机号必需／联系必填执行规则无残留，待同步项明确，未把文档当原型或真实接入完成 | 范围与需求同步 | AGENTS.md、已批准重建方案、各仓库实现及本验收表 | 两导航和联系选填已实现；设计全页核对、最终代码审查和实机接入仍待验收 |
+| T112 | 历史账号缺联系或仅未核实联系 | 旧账号不迁移；重建后的账号无联系方式也可学习，联系方式不作为身份或合并依据 | 本次重置后无历史账号（覆盖迁移条款） | test_reset、test_auth、test_profiles | 不迁移旧账号；重建后无联系可学习，不按联系合并。测试旧OSS已清空；生产OSS暂缓 |
+| T113 | 全文及后续原型同步核对 | 旧手机号必需／联系必填执行规则无残留，待同步项明确，未把文档当原型或真实接入完成 | 范围与需求同步 | AGENTS.md、已批准重建方案、各仓库实现及本验收表 | 两导航和联系选填已实现；独立代码审查已完成；设计全页核对和实机接入仍待验收 |
 
 ## 上线门槛（仍需执行）
 
@@ -127,3 +127,5 @@
 - 小程序API持续接受请求及写入时，实际发布/回滚管理API，核验小程序容器身份与启动时间不变。
 - 真机验证wx.login、媒体拖动/暂停/防叠播、大图手势、头像上传、原生三选择返回及位置恢复。
 - 全页修订12视觉核对、最终代码审查、空数据上线及管理员初始化；本表逐项附最终执行结果后才能签收。
+
+2026-10-17最新测试部署、真实OSS/TTS/撤销、20并发、独立发布回滚和清空交付证据见[test-rollout-20261017.md](test-rollout-20261017.md)。上述待办中测试OSS与独立发布已取得该记录，微信真机、线上视觉、双环境同机压测和生产范围仍保留待验收。

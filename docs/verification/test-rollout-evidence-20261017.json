@@ -1,0 +1,199 @@
+{
+  "date": "2026-10-17",
+  "environment": "test",
+  "backend_image_commit": "58774161d947ed75b46a9dbb7b8bd47cbc2c0985",
+  "operations_commit": "f4c044cc6f5f7d361871e3af56f22ee10058be7d",
+  "admin_web_commit": "6add0ac73e639204e320b536cc98901eec261f42",
+  "mini_source_commit": "abd7df5",
+  "ci_runs": [
+    39025440990,
+    39025958407
+  ],
+  "mixed_load": {
+    "environment": "test",
+    "concurrent_learners": 20,
+    "requests": 420,
+    "duration_seconds": 12.285,
+    "p95_ms": 402.44,
+    "max_ms": 818.31,
+    "errors": 0,
+    "error_rate": 0.0,
+    "status_counts": {
+      "200": 420
+    },
+    "batch_import": {
+      "cards": 20,
+      "readable": 20,
+      "seconds": 7.502
+    },
+    "production_apps_running": false,
+    "synthetic_sessions": true,
+    "media_and_cloud_timing_separate": true
+  },
+  "resources": {
+    "samples": 41,
+    "min_host_available_bytes": 5168594944,
+    "peak_container_memory_bytes": {
+      "juya-rebuild-test-admin-admin-api-1": 164564992,
+      "juya-rebuild-test-admin-admin-worker-1": 214294528,
+      "juya-rebuild-test-admin-admin-dispatcher-1": 89051136,
+      "juya-rebuild-test-mini-mini-api-1": 132476928,
+      "juya-rebuild-test-mini-mini-worker-1": 267071488,
+      "juya-rebuild-test-mini-mini-dispatcher-1": 92971008
+    },
+    "containers": [
+      {
+        "name": "juya-rebuild-test-admin-admin-api-1",
+        "oom": false,
+        "restarts": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "juya-rebuild-test-admin-admin-worker-1",
+        "oom": false,
+        "restarts": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "juya-rebuild-test-admin-admin-dispatcher-1",
+        "oom": false,
+        "restarts": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "juya-rebuild-test-mini-mini-api-1",
+        "oom": false,
+        "restarts": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "juya-rebuild-test-mini-mini-worker-1",
+        "oom": false,
+        "restarts": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "juya-rebuild-test-mini-mini-dispatcher-1",
+        "oom": false,
+        "restarts": 0,
+        "health": "healthy"
+      }
+    ]
+  },
+  "independent_rollout": {
+    "environment": "test",
+    "actions": [
+      {
+        "project": "juya-admin-api",
+        "environment": "test",
+        "action": "rollback",
+        "status": "rolled_back",
+        "release_id": "20261017T101450-665820abd919-fc3826",
+        "image_ref": "juya-admin-api:665820abd919a7ae1c71a9106bb1c9e9d427da3b",
+        "previous_release_id": "20261017T104016-58774161d947-b03a53",
+        "database_downgraded": false,
+        "started_at": 1792234227.720126,
+        "finished_at": 1792234325.691775
+      },
+      {
+        "project": "juya-admin-api",
+        "environment": "test",
+        "action": "publish",
+        "status": "deployed",
+        "release_id": "20261017T104016-58774161d947-b03a53",
+        "image_ref": "juya-admin-api:58774161d947ed75b46a9dbb7b8bd47cbc2c0985",
+        "previous_release_id": "20261017T101450-665820abd919-fc3826",
+        "database_downgraded": false,
+        "started_at": 1792234325.691919,
+        "finished_at": 1792234423.2085881
+      }
+    ],
+    "mini_container_identity_unchanged": true,
+    "learning_writes_during_actions": 93,
+    "failed_learning_writes": 0,
+    "database_migration_or_restore": false,
+    "synthetic_sessions": true
+  },
+  "authorization_and_revocation": {
+    "environment": "test",
+    "credentials_not_interchangeable": true,
+    "offline_blocks_existing_media_range_and_new_learning": true,
+    "stale_preview_cannot_republish": true,
+    "fresh_preview_republishes": true,
+    "old_version_ticket_rejected": true,
+    "completion_count_retained": true,
+    "logout_revokes_session_and_media": true,
+    "synthetic_sessions": true
+  },
+  "cold_tts": {
+    "tts_wait_seconds": 8.366,
+    "tts_bytes": 4032,
+    "tts_download_ms": 164.31,
+    "media_range_request_ms": [
+      277.75,
+      303.04
+    ]
+  },
+  "fixture_cleanup": {
+    "environment": "test",
+    "manifest_sha256": "2dabcfdeac5956a7b6d3ecb28582066d265dd62ae9fc9236fcb58f06d269637e",
+    "oss": {
+      "test_fixture_objects_deleted": 6,
+      "remaining_objects": 0
+    },
+    "database": {
+      "administrator_retained": 1,
+      "business_tables_empty": true,
+      "schema_contract_retained": 1,
+      "rows_before_cleanup": {
+        "administrators": 1,
+        "cards": 3,
+        "jobs": 5,
+        "login_operations": 0,
+        "login_throttles": 1,
+        "media": 4,
+        "operations": 488,
+        "setting_counters": 2,
+        "users": 20,
+        "admin_sessions": 8,
+        "audits": 13,
+        "card_drafts": 3,
+        "card_versions": 4,
+        "checkins": 20,
+        "consents": 0,
+        "favorites": 60,
+        "import_batches": 2,
+        "import_identities": 0,
+        "mini_sessions": 19,
+        "pronunciations": 1,
+        "publication_batches": 0,
+        "publication_previews": 7,
+        "completions": 60,
+        "daily_learning": 60,
+        "import_files": 2,
+        "media_tickets": 8,
+        "publication_items": 0,
+        "import_items": 40
+      },
+      "rows_before_cleanup_include_retained_admin_and_settings": true
+    },
+    "redis": {
+      "test_redis_empty": true
+    },
+    "production_touched": false
+  },
+  "public_handoff": {
+    "test_https_apis_ready": true,
+    "test_admin_html_assets_and_cache_policy": true,
+    "admin_cookie_csrf_cors_preflight": true,
+    "users": 0,
+    "cards": 0,
+    "old_qa_session_revoked": true,
+    "retired_h5_status": 410,
+    "role_prefixes_isolated": true,
+    "production_application_and_oss_deferred": true
+  },
+  "browser_visual_verified_after_deployment": false,
+  "wechat_device_verified": false,
+  "production_apps_running": false
+}
