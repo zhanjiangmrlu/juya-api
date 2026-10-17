@@ -17,7 +17,14 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.3,<10", "pytest-cov>=6,<8", "ruff>=0.9,<1", "mypy>=1.14,<2", "types-PyMySQL"]
+dev = [
+    "pytest>=8.3,<10",
+    "pytest-cov>=6,<8",
+    "ruff>=0.9,<1",
+    "mypy>=1.14,<2",
+    "types-PyMySQL",
+    "httpx2>=2.13.1",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/juya_api"]
@@ -34,6 +41,10 @@ target-version = "py313"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends"]
+
 [tool.mypy]
 python_version = "3.13"
 check_untyped_defs = true
+plugins = ["pydantic.mypy"]

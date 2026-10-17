@@ -2,7 +2,7 @@
 
 ## Status
 
-Task 1: in progress
+Task 1: complete (auth and independent entrypoints; real MySQL 8.4 migration and concurrency verified)
 Tasks 2—8: pending
 
 ## Pre-flight
@@ -27,3 +27,19 @@ Tasks 2—8: pending
 - System lacks Docker/uv/Node on PATH; installing isolated tools and using bundled Node; MySQL verification can run remotely once authenticated
 - SSH ED25519 first-use fingerprint recorded: SHA256:1JOgC3coZdjNyB0/jmIr8jAD3E3Bm1vi9/g4efHfkEo
 - Default local SSH key is not authorized; account file supplies password and a Windows-only key path; attempting supplied password with verified recorded host key
+
+## Foundation evidence
+
+- Initial authentication suite failed because the new entrypoints did not exist; 10 local behavior tests then passed
+- Real MySQL concurrency reproduced duplicate login result insertion, then a duplicate-insert lock upgrade deadlock; atomic no-op upserts fix the actual locking boundary
+- Login reservation now precedes one-use code exchange; 4 concurrent identical attempts return one token and redeem code once
+- SQLite transaction control explicitly owned by SQLAlchemy to preserve rollback across savepoints; invalid-code retries never return a false successful login
+- Ruff and mypy pass; fresh Alembic 0001 creates an empty schema, no administrator or business fixtures
+- Reset guard tests reject unrelated/new containers, volumes and application databases
+
+## Legacy cleanup
+
+- Executed authorized inventory-bound cleanup: 8 exact legacy containers, 3 volumes (old MySQL/Redis/imports), four backup directories removed; old runtime profile paths retired
+- Provider configuration preserved root-only at /root/juya-rebuild/preserved-config
+- OSS list versions and multipart both return 403 AccessDenied (EC 0003-00000001); async request sent for corrected bucket/account permissions, not treated as zero objects
+- Ruling: do not substitute unrelated cloud credentials after OSS AccessDenied; continue independent local/DB work — prevents accessing the wrong account — OSS reset and real storage deployment remain pending

@@ -1,0 +1,29 @@
+{
+  "inventory_sha256": "d387ebc1eeca1c44d7dfb581c02fb85300850dc8f06e5c66a530b82bc8228c2e",
+  "removed_containers": [
+    "juya-admin-small-admin-worker-1",
+    "juya-admin-small-admin-beat-1",
+    "juya-admin-small-admin-api-1",
+    "juya-miniapp-test-miniapp-worker-1",
+    "juya-miniapp-test-miniapp-beat-1",
+    "juya-miniapp-test-miniapp-api-1",
+    "juya-admin-small-redis-1",
+    "juya-admin-small-mysql-1"
+  ],
+  "removed_volumes": [
+    "juya-admin-small_juya_imports",
+    "juya-admin-small_mysql_data",
+    "juya-admin-small_redis_data"
+  ],
+  "removed_backup_directories": [
+    "/opt/juya/backups",
+    "/etc/juya/backups",
+    "/opt/juya/juya-admin-web-backups",
+    "/opt/juya/juya-miniapp-h5-backups"
+  ],
+  "removed_release_dump_count": 0,
+  "retired_runtime_profiles": true,
+  "oss_status": "blocked_access_denied",
+  "production_old_database_found": false,
+  "shared_old_database": "juya"
+}
