@@ -189,7 +189,15 @@ def test_docx_batch_restores_staging_matches_only_exact_names_and_saves_drafts(a
     process_jobs(admin)
     result = admin.get(f"/api/admin/v1/imports/{batch_id}").json()
     assert all(item["state"] == "saved" for item in result["items"])
-    assert admin.get("/api/admin/v1/cards").json()["total"] == 2
+    from .content_helpers import draft
+
+    unrelated = draft(admin)
+    filtered = admin.get(f"/api/admin/v1/cards?batch_id={batch_id}")
+    assert filtered.status_code == 200, filtered.text
+    assert filtered.json()["total"] == 2
+    assert unrelated["id"] not in [item["id"] for item in filtered.json()["items"]]
+    assert admin.get("/api/admin/v1/cards?batch_id=unowned").status_code == 404
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 3
     assert mini.get("/api/mini/v1/cards").json()["total"] == 0
 
 
@@ -379,3 +387,32 @@ def test_download_example_is_authenticated_parseable_and_does_not_seed_business_
 
     with TestClient(system["admin"].app, base_url="https://testserver") as unsigned:
         assert unsigned.get("/api/admin/v1/imports/example").status_code == 401
+
+
+def test_failed_import_file_retries_retained_bytes_without_duplicating_successful_items(
+    admin, system
+):
+    from juya_api.job_models import Job
+
+    from .content_helpers import key, process_jobs
+
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "docx"}).json()
+    path = f"/api/admin/v1/imports/{batch['id']}/files"
+    uploaded = admin.post(
+        path + "?kind=docx",
+        headers=key(),
+        files={"file": ("one.docx", document("保留原文件"), "application/octet-stream")},
+    ).json()
+    with system["admin"].app.state.sessions.begin() as db:
+        job = db.get(Job, uploaded["job_id"])
+        job.state, job.error_code = "failed", "worker_interrupted"
+    headers = key()
+    response = admin.post(path + f"/{uploaded['id']}/retry", headers=headers)
+    assert response.status_code == 200, response.text
+    assert response.json()["id"] == uploaded["id"]
+    assert response.json()["job_id"] != uploaded["job_id"]
+    assert admin.post(path + f"/{uploaded['id']}/retry", headers=headers).json() == response.json()
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()
+    assert len(result["items"]) == 1 and result["files"][0]["state"] == "ready"
+    assert admin.post(path + "/unknown/retry", headers=key()).status_code == 404

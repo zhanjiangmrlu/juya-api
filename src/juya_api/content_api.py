@@ -18,6 +18,8 @@ from .content_service import (
 )
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
+from .import_models import ImportItem
+from .import_service import owned_batch
 from .learning_models import Completion, DailyLearning, Favorite
 from .learning_service import business_date, card_state
 from .models import Audit
@@ -41,12 +43,22 @@ def admin_routes():
         request: Request,
         status: str = "all",
         search: str = "",
+        batch_id: str | None = Query(None, min_length=1, max_length=36),
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=100),
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
         query = select(Card).join(CardDraft).where(Card.deleted_at.is_(None))
+        if batch_id:
+            owned_batch(db, batch_id, admin.id)
+            query = query.where(
+                Card.id.in_(
+                    select(ImportItem.saved_card_id).where(
+                        ImportItem.batch_id == batch_id, ImportItem.saved_card_id.is_not(None)
+                    )
+                )
+            )
         if status in {"draft", "published", "offline"}:
             query = query.where(Card.status == status)
         if search.strip():

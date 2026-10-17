@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .content_contracts import SceneContent
-from .content_models import CardDraft
+from .content_models import CardDraft, Media
 from .content_service import normalize, require_card, revision_matches
 from .dependencies import administrator, database, operation_key
 from .errors import DomainError
@@ -25,6 +25,7 @@ from .import_service import (
     owned_batch,
     resolve,
 )
+from .job_models import Job
 from .jobs import enqueue
 from .media_api import save_media
 from .models import identifier
@@ -166,7 +167,11 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         batch = owned_batch(db, batch_id, admin.id)
-        if (batch.mode == "zip" and kind != "zip") or (batch.mode == "docx" and kind == "zip"):
+        if (
+            (batch.mode == "zip" and kind != "zip")
+            or (batch.mode == "docx" and kind == "zip")
+            or (batch.mode == "single" and kind != "docx")
+        ):
             raise DomainError(422, "import_mode", "一批只能选择一种资料上传方式")
         settings, now = request.app.state.settings, request.app.state.clock()
         name = PurePosixPath((file.filename or "").replace("\\", "/")).name
@@ -247,6 +252,58 @@ def routes():
             now,
             execute,
         )
+
+    @router.post("/imports/{batch_id}/files/{file_id}/retry", response_model=ImportFileView)
+    def retry_file(
+        batch_id: str,
+        file_id: str,
+        request: Request,
+        admin=Depends(administrator),
+        key: str = Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        now, settings = request.app.state.clock(), request.app.state.settings
+
+        def execute():
+            owned_batch(db, batch_id, admin.id)
+            row = db.get(ImportFile, file_id)
+            if not row or row.batch_id != batch_id:
+                raise DomainError(404, "import_file_missing", "未找到本次导入文件")
+            medium = db.get(Media, row.media_id) if row.media_id else None
+            previous = db.get(Job, medium.job_id if medium else row.job_id)
+            if not previous or previous.state != "failed":
+                return file_view(db, row)
+            if previous.error_code in {
+                "image_invalid",
+                "audio_invalid",
+                "media_invalid",
+                "docx_invalid",
+                "docx_structure",
+                "single_docx_multiple",
+                "archive_unsafe",
+                "archive_limit",
+                "import_empty",
+                "import_card_limit",
+            }:
+                raise DomainError(
+                    422, "import_file_invalid", "原文件无法读取，请按提示修正后重新上传"
+                )
+            job = enqueue(
+                db,
+                "media.decode" if medium else "import.parse",
+                "admin",
+                admin.id,
+                {"media_id": medium.id} if medium else {"file_id": row.id},
+                now,
+                settings=settings,
+            )
+            row.job_id = job.id
+            if medium:
+                medium.job_id, medium.state = job.id, "processing"
+            db.flush()
+            return file_view(db, row)
+
+        return operate(db, admin, "admin", key, "import.file.retry:" + file_id, {}, now, execute)
 
     @router.post("/imports/{batch_id}/resolve", response_model=ImportBatchView)
     def match(
