@@ -278,6 +278,7 @@ def prepare_parse(settings, sessions, job):
             storage_key=original.storage_key,
             sha256=original.sha256,
             admin_id=batch.admin_id,
+            mode=batch.mode,
         )
     storage = ObjectStorage(settings)
     data = storage.read(source["storage_key"])
@@ -299,7 +300,10 @@ def prepare_parse(settings, sessions, job):
         )
 
     if source["kind"] == "docx":
-        for index, content in enumerate(parse_docx(data, card_limit=settings.import_card_limit)):
+        contents = parse_docx(data, card_limit=settings.import_card_limit)
+        if source["mode"] == "single" and len(contents) != 1:
+            raise DomainError(422, "single_docx_multiple", "这份DOCX包含多张卡片，请改用批量导入")
+        for index, content in enumerate(contents):
             candidate(source["id"], index, content, source["sha256"])
     else:
         with checked_archive(

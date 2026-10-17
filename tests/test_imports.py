@@ -340,3 +340,42 @@ def test_same_complete_object_is_skipped_across_batches_without_name_merging(adm
         else:
             assert confirmation["count"] == 0 and confirmation["duplicates"] == 1
     assert admin.get("/api/admin/v1/cards").json()["total"] == 1
+
+
+def test_single_editor_docx_preview_rejects_multiple_cards_without_taking_first(admin):
+    from .content_helpers import key, process_jobs
+
+    created = admin.post(
+        "/api/admin/v1/imports", headers=key(), json={"mode": "docx", "single_card": True}
+    )
+    assert created.status_code == 201, created.text
+    batch_id = created.json()["id"]
+    admin.post(
+        f"/api/admin/v1/imports/{batch_id}/files?kind=docx",
+        headers=key(),
+        files={"file": ("多卡.docx", document("第一张", "第二张"), "application/octet-stream")},
+    )
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch_id}").json()
+    assert result["items"] == []
+    assert result["files"][0]["error_code"] == "single_docx_multiple"
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 0
+
+
+def test_download_example_is_authenticated_parseable_and_does_not_seed_business_data(admin, system):
+    response = admin.get("/api/admin/v1/imports/example")
+    assert response.status_code == 200, response.text
+    assert response.headers["content-type"] == "application/zip"
+    parse, _ = parser()
+    with zipfile.ZipFile(io.BytesIO(response.content)) as package:
+        assert {
+            "在咖啡店点单/内容.docx",
+            "在咖啡店点单/场景图.png",
+            "在咖啡店点单/完整音频.wav",
+        } <= set(package.namelist())
+        assert len(parse(package.read("在咖啡店点单/内容.docx"))) == 1
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 0
+    from fastapi.testclient import TestClient
+
+    with TestClient(system["admin"].app, base_url="https://testserver") as unsigned:
+        assert unsigned.get("/api/admin/v1/imports/example").status_code == 401

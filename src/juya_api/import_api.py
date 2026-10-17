@@ -1,10 +1,11 @@
 """Same-page upload/review/save workflow backed by persistent batches and item receipts."""
 
 import hashlib
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -35,6 +36,7 @@ from .transactions import operate
 class CreateImport(BaseModel):
     model_config = ConfigDict(extra="forbid")
     mode: Literal["zip", "docx"]
+    single_card: bool = False
 
 
 class ImportFileView(BaseModel):
@@ -116,7 +118,11 @@ def routes():
         now = request.app.state.clock()
 
         def execute():
-            batch = ImportBatch(admin_id=admin.id, mode=body.mode, created_at=now)
+            if body.single_card and body.mode != "docx":
+                raise DomainError(422, "import_mode", "单卡导入请选择DOCX")
+            batch = ImportBatch(
+                admin_id=admin.id, mode="single" if body.single_card else body.mode, created_at=now
+            )
             db.add(batch)
             db.flush()
             return batch_view(db, batch)
@@ -127,11 +133,19 @@ def routes():
     def recent(admin=Depends(administrator), db: Session = Depends(database, scope="function")):
         rows = db.scalars(
             select(ImportBatch)
-            .where(ImportBatch.admin_id == admin.id)
+            .where(ImportBatch.admin_id == admin.id, ImportBatch.mode != "single")
             .order_by(ImportBatch.created_at.desc(), ImportBatch.id.desc())
             .limit(5)
         ).all()
         return [batch_view(db, batch) for batch in rows]
+
+    @router.get("/imports/example", response_class=FileResponse)
+    def example(admin=Depends(administrator)):
+        return FileResponse(
+            Path(__file__).parent / "assets" / "import-example.zip",
+            media_type="application/zip",
+            filename="句芽英语-资料填写示例.zip",
+        )
 
     @router.get("/imports/{batch_id}", response_model=ImportBatchView)
     def read(
