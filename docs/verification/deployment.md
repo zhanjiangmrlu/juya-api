@@ -78,3 +78,7 @@ MySQL的舍入行为依据：[官方小数秒说明](https://dev.mysql.com/doc/r
 `monitor.py`读取最近五分钟的安全日志，分开业务、云调用、媒体耗时；普通API达到20样本才判断P95/5xx比例。采集主机内存、CPU、磁盘、容器状态/OOM，以及SQL连接、积压年龄、过期任务租约、最近15分钟TTS失败率。告警连续两次异常才触发，连续两次正常才恢复，无数据不误报恢复；通知失败保留发件状态重试。告警仅包含固定信号码，不含用户资料。systemd service/timer默认无 `--notify`，启用通知需在完成上线演练后显式配置私密Feishu webhook文件。
 
 ECS实际采集与故障→告警→去重→恢复演练通过，没有读取或发送Feishu webhook。SQL指标聚合已用真实MySQL验证；新应用就绪后才能验收完整采集与通知交付。目前未安装新HTTPS配置、未启用监控timer、未发送通知。
+
+更新：生产证书已由既有ACME账号签发，有效期至2027-01-15，覆盖四个production域名。只安装了专属HTTP ACME/503准备配置，未启用新应用HTTPS代理。最终安装production.conf时须移除精确的 `/etc/nginx/conf.d/juya-rebuild-production-acme.conf`，避免重复80端口server_name；不得清理整目录。
+
+第二轮CI112通过/1日志检查失败：实际Worker已完成任务，但默认启动横幅打印无密码测试Redis地址。新增全局quiet参数关闭横幅，保留日志检查；真实有密码及无密码Redis分别通过。无密码容器仅用于本机回环验证，已移除；生产Redis仍须认证。

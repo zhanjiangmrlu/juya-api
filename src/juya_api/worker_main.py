@@ -17,6 +17,7 @@ def main():
     app = celery_app(settings)
     app.worker_main(
         [
+            "--quiet",
             "worker",
             "--loglevel=WARNING",
             "--concurrency=1",
