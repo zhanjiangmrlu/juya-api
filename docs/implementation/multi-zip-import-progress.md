@@ -4,7 +4,7 @@ Plan: ../superpowers/plans/2026-10-17-multi-zip-import.md
 
 User approved design on 2026-10-17. Backend base 7821097; frontend base 92152b3
 
-Ruling: reuse the existing frontend linked worktree and backend test checkout — preserves the approved rebuilt sources and avoids creating another checkout attached to an unrelated workspace root; no main branch edits or deployment
+Ruling: reuse the existing frontend linked worktree and backend test checkout — preserves the approved rebuilt sources and avoids creating another checkout attached to an unrelated workspace root; no main branch edits. Subsequent authorized test deployment is recorded below
 
 Ruling: the referenced parent AGENTS.md is absent from all current workspace roots — proceed under the approved requirements and readable repository rules, as the user approved after this limitation was disclosed; unknown additional rules cannot be claimed satisfied
 
@@ -30,4 +30,17 @@ Final: fixed DOCX-mode file-kind conflict regression independently identified be
 
 Final: schema floor checked consistently by admin API, admin Worker probe, release preflight and bootstrap; mini remains compatible with0010. New admin Worker probe regression RED→GREEN
 
-No review findings deferred. No shared business data was modified, no repository was pushed and no test/production deployment was performed. Changes remain reviewable in the existing local checkouts
+No review findings deferred. Implementation verification did not modify shared business data. The user subsequently authorized committing and deploying to test
+
+## Authorized test release — 2026-10-17
+
+- Feature commits pushed to `origin/test`: backend `e503442bd5439615b615303eebc25f5ab082ede9`, frontend `5e7e261e9a6e0e9b6521775ff78363ae8d1a13e8`.
+- [GitHub Actions run 39041233684](https://github.com/zhanjiangmrlu/juya-api/actions/runs/39041233684) passed quality checks with actual MySQL/Redis and both role image jobs. Only the admin image was deployed. Admin artifact 12104056954 ZIP SHA-256 `adc8fa8ee4b3e7799430ddb7b78bd560d0dfc6623f1199c5837e72655b8cfb06` was verified before packaging; native CLI also checked the inner archive and OCI identity.
+- Used the existing Juya CLI release engine; only SSH transport was adapted for the existing password login, with strict known-host verification. Repeated local release gates passed: backend 133 tests / 7 external-only skips plus Ruff/format/mypy; frontend 42 tests, full checks and test-configured build.
+- Explicit compatible migration completed first; actual test database reports `0011`. Management API, Worker and dispatcher then deployed as `20261017T143926-e503442bd543-98d7dc`; previous release remains `20261017T130435-6aca4f47e516-a093cd`. Native public-health finalization and test retention completed without warnings.
+- Admin web deployed as `20261017T144627-5e7e261e9a6e-f75743`; previous web release remains `20261017T125435-92152b326627-0007d7`. Test web assets and configured API base passed the native release validation.
+- Actual new Worker image passed seven isolated temporary-SQLite/media regressions: three ZIP sources, three folders in one ZIP with persistent progress, source media isolation, incomplete duplicate recovery, renamed identical ZIP reuse, stale confirmation rejection and duplicate reporting during save. These probes did not write shared SQL/OSS business data.
+- Actual Chrome login at [test admin](https://test-admin.juyayingyu.com/imports) succeeded; multi-ZIP and original DOCX entries and draft-only notice are visible. No browser runtime errors or HTTP 5xx occurred; screenshot inspected.
+- Both public test API readiness endpoints return HTTP200/ready. All three admin containers are healthy on `e503442`, with zero restarts/OOM. All three mini containers retain their exact prior IDs, images, start times and health. Production resources were not deployed or restarted; no business-data cleanup or database downgrade was performed.
+
+Existing capacity and browser pending-file persistence limitations remain as documented in the frontend verification report. Full cloud import was not repeated against shared business data; the cloud image regressions above used private temporary storage, supplementing the earlier real-MySQL/Redis and complete browser flow verification.
