@@ -24,7 +24,6 @@ from .learning_service import (
 )
 from .response_contracts import (
     CardState,
-    CardSummary,
     CheckinRecord,
     CompletionResponse,
     DailyRecords,
@@ -120,8 +119,9 @@ def routes():
 
         return operate(db, user, "mini", key, f"cards.{card_id}.unfavorite", {}, now, execute)
 
-    @router.get("/favorites", response_model=Page[CardSummary])
+    @router.get("/favorites", response_model=Page[PersonalSummary])
     def favorites(
+        request: Request,
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
         user=Depends(learner),
@@ -135,7 +135,13 @@ def routes():
             .limit(limit)
         ).all()
         return {
-            "items": [card_summary(db, row.card_id) for row in rows],
+            "items": [
+                {
+                    **card_summary(db, row.card_id),
+                    "state": card_state(db, user.id, row.card_id, request.app.state.clock()),
+                }
+                for row in rows
+            ],
             "total": total,
             "page": page,
             "limit": limit,

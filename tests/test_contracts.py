@@ -20,6 +20,7 @@ def test_list_and_detail_include_actual_completion_and_favorite_state(admin, min
     detail = mini.get(f"/api/mini/v1/cards/{card['id']}").json()
     assert listed["state"] == {"completed": True, "today_completed": True, "favorite": True}
     assert detail["state"] == listed["state"]
+    assert mini.get("/api/mini/v1/favorites").json()["items"][0]["state"] == listed["state"]
 
 
 def test_published_admin_preview_never_replaces_it_with_an_unpublished_candidate(admin, mini):
@@ -81,3 +82,12 @@ def test_upload_configuration_exposes_actual_environment_limits(admin, system):
     response = admin.get("/api/admin/v1/media/configuration")
     assert response.status_code == 200
     assert response.json()["image_limit_bytes"] == system["settings"].image_limit_mb * 1024 * 1024
+
+
+def test_mini_configuration_reports_avatar_budget_without_administrator_capabilities(mini, system):
+    response = mini.get("/api/mini/v1/configuration")
+    assert response.status_code == 200
+    assert response.json() == {
+        "avatar_limit_bytes": system["settings"].image_limit_mb * 1024 * 1024
+    }
+    assert mini.get("/api/admin/v1/media/configuration").status_code == 404

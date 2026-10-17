@@ -246,3 +246,7 @@ class UploadConfiguration(PublicModel):
     audio_limit_bytes: int
     archive_limit_bytes: int
     import_card_limit: int
+
+
+class ClientConfiguration(PublicModel):
+    avatar_limit_bytes: int

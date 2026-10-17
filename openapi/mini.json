@@ -1438,7 +1438,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_CardSummary_"
+                  "$ref": "#/components/schemas/Page_PersonalSummary_"
                 }
               }
             }
@@ -2297,6 +2297,117 @@
         }
       }
     },
+    "/api/mini/v1/configuration": {
+      "get": {
+        "tags": [
+          "personal profile"
+        ],
+        "summary": "Configuration",
+        "operationId": "configuration_api_mini_v1_configuration_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientConfiguration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/mini/v1/me/profile": {
       "patch": {
         "tags": [
@@ -3024,65 +3135,6 @@
         ],
         "title": "CardState"
       },
-      "CardSummary": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "thumbnail_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Thumbnail Id"
-          },
-          "available": {
-            "type": "boolean",
-            "title": "Available"
-          },
-          "version_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Version Id"
-          },
-          "unavailable_reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Unavailable Reason"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "thumbnail_id",
-          "available",
-          "version_id",
-          "unavailable_reason"
-        ],
-        "title": "CardSummary"
-      },
       "CheckinRecord": {
         "properties": {
           "date": {
@@ -3123,6 +3175,19 @@
         },
         "type": "object",
         "title": "Chunk"
+      },
+      "ClientConfiguration": {
+        "properties": {
+          "avatar_limit_bytes": {
+            "type": "integer",
+            "title": "Avatar Limit Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_limit_bytes"
+        ],
+        "title": "ClientConfiguration"
       },
       "CompletionResponse": {
         "properties": {
@@ -3553,37 +3618,6 @@
         ],
         "title": "Page[CardBrief]"
       },
-      "Page_CardSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/CardSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "page": {
-            "type": "integer",
-            "title": "Page"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "limit"
-        ],
-        "title": "Page[CardSummary]"
-      },
       "Page_CheckinRecord_": {
         "properties": {
           "items": {
@@ -3645,6 +3679,37 @@
           "limit"
         ],
         "title": "Page[LearningRecord]"
+      },
+      "Page_PersonalSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ],
+        "title": "Page[PersonalSummary]"
       },
       "PersonalSummary": {
         "properties": {

@@ -15,7 +15,7 @@ from .dependencies import database, learner, operation_key
 from .errors import DomainError
 from .media_api import deliver, save_media
 from .models import Consent, MiniSession, User
-from .response_contracts import AvatarUpload, AvatarURL, UserProfile
+from .response_contracts import AvatarUpload, AvatarURL, ClientConfiguration, UserProfile
 from .security import decrypt, digest, encrypt, lookup
 from .transactions import operate
 
@@ -37,6 +37,10 @@ class ContactChange(BaseModel):
 
 def routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["personal profile"])
+
+    @router.get("/configuration", response_model=ClientConfiguration)
+    def configuration(request: Request, user=Depends(learner)):
+        return {"avatar_limit_bytes": request.app.state.settings.image_limit_mb * 1024 * 1024}
 
     @router.patch("/me/profile", response_model=UserProfile)
     def profile(
