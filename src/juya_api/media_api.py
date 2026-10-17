@@ -25,6 +25,7 @@ from .dependencies import administrator, database, learner, operation_key
 from .errors import DomainError
 from .media_permissions import summary_thumbnail
 from .models import MiniSession, identifier
+from .response_contracts import MediaMetadata, ResourceURL
 from .security import digest, token
 from .storage import ObjectStorage
 from .transactions import operate
@@ -230,7 +231,7 @@ def deliver(medium: Media, request: Request):
 def admin_routes():
     router = APIRouter(prefix="/api/admin/v1", tags=["private administrator media"])
 
-    @router.post("/media", status_code=201)
+    @router.post("/media", status_code=201, response_model=MediaMetadata)
     def upload(
         request: Request,
         kind: Literal["image", "audio"],
@@ -257,7 +258,8 @@ def admin_routes():
             lambda: media_view(save_media(db, settings, admin, "admin", kind, data, now)),
         )
 
-    @router.api_route("/media/{media_id}", methods=["GET", "HEAD"])
+    @router.head("/media/{media_id}", include_in_schema=False)
+    @router.get("/media/{media_id}")
     def read(
         media_id: str,
         request: Request,
@@ -269,7 +271,7 @@ def admin_routes():
             raise DomainError(404, "media_missing", "素材不可用")
         return deliver(medium, request)
 
-    @router.get("/media/{media_id}/status")
+    @router.get("/media/{media_id}/status", response_model=MediaMetadata)
     def status(
         media_id: str,
         admin=Depends(administrator),
@@ -286,7 +288,7 @@ def admin_routes():
 def mini_routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["controlled published resources"])
 
-    @router.get("/cards/{card_id}/media/{media_id}/url")
+    @router.get("/cards/{card_id}/media/{media_id}/url", response_model=ResourceURL)
     def issue(
         card_id: str,
         media_id: str,
@@ -329,7 +331,8 @@ def mini_routes():
         )
         return {"url": "/api/mini/v1/media/" + credential, "expires_at": timestamp(expires)}
 
-    @router.api_route("/media/{credential}", methods=["GET", "HEAD"])
+    @router.head("/media/{credential}", include_in_schema=False)
+    @router.get("/media/{credential}")
     def read(credential: str, request: Request, db: Session = Depends(database, scope="function")):
         now = request.app.state.clock()
         ticket = db.get(MediaTicket, digest(credential))

@@ -22,6 +22,15 @@ from .learning_service import (
     statistics,
 )
 from .models import Audit, User
+from .response_contracts import (
+    AdminUser,
+    AdminUserPage,
+    CheckinRecord,
+    DailyRecords,
+    LearningRecord,
+    Overview,
+    Page,
+)
 from .security import lookup
 
 
@@ -35,7 +44,7 @@ def require_user(db, user_id):
 def routes():
     router = APIRouter(prefix="/api/admin/v1", tags=["read-only learners and statistics"])
 
-    @router.get("/statistics")
+    @router.get("/statistics", response_model=Overview)
     def overview(
         request: Request,
         admin=Depends(administrator),
@@ -65,7 +74,7 @@ def routes():
             "updated_at": timestamp(now),
         }
 
-    @router.get("/users")
+    @router.get("/users", response_model=AdminUserPage)
     def listing(
         request: Request,
         search: str = Query("", max_length=200),
@@ -117,7 +126,7 @@ def routes():
             "statistical_date": today.isoformat(),
         }
 
-    @router.get("/users/{user_id}")
+    @router.get("/users/{user_id}", response_model=AdminUser)
     def detail(
         user_id: str,
         request: Request,
@@ -132,7 +141,7 @@ def routes():
             "statistics": statistics(db, user.id, now),
         }
 
-    @router.get("/users/{user_id}/learning-records")
+    @router.get("/users/{user_id}/learning-records", response_model=Page[LearningRecord])
     def learned(
         user_id: str,
         page: int = Query(1, ge=1),
@@ -143,7 +152,7 @@ def routes():
         require_user(db, user_id)
         return learning_records(db, user_id, page, limit)
 
-    @router.get("/users/{user_id}/checkins")
+    @router.get("/users/{user_id}/checkins", response_model=Page[CheckinRecord])
     def checkins(
         user_id: str,
         page: int = Query(1, ge=1),
@@ -154,7 +163,7 @@ def routes():
         require_user(db, user_id)
         return checkin_records(db, user_id, page, limit)
 
-    @router.get("/users/{user_id}/checkins/{day}")
+    @router.get("/users/{user_id}/checkins/{day}", response_model=DailyRecords)
     def day_detail(
         user_id: str,
         day: date,

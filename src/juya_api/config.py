@@ -4,19 +4,21 @@ from pathlib import Path
 from typing import Literal
 
 from cryptography.fernet import Fernet
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="JUYA_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="JUYA_", env_file=".env", extra="ignore", hide_input_in_errors=True
+    )
 
     environment: Literal["local", "test", "production"] = "local"
-    database_url: str
-    field_encryption_key: str
-    lookup_key: str
+    database_url: str = Field(repr=False)
+    field_encryption_key: str = Field(repr=False)
+    lookup_key: str = Field(repr=False)
     wechat_app_id: str = ""
-    wechat_app_secret: str = ""
+    wechat_app_secret: str = Field(default="", repr=False)
     allowed_origins: list[str] = []
     cookie_secure: bool = True
     session_days: int = 7
@@ -26,11 +28,11 @@ class Settings(BaseSettings):
     oss_endpoint: str = ""
     oss_region: str = ""
     oss_bucket: str = ""
-    oss_access_key_id: str = ""
-    oss_access_key_secret: str = ""
-    redis_url: str = "redis://127.0.0.1:6379/0"
-    tts_secret_id: str = ""
-    tts_secret_key: str = ""
+    oss_access_key_id: str = Field(default="", repr=False)
+    oss_access_key_secret: str = Field(default="", repr=False)
+    redis_url: str = Field(default="redis://127.0.0.1:6379/0", repr=False)
+    tts_secret_id: str = Field(default="", repr=False)
+    tts_secret_key: str = Field(default="", repr=False)
     tts_voice_type: int = 101050
     tts_daily_budget: int = 2000
     image_limit_mb: int = 10

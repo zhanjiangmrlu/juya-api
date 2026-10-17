@@ -22,6 +22,19 @@ from .learning_service import (
     learning_records,
     statistics,
 )
+from .response_contracts import (
+    CardState,
+    CardSummary,
+    CheckinRecord,
+    CompletionResponse,
+    DailyRecords,
+    FavoriteResponse,
+    LearningRecord,
+    OperationResponse,
+    Page,
+    PersonalSummary,
+    Statistics,
+)
 from .security import decrypt, digest
 from .transactions import operate
 
@@ -34,13 +47,13 @@ class CurrentVersion(BaseModel):
 def routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["personal learning"])
 
-    @router.get("/me/statistics")
+    @router.get("/me/statistics", response_model=Statistics)
     def stats(
         request: Request, user=Depends(learner), db: Session = Depends(database, scope="function")
     ):
         return statistics(db, user.id, request.app.state.clock())
 
-    @router.post("/cards/{card_id}/complete")
+    @router.post("/cards/{card_id}/complete", response_model=CompletionResponse)
     def complete(
         card_id: str,
         body: CurrentVersion,
@@ -61,7 +74,7 @@ def routes():
             lambda: complete_learning(db, user, card_id, body.version_id, now),
         )
 
-    @router.put("/cards/{card_id}/favorite")
+    @router.put("/cards/{card_id}/favorite", response_model=FavoriteResponse)
     def favorite(
         card_id: str,
         body: CurrentVersion,
@@ -89,7 +102,7 @@ def routes():
             db, user, "mini", key, f"cards.{card_id}.favorite", body.model_dump(), now, execute
         )
 
-    @router.delete("/favorites/{card_id}")
+    @router.delete("/favorites/{card_id}", response_model=FavoriteResponse)
     def unfavorite(
         card_id: str,
         request: Request,
@@ -107,7 +120,7 @@ def routes():
 
         return operate(db, user, "mini", key, f"cards.{card_id}.unfavorite", {}, now, execute)
 
-    @router.get("/favorites")
+    @router.get("/favorites", response_model=Page[CardSummary])
     def favorites(
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
@@ -128,7 +141,7 @@ def routes():
             "limit": limit,
         }
 
-    @router.get("/cards/{card_id}/state")
+    @router.get("/cards/{card_id}/state", response_model=CardState)
     def state(
         card_id: str,
         request: Request,
@@ -138,7 +151,7 @@ def routes():
         published_card(db, card_id)
         return card_state(db, user.id, card_id, request.app.state.clock())
 
-    @router.get("/cards/{card_id}/summary")
+    @router.get("/cards/{card_id}/summary", response_model=PersonalSummary)
     def summary(
         card_id: str,
         request: Request,
@@ -154,7 +167,7 @@ def routes():
             "state": card_state(db, user.id, card_id, request.app.state.clock()),
         }
 
-    @router.get("/me/learning-records")
+    @router.get("/me/learning-records", response_model=Page[LearningRecord])
     def records(
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
@@ -163,7 +176,7 @@ def routes():
     ):
         return learning_records(db, user.id, page, limit)
 
-    @router.get("/me/checkins")
+    @router.get("/me/checkins", response_model=Page[CheckinRecord])
     def checkins(
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
@@ -172,13 +185,13 @@ def routes():
     ):
         return checkin_records(db, user.id, page, limit)
 
-    @router.get("/me/checkins/{day}")
+    @router.get("/me/checkins/{day}", response_model=DailyRecords)
     def day_detail(
         day: date, user=Depends(learner), db: Session = Depends(database, scope="function")
     ):
         return day_records(db, user.id, day)
 
-    @router.get("/operations/{key}")
+    @router.get("/operations/{key}", response_model=OperationResponse)
     def operation(
         key: str,
         request: Request,

@@ -15,6 +15,7 @@ from .dependencies import database, learner, operation_key
 from .errors import DomainError
 from .media_api import deliver, save_media
 from .models import Consent, MiniSession, User
+from .response_contracts import AvatarUpload, AvatarURL, UserProfile
 from .security import decrypt, digest, encrypt, lookup
 from .transactions import operate
 
@@ -37,7 +38,7 @@ class ContactChange(BaseModel):
 def routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["personal profile"])
 
-    @router.patch("/me/profile")
+    @router.patch("/me/profile", response_model=UserProfile)
     def profile(
         body: ProfileChange,
         request: Request,
@@ -78,7 +79,7 @@ def routes():
             db, user, "mini", key, "profile.save", body.model_dump(exclude_unset=True), now, execute
         )
 
-    @router.patch("/me/contact")
+    @router.patch("/me/contact", response_model=UserProfile)
     def contact(
         body: ContactChange,
         request: Request,
@@ -156,7 +157,7 @@ def routes():
             db, user, "mini", key, "contact.save", body.model_dump(exclude_unset=True), now, execute
         )
 
-    @router.post("/me/avatar", status_code=201)
+    @router.post("/me/avatar", status_code=201, response_model=AvatarUpload)
     def upload_avatar(
         request: Request,
         file: UploadFile = File(...),
@@ -185,7 +186,7 @@ def routes():
             execute,
         )
 
-    @router.get("/me/avatar-url")
+    @router.get("/me/avatar-url", response_model=AvatarURL)
     def avatar_url(request: Request, user=Depends(learner)):
         if not user.avatar_id:
             return {"url": None}
@@ -199,7 +200,8 @@ def routes():
         credential = encrypt(request.app.state.settings, json.dumps(payload))
         return {"url": "/api/mini/v1/avatar/" + credential}
 
-    @router.api_route("/avatar/{credential}", methods=["GET", "HEAD"])
+    @router.head("/avatar/{credential}", include_in_schema=False)
+    @router.get("/avatar/{credential}")
     def avatar(
         credential: str, request: Request, db: Session = Depends(database, scope="function")
     ):

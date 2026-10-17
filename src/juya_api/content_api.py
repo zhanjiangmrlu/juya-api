@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
-from .content_models import Card, CardDraft, Media
+from .content_models import Card, CardDraft, CardVersion, Media
 from .content_service import (
     card_view,
     make_preview,
@@ -17,14 +17,25 @@ from .content_service import (
 )
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
+from .learning_models import Completion, DailyLearning, Favorite
+from .learning_service import business_date, card_state
 from .models import Audit
+from .response_contracts import (
+    CardBrief,
+    CardPreview,
+    CardView,
+    DeletedCard,
+    Page,
+    PublishedDetail,
+    PublishedPreview,
+)
 from .transactions import operate
 
 
 def admin_routes():
     router = APIRouter(prefix="/api/admin/v1", tags=["scene management"])
 
-    @router.get("/cards")
+    @router.get("/cards", response_model=Page[CardView])
     def listing(
         request: Request,
         status: str = "all",
@@ -52,7 +63,7 @@ def admin_routes():
             "limit": limit,
         }
 
-    @router.post("/cards", status_code=201)
+    @router.post("/cards", status_code=201, response_model=CardView)
     def create(
         body: CreateCard,
         request: Request,
@@ -90,7 +101,7 @@ def admin_routes():
             execute,
         )
 
-    @router.get("/cards/{card_id}")
+    @router.get("/cards/{card_id}", response_model=CardView)
     def detail(
         card_id: str,
         admin=Depends(administrator),
@@ -98,7 +109,21 @@ def admin_routes():
     ):
         return card_view(db, require_card(db, card_id))
 
-    @router.put("/cards/{card_id}")
+    @router.get("/cards/{card_id}/published", response_model=PublishedPreview)
+    def published_preview(
+        card_id: str,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        card, version = published_card(db, card_id)
+        return {
+            "card_id": card.id,
+            "version_id": version.id,
+            "content": version.payload,
+            "mode": "published",
+        }
+
+    @router.put("/cards/{card_id}", response_model=CardView)
     def save(
         card_id: str,
         body: SaveCard,
@@ -130,7 +155,7 @@ def admin_routes():
             execute,
         )
 
-    @router.post("/cards/{card_id}/preview")
+    @router.post("/cards/{card_id}/preview", response_model=CardPreview)
     def preview(
         card_id: str,
         body: Revision,
@@ -151,7 +176,7 @@ def admin_routes():
             lambda: make_preview(db, require_card(db, card_id), admin.id, body.revision, now),
         )
 
-    @router.post("/cards/{card_id}/publish")
+    @router.post("/cards/{card_id}/publish", response_model=CardView)
     def publish(
         card_id: str,
         body: PublishCard,
@@ -174,7 +199,7 @@ def admin_routes():
             ),
         )
 
-    @router.post("/cards/{card_id}/offline")
+    @router.post("/cards/{card_id}/offline", response_model=CardView)
     def offline(
         card_id: str,
         body: Revision,
@@ -206,7 +231,7 @@ def admin_routes():
             execute,
         )
 
-    @router.delete("/cards/{card_id}")
+    @router.delete("/cards/{card_id}", response_model=DeletedCard)
     def delete(
         card_id: str,
         body: Revision,
@@ -243,8 +268,9 @@ def admin_routes():
 def mini_routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["published learning content"])
 
-    @router.get("/cards")
+    @router.get("/cards", response_model=Page[CardBrief])
     def listing(
+        request: Request,
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
         user=Depends(learner),
@@ -255,10 +281,51 @@ def mini_routes():
         rows = db.scalars(
             query.order_by(Card.sort_order, Card.id).offset((page - 1) * limit).limit(limit)
         ).all()
+        ids = [card.id for card in rows]
+        versions = {
+            v.id: v
+            for v in db.scalars(
+                select(CardVersion).where(
+                    CardVersion.id.in_([card.current_version_id for card in rows])
+                )
+            )
+        }
+        images = {
+            m.id: m
+            for m in db.scalars(
+                select(Media).where(
+                    Media.id.in_([v.payload["image_id"] for v in versions.values()])
+                )
+            )
+        }
+        completed = set(
+            db.scalars(
+                select(Completion.card_id).where(
+                    Completion.user_id == user.id, Completion.card_id.in_(ids)
+                )
+            )
+        )
+        daily = set(
+            db.scalars(
+                select(DailyLearning.card_id).where(
+                    DailyLearning.user_id == user.id,
+                    DailyLearning.card_id.in_(ids),
+                    DailyLearning.date == business_date(request.app.state.clock()),
+                )
+            )
+        )
+        favorites = set(
+            db.scalars(
+                select(Favorite.card_id).where(
+                    Favorite.user_id == user.id, Favorite.card_id.in_(ids)
+                )
+            )
+        )
         items = []
         for card in rows:
-            _, version = published_card(db, card.id)
-            image = db.get(Media, version.payload["image_id"])
+            assert card.current_version_id is not None
+            version = versions[card.current_version_id]
+            image = images.get(version.payload["image_id"])
             items.append(
                 {
                     "id": card.id,
@@ -266,13 +333,19 @@ def mini_routes():
                     "version_id": version.id,
                     "thumbnail_id": image.thumbnail_id if image else None,
                     "published_at": timestamp(version.published_at),
+                    "state": {
+                        "completed": card.id in completed,
+                        "today_completed": card.id in daily,
+                        "favorite": card.id in favorites,
+                    },
                 }
             )
         return {"items": items, "total": total, "page": page, "limit": limit}
 
-    @router.get("/cards/{card_id}")
+    @router.get("/cards/{card_id}", response_model=PublishedDetail)
     def detail(
         card_id: str,
+        request: Request,
         version_id: str | None = None,
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
@@ -283,6 +356,7 @@ def mini_routes():
             "version_id": version.id,
             "content": version.payload,
             "published_at": timestamp(version.published_at),
+            "state": card_state(db, user.id, card.id, request.app.state.clock()),
         }
 
     return router

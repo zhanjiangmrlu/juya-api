@@ -73,3 +73,5 @@ Tasks 4—8: pending
 Task 3: complete — full MySQL8.4 suite 52 passed in 182.92s, including fresh migration0003, concurrent identities, different-card completion race and commit-failure rollback; local 48 passed/4 MySQL-only skips; Ruff/mypy clean
 
 Ruling: implement core admin/mini screens now before advanced imports/TTS tasks — follows the user-approved end-to-end sequence rather than finishing all backends first — generated contracts may expand when advanced features land
+
+Contract integration: response whitelists now generate separate typed APIs; mini list uses page-wide queries for learning/favorite flags and the published admin preview never selects the editing candidate. Three new behavior tests failed then passed; unique OpenAPI operation IDs also tested (HEAD routes remain available but hidden from SDK). Local suite:52 passed/4 MySQL-only skipped; Ruff/mypy clean. Settings repr excludes all credentials and connection URLs.

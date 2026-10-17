@@ -28,6 +28,13 @@ from .models import (
     identifier,
 )
 from .persistence import insert_once
+from .response_contracts import (
+    AdminLoginResponse,
+    AdminSessionResponse,
+    LogoutResponse,
+    UserProfile,
+    WechatLoginResponse,
+)
 from .security import decrypt, digest, encrypt, fingerprint, lookup, token
 
 passwords = PasswordHasher()
@@ -102,7 +109,7 @@ class WechatLogin(BaseModel):
 def admin_routes() -> APIRouter:
     router = APIRouter(prefix="/api/admin/v1/auth", tags=["administrator authentication"])
 
-    @router.post("/login")
+    @router.post("/login", response_model=AdminLoginResponse)
     def login(
         body: AdminLogin,
         request: Request,
@@ -163,7 +170,7 @@ def admin_routes() -> APIRouter:
         )
         return {"administrator": {"id": admin.id, "username": admin.username}, "csrf_token": csrf}
 
-    @router.get("/session")
+    @router.get("/session", response_model=AdminSessionResponse)
     def session(
         request: Request,
         admin: Administrator = Depends(administrator),
@@ -177,7 +184,7 @@ def admin_routes() -> APIRouter:
             "csrf_token": decrypt(request.app.state.settings, current.csrf_cipher),
         }
 
-    @router.post("/logout")
+    @router.post("/logout", response_model=LogoutResponse)
     def logout(
         request: Request,
         response: Response,
@@ -194,7 +201,7 @@ def admin_routes() -> APIRouter:
 def mini_routes() -> APIRouter:
     router = APIRouter(prefix="/api/mini/v1", tags=["learner authentication"])
 
-    @router.post("/auth/wechat")
+    @router.post("/auth/wechat", response_model=WechatLoginResponse)
     def login(
         body: WechatLogin,
         request: Request,
@@ -277,11 +284,11 @@ def mini_routes() -> APIRouter:
         db.flush()
         return result
 
-    @router.get("/me")
+    @router.get("/me", response_model=UserProfile)
     def me(request: Request, user: User = Depends(learner)):
         return user_view(user, request.app.state.settings)
 
-    @router.post("/auth/logout")
+    @router.post("/auth/logout", response_model=LogoutResponse)
     def logout(
         request: Request,
         user: User = Depends(learner),

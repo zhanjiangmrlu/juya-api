@@ -10,12 +10,16 @@ from sqlalchemy import inspect, text
 from .config import Settings
 from .database import make_database, naive_utc
 from .errors import DomainError, install_errors
+from .response_contracts import ErrorResponse
 
 
 def application(role: str, settings: Settings, sessions=None, clock=None) -> FastAPI:
     """Build an isolated entrypoint with explicit dependencies and no implicit schema writes."""
     app = FastAPI(
         title=f"Juya {role} API",
+        responses={
+            code: {"model": ErrorResponse} for code in [400, 401, 403, 404, 409, 410, 422, 429, 503]
+        },
         version="1.5.0",
         docs_url="/docs" if settings.environment != "production" else None,
     )
