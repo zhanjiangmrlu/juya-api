@@ -149,8 +149,12 @@ def card_view(db, card: Card) -> dict:
     draft = db.get(CardDraft, card.id)
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
     assert draft is not None
+    display = current.payload if current and card.status != "draft" else draft.payload
+    display_image = db.get(Media, display["image_id"]) if display["image_id"] else None
     return {
         "id": card.id,
+        "display_name": display["name"],
+        "display_thumbnail_id": display_image.thumbnail_id if display_image else None,
         "status": card.status,
         "current_version_id": card.current_version_id,
         "draft_revision": draft.revision,

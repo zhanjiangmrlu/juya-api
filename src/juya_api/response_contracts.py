@@ -64,6 +64,8 @@ class FieldIssue(PublicModel):
 
 class CardView(PublicModel):
     id: str
+    display_name: str
+    display_thumbnail_id: str | None
     status: str
     current_version_id: str | None
     draft_revision: int
@@ -237,3 +239,10 @@ class ErrorBody(PublicModel):
 class ErrorResponse(PublicModel):
     error: ErrorBody
     request_id: str | None = None
+
+
+class UploadConfiguration(PublicModel):
+    image_limit_bytes: int
+    audio_limit_bytes: int
+    archive_limit_bytes: int
+    import_card_limit: int

@@ -25,7 +25,7 @@ from .dependencies import administrator, database, learner, operation_key
 from .errors import DomainError
 from .media_permissions import summary_thumbnail
 from .models import MiniSession, identifier
-from .response_contracts import MediaMetadata, ResourceURL
+from .response_contracts import MediaMetadata, ResourceURL, UploadConfiguration
 from .security import digest, token
 from .storage import ObjectStorage
 from .transactions import operate
@@ -257,6 +257,16 @@ def admin_routes():
             now,
             lambda: media_view(save_media(db, settings, admin, "admin", kind, data, now)),
         )
+
+    @router.get("/media/configuration", response_model=UploadConfiguration)
+    def configuration(request: Request, admin=Depends(administrator)):
+        settings = request.app.state.settings
+        return {
+            "image_limit_bytes": settings.image_limit_mb * 1024 * 1024,
+            "audio_limit_bytes": settings.audio_limit_mb * 1024 * 1024,
+            "archive_limit_bytes": settings.archive_limit_mb * 1024 * 1024,
+            "import_card_limit": settings.import_card_limit,
+        }
 
     @router.head("/media/{media_id}", include_in_schema=False)
     @router.get("/media/{media_id}")

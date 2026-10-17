@@ -61,3 +61,23 @@ def test_openapi_operations_have_independent_method_identifiers(system):
         ]
         assert len(ids) == len(set(ids))
         assert not recorded
+
+
+def test_management_list_identifies_published_content_while_editing_a_candidate(admin):
+    card = draft(admin)
+    publish(admin, card)
+    saved = admin.put(
+        f"/api/admin/v1/cards/{card['id']}",
+        headers=key(),
+        json={"revision": 1, "content": dict(card["content"], name="尚未发布的名称")},
+    )
+    assert saved.status_code == 200
+    item = admin.get("/api/admin/v1/cards").json()["items"][0]
+    assert item["display_name"] == "在咖啡店点单"
+    assert item["content"]["name"] == "尚未发布的名称"
+
+
+def test_upload_configuration_exposes_actual_environment_limits(admin, system):
+    response = admin.get("/api/admin/v1/media/configuration")
+    assert response.status_code == 200
+    assert response.json()["image_limit_bytes"] == system["settings"].image_limit_mb * 1024 * 1024

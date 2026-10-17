@@ -1659,6 +1659,117 @@
         }
       }
     },
+    "/api/admin/v1/media/configuration": {
+      "get": {
+        "tags": [
+          "private administrator media"
+        ],
+        "summary": "Configuration",
+        "operationId": "configuration_api_admin_v1_media_configuration_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadConfiguration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/v1/media/{media_id}": {
       "get": {
         "tags": [
@@ -3006,6 +3117,21 @@
             "type": "string",
             "title": "Id"
           },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "display_thumbnail_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Thumbnail Id"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -3051,6 +3177,8 @@
         "type": "object",
         "required": [
           "id",
+          "display_name",
+          "display_thumbnail_id",
           "status",
           "current_version_id",
           "draft_revision",
@@ -3884,6 +4012,34 @@
           "favorite_count"
         ],
         "title": "Statistics"
+      },
+      "UploadConfiguration": {
+        "properties": {
+          "image_limit_bytes": {
+            "type": "integer",
+            "title": "Image Limit Bytes"
+          },
+          "audio_limit_bytes": {
+            "type": "integer",
+            "title": "Audio Limit Bytes"
+          },
+          "archive_limit_bytes": {
+            "type": "integer",
+            "title": "Archive Limit Bytes"
+          },
+          "import_card_limit": {
+            "type": "integer",
+            "title": "Import Card Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "image_limit_bytes",
+          "audio_limit_bytes",
+          "archive_limit_bytes",
+          "import_card_limit"
+        ],
+        "title": "UploadConfiguration"
       },
       "Vocabulary": {
         "properties": {
