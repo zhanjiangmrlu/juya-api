@@ -206,8 +206,13 @@ def admin_routes():
 
         def execute():
             card = require_card(db, card_id)
-            revision_matches(db.get(CardDraft, card.id), body.revision)
+            draft = db.get(CardDraft, card.id)
+            revision_matches(draft, body.revision)
+            assert draft is not None
             card.status = "offline"
+            # Lifecycle changes invalidate old editors, previews and queued publications together.
+            draft.revision += 1
+            draft.updated_at = now
             db.add(
                 Audit(admin_id=admin.id, action="card.offline", object_id=card.id, occurred_at=now)
             )

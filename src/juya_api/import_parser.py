@@ -106,8 +106,92 @@ def heading_styles(archive):
     return ids
 
 
-def parse_docx(data, *, card_limit=50):
-    """Use explicit H1 boundaries and fixed section/table headers; blank lines never split cards."""
+def parse_docx_section(name, elements):
+    """Parse exactly one explicit H1 section; malformed neighbors cannot discard this card."""
+    current: dict[str, Any] = {"name": name, "dialogue": [], "vocabulary": [], "chunks": []}
+    section = ""
+    source_hints = []
+    for element in elements:
+        if element.tag == W + "p":
+            text = paragraph_text(element).strip()
+            if text in {"场景对话", "重点词汇", "语块", "语块（选填）", "语块(选填)"}:
+                section = "语块" if text.startswith("语块") else text
+            elif text:
+                raise DomainError(
+                    422, "docx_structure", "卡片正文请使用固定小标题和表格，不按任意段落猜测配对"
+                )
+        elif element.tag == W + "tbl":
+            if current is None or not section:
+                raise DomainError(422, "docx_structure", "请先填写一级卡片标题和对应小标题")
+            rows = []
+            for row in element.findall(W + "tr"):
+                cells = [
+                    "\n".join(paragraph_text(p) for p in cell.findall(W + "p")).strip()
+                    for cell in row.findall(W + "tc")
+                ]
+                rows.append(cells)
+            if not rows:
+                continue
+            headers = [re.sub(r"[（(].*", "", x).strip() for x in rows[0]]
+            required = {
+                "场景对话": ["人物", "英文", "中文"],
+                "重点词汇": ["词汇", "本句释义"],
+                "语块": ["英文", "中文释义"],
+            }[section]
+            if headers[: len(required)] != required:
+                raise DomainError(
+                    422,
+                    "docx_structure",
+                    "表格列名不符合填写示例，请核对人物、中英文或本句释义",
+                )
+            for row in rows[1:]:
+                if not any(row):
+                    continue
+                if len(row) != len(headers):
+                    raise DomainError(422, "docx_structure", "表格存在合并单元格，请按示例拆分")
+                values = dict(zip(headers, row, strict=True))
+                if section == "场景对话":
+                    current["dialogue"].append(
+                        {
+                            "id": identifier(),
+                            "speaker": values["人物"],
+                            "english": values["英文"],
+                            "chinese": values["中文"],
+                        }
+                    )
+                elif section == "重点词汇":
+                    word: dict[str, Any] = {
+                        "id": identifier(),
+                        "english": values["词汇"],
+                        "meaning": values["本句释义"],
+                        "phonetic": values.get("音标", ""),
+                    }
+                    current["vocabulary"].append(word)
+                    source_hints.append((current, word, values.get("对应英文原句", "")))
+                else:
+                    current["chunks"].append(
+                        {
+                            "id": identifier(),
+                            "english": values["英文"],
+                            "chinese": values["中文释义"],
+                        }
+                    )
+    for content, word, hint in source_hints:
+        if hint:
+            lines = [line for line in content["dialogue"] if line["english"] == hint]
+            candidates = source_candidates(lines, word["english"])
+            if len(candidates) == 1:
+                word["source"] = candidates[0]
+    try:
+        return normalize(SceneContent.model_validate(current))
+    except ValueError:
+        raise DomainError(
+            422, "docx_structure", "资料字段过长或数量超过限制，请拆分后重试"
+        ) from None
+
+
+def parse_docx_items(data, *, card_limit=50):
+    """Retain one result per explicit H1, while rejecting corrupt archives/XML as a whole."""
     try:
         archive = checked_archive(data, expanded_limit=30 * 1024 * 1024, file_limit=300)
     except DomainError as error:
@@ -118,11 +202,10 @@ def parse_docx(data, *, card_limit=50):
         body = root.find(W + "body")
         if body is None:
             raise DomainError(422, "docx_invalid", "DOCX缺少正文")
-        results: list[dict[str, Any]] = []
-        current: dict[str, Any] | None = None
-        section = ""
-        source_hints = []
+        sections: list[tuple[str, list]] = []
         for element in body:
+            is_heading = False
+            text = ""
             if element.tag == W + "p":
                 text = paragraph_text(element).strip()
                 style = element.find("./" + W + "pPr/" + W + "pStyle")
@@ -130,89 +213,46 @@ def parse_docx(data, *, card_limit=50):
                 is_heading = (style is not None and style.get(W + "val") in styles) or (
                     level is not None and level.get(W + "val") == "0"
                 )
-                if is_heading and text:
-                    if len(results) >= card_limit:
-                        raise DomainError(
-                            422, "import_card_limit", "本批卡片数量超过当前限制，请拆分资料"
-                        )
-                    current = {"name": text, "dialogue": [], "vocabulary": [], "chunks": []}
-                    results.append(current)
-                    section = ""
-                elif text in {"场景对话", "重点词汇", "语块", "语块（选填）", "语块(选填)"}:
-                    section = "语块" if text.startswith("语块") else text
-                elif text and current:
+            if is_heading and text:
+                if len(sections) >= card_limit:
                     raise DomainError(
-                        422,
-                        "docx_structure",
-                        "卡片正文请使用固定小标题和表格，不按任意段落猜测配对",
+                        422, "import_card_limit", "本批卡片数量超过当前限制，请拆分资料"
                     )
+                sections.append((text, []))
+            elif sections:
+                sections[-1][1].append(element)
             elif element.tag == W + "tbl":
-                if current is None or not section:
-                    raise DomainError(422, "docx_structure", "请先填写一级卡片标题和对应小标题")
-                rows = []
-                for row in element.findall(W + "tr"):
-                    cells = [
-                        "\n".join(paragraph_text(p) for p in cell.findall(W + "p")).strip()
-                        for cell in row.findall(W + "tc")
-                    ]
-                    rows.append(cells)
-                if not rows:
-                    continue
-                headers = [re.sub(r"[（(].*", "", x).strip() for x in rows[0]]
-                required = {
-                    "场景对话": ["人物", "英文", "中文"],
-                    "重点词汇": ["词汇", "本句释义"],
-                    "语块": ["英文", "中文释义"],
-                }[section]
-                if headers[: len(required)] != required:
-                    raise DomainError(
-                        422,
-                        "docx_structure",
-                        "表格列名不符合填写示例，请核对人物、中英文或本句释义",
-                    )
-                for row in rows[1:]:
-                    if not any(row):
-                        continue
-                    if len(row) != len(headers):
-                        raise DomainError(422, "docx_structure", "表格存在合并单元格，请按示例拆分")
-                    values = dict(zip(headers, row, strict=True))
-                    if section == "场景对话":
-                        current["dialogue"].append(
-                            {
-                                "id": identifier(),
-                                "speaker": values["人物"],
-                                "english": values["英文"],
-                                "chinese": values["中文"],
-                            }
-                        )
-                    elif section == "重点词汇":
-                        word: dict[str, Any] = {
-                            "id": identifier(),
-                            "english": values["词汇"],
-                            "meaning": values["本句释义"],
-                            "phonetic": values.get("音标", ""),
-                        }
-                        current["vocabulary"].append(word)
-                        source_hints.append((current, word, values.get("对应英文原句", "")))
-                    else:
-                        current["chunks"].append(
-                            {
-                                "id": identifier(),
-                                "english": values["英文"],
-                                "chinese": values["中文释义"],
-                            }
-                        )
-        if not results:
+                raise DomainError(422, "docx_structure", "请先填写一级卡片标题和对应小标题")
+        if not sections:
             raise DomainError(422, "docx_structure", "未找到合法的一级卡片标题，请使用填写示例")
-        for content, word, hint in source_hints:
-            if hint:
-                lines = [line for line in content["dialogue"] if line["english"] == hint]
-                candidates = source_candidates(lines, word["english"])
-                if len(candidates) == 1:
-                    word["source"] = candidates[0]
-        try:
-            return [normalize(SceneContent.model_validate(value)) for value in results]
-        except ValueError:
-            raise DomainError(
-                422, "docx_structure", "资料字段过长或数量超过限制，请拆分后重试"
-            ) from None
+        results = []
+        for index, (name, elements) in enumerate(sections):
+            try:
+                content = parse_docx_section(name, elements)
+                results.append({"content": content, "readable": True, "issues": []})
+            except DomainError as error:
+                # Show only a bounded title for an unreadable card; retain the original source file.
+                results.append(
+                    {
+                        "content": normalize(SceneContent(name=name[:160])),
+                        "readable": False,
+                        "issues": [
+                            {
+                                "field": "source",
+                                "code": error.code,
+                                "message": f"第{index + 1}张卡片：{error.message}",
+                            }
+                        ],
+                    }
+                )
+        return results
+
+
+def parse_docx(data, *, card_limit=50):
+    """Strict single-folder parser; batch DOCX callers consume per-card results instead."""
+    items = parse_docx_items(data, card_limit=card_limit)
+    for item in items:
+        if not item["readable"]:
+            issue = item["issues"][0]
+            raise DomainError(422, issue["code"], issue["message"])
+    return [item["content"] for item in items]

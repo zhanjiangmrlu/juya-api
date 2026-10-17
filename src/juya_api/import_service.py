@@ -20,7 +20,7 @@ from .content_service import (
 from .database import timestamp
 from .errors import DomainError
 from .import_models import ImportBatch, ImportFile, ImportIdentity, ImportItem
-from .import_parser import checked_archive, member_bytes, parse_docx
+from .import_parser import checked_archive, member_bytes, parse_docx, parse_docx_items
 from .job_models import Job
 from .jobs import enqueue
 from .models import Administrator
@@ -304,11 +304,21 @@ def prepare_parse(settings, sessions, job):
         )
 
     if source["kind"] == "docx":
-        contents = parse_docx(data, card_limit=settings.import_card_limit)
-        if source["mode"] == "single" and len(contents) != 1:
+        items = parse_docx_items(data, card_limit=settings.import_card_limit)
+        if source["mode"] == "single" and len(items) != 1:
             raise DomainError(422, "single_docx_multiple", "这份DOCX包含多张卡片，请改用批量导入")
-        for index, content in enumerate(contents):
-            candidate(source["id"], index, content, source["sha256"])
+        for index, item in enumerate(items):
+            if source["mode"] == "single" and not item["readable"]:
+                issue = item["issues"][0]
+                raise DomainError(422, issue["code"], issue["message"])
+            candidate(
+                source["id"],
+                index,
+                item["content"],
+                source["sha256"],
+                readable=item["readable"],
+                issues=item["issues"],
+            )
     else:
         with checked_archive(
             data, expanded_limit=settings.archive_expanded_limit_mb * 1024 * 1024

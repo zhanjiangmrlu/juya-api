@@ -112,18 +112,19 @@ def test_repeated_operation_returns_same_card_and_changed_body_conflicts(admin):
 def test_offline_and_delete_block_new_access_and_stale_revival(admin, mini):
     card = draft(admin)
     publish(admin, card)
-    assert (
-        admin.post(
-            f"/api/admin/v1/cards/{card['id']}/offline", headers=key(), json={"revision": 1}
-        ).status_code
-        == 200
+    offline = admin.post(
+        f"/api/admin/v1/cards/{card['id']}/offline", headers=key(), json={"revision": 1}
     )
+    assert offline.status_code == 200
     assert mini.get(f"/api/mini/v1/cards/{card['id']}").status_code == 410
     assert mini.get("/api/mini/v1/cards").json()["total"] == 0
-    publish(admin, card)
+    publish(admin, offline.json())
     assert (
         admin.request(
-            "DELETE", f"/api/admin/v1/cards/{card['id']}", headers=key(), json={"revision": 1}
+            "DELETE",
+            f"/api/admin/v1/cards/{card['id']}",
+            headers=key(),
+            json={"revision": offline.json()["draft_revision"]},
         ).status_code
         == 200
     )
@@ -164,3 +165,32 @@ def test_card_text_budget_rejects_combined_large_fields_without_creating_a_card(
     assert (
         admin.post("/api/admin/v1/cards", headers=key(), json={"content": small}).status_code == 201
     )
+
+
+def test_offline_invalidates_old_preview_and_editor_before_explicit_republication(admin, mini):
+    card = draft(admin)
+    publish(admin, card)
+    old_preview = admin.post(
+        f"/api/admin/v1/cards/{card['id']}/preview", headers=key(), json={"revision": 1}
+    ).json()["preview_id"]
+    offline = admin.post(
+        f"/api/admin/v1/cards/{card['id']}/offline", headers=key(), json={"revision": 1}
+    )
+    assert offline.status_code == 200
+    stale = admin.post(
+        f"/api/admin/v1/cards/{card['id']}/publish",
+        headers=key(),
+        json={"revision": 1, "preview_id": old_preview},
+    )
+    assert stale.status_code == 409
+    assert mini.get(f"/api/mini/v1/cards/{card['id']}").status_code == 410
+    assert (
+        admin.put(
+            f"/api/admin/v1/cards/{card['id']}",
+            headers=key(),
+            json={"revision": 1, "content": card["content"]},
+        ).status_code
+        == 409
+    )
+    restored = publish(admin, offline.json())
+    assert restored["status"] == "published"

@@ -100,3 +100,37 @@ def test_card_deleted_after_review_fails_only_its_own_batch_member(admin, mini):
     assert [item["state"] for item in result["items"]] == ["succeeded", "failed"]
     assert result["items"][1]["error_code"] == "card_deleted"
     assert mini.get("/api/mini/v1/cards").json()["total"] == 1
+
+
+def test_offline_after_batch_acceptance_cannot_be_undone_by_queued_publication(admin, mini):
+    from .content_helpers import publish
+
+    one, two = draft(admin), draft(admin)
+    publish(admin, one)
+    members = [
+        {"card_id": card["id"], "revision": 1, "preview_id": preview(admin, card)}
+        for card in [one, two]
+    ]
+    batch = admin.post(
+        "/api/admin/v1/publication-batches",
+        headers=key(),
+        json={"confirmed": True, "items": members},
+    )
+    assert batch.status_code == 201
+    assert (
+        admin.post(
+            f"/api/admin/v1/cards/{one['id']}/offline", headers=key(), json={"revision": 1}
+        ).status_code
+        == 200
+    )
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/publication-batches/{batch.json()['id']}").json()
+    assert [item["state"] for item in result["items"]] == ["failed", "succeeded"]
+    assert result["items"][0]["error_code"] == "revision_changed"
+    assert mini.get(f"/api/mini/v1/cards/{one['id']}").status_code == 410
+    assert (
+        admin.post(
+            f"/api/admin/v1/publication-batches/{batch.json()['id']}/retry", headers=key()
+        ).json()["items"][0]["state"]
+        == "failed"
+    )

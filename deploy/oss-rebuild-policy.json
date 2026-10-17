@@ -1,0 +1,33 @@
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "oss:GetBucketInfo",
+        "oss:GetBucketLocation",
+        "oss:GetBucketVersioning",
+        "oss:GetBucketAcl",
+        "oss:ListObjects",
+        "oss:ListObjectVersions",
+        "oss:ListMultipartUploads"
+      ],
+      "Resource": [
+        "acs:oss:*:*:juya-test"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "oss:GetObject",
+        "oss:PutObject",
+        "oss:DeleteObject",
+        "oss:DeleteObjectVersion",
+        "oss:AbortMultipartUpload"
+      ],
+      "Resource": [
+        "acs:oss:*:*:juya-test/*"
+      ]
+    }
+  ]
+}

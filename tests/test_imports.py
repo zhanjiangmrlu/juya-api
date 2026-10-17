@@ -77,6 +77,52 @@ def test_docx_uses_explicit_h1_boundaries_and_preserves_dialogue_and_confirmed_s
         parse(stream.getvalue())
 
 
+def test_multicard_docx_retains_good_sections_and_marks_field_or_structure_failures():
+    from juya_api.import_parser import parse_docx_items
+
+    doc = Document(io.BytesIO(document("正常第一张", "错列表格", "名" * 161, "正常最后一张")))
+    doc.tables[2].rows[0].cells[0].text = "错误列名"
+    output = io.BytesIO()
+    doc.save(output)
+    items = parse_docx_items(output.getvalue())
+    assert [item["readable"] for item in items] == [True, False, False, True]
+    assert items[0]["content"]["dialogue"][0]["english"] == "Could I get a latte, please?"
+    assert items[3]["content"]["name"] == "正常最后一张"
+    assert all(item["issues"] for item in items[1:3])
+    assert len(items[2]["content"]["name"]) == 160
+
+
+def test_docx_partial_staging_survives_restore_and_saves_only_readable_cards(admin):
+    from .content_helpers import key, process_jobs
+
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "docx"}).json()
+    uploaded = admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/files?kind=docx",
+        headers=key(),
+        files={
+            "file": ("部分失败.docx", document("正常卡片", "名" * 161), "application/octet-stream")
+        },
+    )
+    assert uploaded.status_code == 201
+    process_jobs(admin)
+    restored = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()
+    assert len(restored["items"]) == 2
+    good, bad = restored["items"]
+    assert good["readable"] and good["selected"]
+    assert not bad["readable"] and not bad["selected"]
+    confirmation = admin.get(f"/api/admin/v1/imports/{batch['id']}/confirmation").json()
+    saved = admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/save",
+        headers=key(),
+        json={"confirmed": True, "version": confirmation["version"]},
+    )
+    assert saved.status_code == 200
+    process_jobs(admin)
+    listing = admin.get("/api/admin/v1/cards").json()
+    assert listing["total"] == 1
+    assert listing["items"][0]["content"]["name"] == "正常卡片"
+
+
 @pytest.mark.parametrize(
     "path",
     [
