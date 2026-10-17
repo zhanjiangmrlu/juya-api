@@ -80,6 +80,14 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
     try:
         if job["kind"] == "media.decode":
             result, apply = prepare_media(settings, sessions, job["payload"])
+        elif job["kind"] == "import.parse":
+            from .import_service import prepare_parse
+
+            result, apply = prepare_parse(settings, sessions, job)
+        elif job["kind"] == "import.save":
+            from .import_service import prepare_save
+
+            result, apply = prepare_save(settings, sessions, job, now())
         elif job["kind"] == "tts.synthesize":
             from .pronunciation import prepare
 

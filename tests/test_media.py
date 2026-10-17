@@ -148,3 +148,19 @@ def test_interrupted_media_can_retry_without_reupload_or_duplicate_jobs(admin, s
     )
     process_jobs(admin)
     assert admin.get(f"/api/admin/v1/media/{response['id']}/status").json()["state"] == "ready"
+
+
+def test_unfinished_media_cannot_be_saved_as_a_candidate_reference(admin):
+    response = admin.post(
+        "/api/admin/v1/media?kind=image",
+        headers=key(),
+        files={"file": ("image.png", picture(), "image/png")},
+    ).json()
+    rejected = admin.post(
+        "/api/admin/v1/cards",
+        headers=key(),
+        json={"content": {"name": "未准备好的素材", "image_id": response["id"]}},
+    )
+    assert rejected.status_code == 409, rejected.text
+    assert rejected.json()["error"]["code"] == "media_processing"
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 0

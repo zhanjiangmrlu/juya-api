@@ -100,7 +100,10 @@ def test_zip_rejects_duplicate_paths_symlinks_and_expansion_bombs():
     _, checked = parser()
     from juya_api.errors import DomainError
 
-    with pytest.raises(DomainError, match="archive_unsafe"):
+    with (
+        pytest.warns(UserWarning, match="Duplicate name"),
+        pytest.raises(DomainError, match="archive_unsafe"),
+    ):
         checked(archive([("one/doc.docx", b"one"), ("one/doc.docx", b"two")]))
     link = zipfile.ZipInfo("one/link")
     link.create_system = 3
@@ -120,3 +123,220 @@ def test_docx_external_entities_and_unreadable_documents_are_rejected():
         parse(archive([("word/document.xml", xml)]))
     with pytest.raises(DomainError, match="docx_invalid"):
         parse(b"not a zip file")
+
+
+def test_docx_batch_restores_staging_matches_only_exact_names_and_saves_drafts(admin, mini):
+    from .content_helpers import key, picture, process_jobs, recording
+
+    created = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "docx"})
+    assert created.status_code == 201, created.text
+    batch_id = created.json()["id"]
+    for kind, name, data in [
+        ("docx", "场景.docx", document("咖啡店", "机场")),
+        ("image", "咖啡店.png", picture()),
+        ("audio", "咖啡店.wav", recording()),
+    ]:
+        response = admin.post(
+            f"/api/admin/v1/imports/{batch_id}/files?kind={kind}",
+            headers=key(),
+            files={"file": (name, data, "application/octet-stream")},
+        )
+        assert response.status_code == 201, response.text
+    process_jobs(admin)
+    matched = admin.post(f"/api/admin/v1/imports/{batch_id}/resolve", headers=key())
+    assert matched.status_code == 200, matched.text
+    items = matched.json()["items"]
+    assert len(items) == 2 and items[0]["content"]["image_id"]
+    assert items[1]["content"]["image_id"] is None
+    # Persisted staging survives a new read and changes invalidate an old confirmation.
+    confirmation = admin.get(f"/api/admin/v1/imports/{batch_id}/confirmation").json()
+    updated = admin.patch(
+        f"/api/admin/v1/imports/{batch_id}/items/{items[1]['id']}",
+        headers=key(),
+        json={
+            "revision": items[1]["revision"],
+            "content": dict(items[1]["content"], name="机场（已核对）"),
+            "selected": True,
+        },
+    )
+    assert updated.status_code == 200, updated.text
+    restored = admin.get(f"/api/admin/v1/imports/{batch_id}").json()
+    assert restored["items"][1]["content"]["name"] == "机场（已核对）"
+    assert (
+        admin.post(
+            f"/api/admin/v1/imports/{batch_id}/save",
+            headers=key(),
+            json={"confirmed": True, "version": confirmation["version"]},
+        ).status_code
+        == 409
+    )
+    confirmation = admin.get(f"/api/admin/v1/imports/{batch_id}/confirmation").json()
+    headers = key()
+    accepted = admin.post(
+        f"/api/admin/v1/imports/{batch_id}/save",
+        headers=headers,
+        json={"confirmed": True, "version": confirmation["version"]},
+    )
+    assert accepted.status_code == 200, accepted.text
+    assert (
+        admin.post(
+            f"/api/admin/v1/imports/{batch_id}/save",
+            headers=headers,
+            json={"confirmed": True, "version": confirmation["version"]},
+        ).json()
+        == accepted.json()
+    )
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch_id}").json()
+    assert all(item["state"] == "saved" for item in result["items"])
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 2
+    assert mini.get("/api/mini/v1/cards").json()["total"] == 0
+
+
+def test_zip_keeps_other_folders_when_one_docx_has_multiple_cards_and_never_merges_same_name(admin):
+    from .content_helpers import key, picture, process_jobs, recording
+
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "zip"}).json()
+    response = admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/files?kind=zip",
+        headers=key(),
+        files={
+            "file": (
+                "资料.zip",
+                archive(
+                    [
+                        ("one/内容.docx", document("同名卡片")),
+                        ("one/场景图.png", picture()),
+                        ("one/完整音频.wav", recording()),
+                        ("two/内容.docx", document("同名卡片", "另一张")),
+                        ("three/内容.docx", document("同名卡片")),
+                    ]
+                ),
+                "application/zip",
+            )
+        },
+    )
+    assert response.status_code == 201, response.text
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch['id']}").json()
+    assert len(result["items"]) == 3
+    assert sum(not i["readable"] for i in result["items"]) == 1
+    confirmation = admin.get(f"/api/admin/v1/imports/{batch['id']}/confirmation").json()
+    admin.post(
+        f"/api/admin/v1/imports/{batch['id']}/save",
+        headers=key(),
+        json={"confirmed": True, "version": confirmation["version"]},
+    )
+    process_jobs(admin)
+    # Same name does not imply identity; distinct media or document bytes stay separate.
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 2
+
+
+def test_explicit_update_conflict_preserves_other_saved_items_and_retry_skips_success(admin, mini):
+    from .content_helpers import draft, key, process_jobs, publish
+
+    target = draft(admin)
+    published = publish(admin, target)
+    batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "docx"}).json()
+    batch_id = batch["id"]
+    admin.post(
+        f"/api/admin/v1/imports/{batch_id}/files?kind=docx",
+        headers=key(),
+        files={"file": ("two.docx", document("更新目标", "独立新增"), "application/octet-stream")},
+    )
+    process_jobs(admin)
+    items = admin.get(f"/api/admin/v1/imports/{batch_id}").json()["items"]
+    body = {
+        "revision": items[0]["revision"],
+        "content": items[0]["content"],
+        "selected": True,
+        "target_card_id": target["id"],
+        "target_revision": 1,
+    }
+    assert (
+        admin.patch(
+            f"/api/admin/v1/imports/{batch_id}/items/{items[0]['id']}", headers=key(), json=body
+        ).status_code
+        == 422
+    )
+    body["update_confirmed"] = True
+    assert (
+        admin.patch(
+            f"/api/admin/v1/imports/{batch_id}/items/{items[0]['id']}", headers=key(), json=body
+        ).status_code
+        == 200
+    )
+    confirmation = admin.get(f"/api/admin/v1/imports/{batch_id}/confirmation").json()
+    admin.post(
+        f"/api/admin/v1/imports/{batch_id}/save",
+        headers=key(),
+        json={"confirmed": True, "version": confirmation["version"]},
+    )
+    admin.put(
+        f"/api/admin/v1/cards/{target['id']}",
+        headers=key(),
+        json={"revision": 1, "content": dict(target["content"], name="另一窗口修改")},
+    )
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch_id}").json()["items"]
+    assert [item["state"] for item in result] == ["failed", "saved"]
+    succeeded_job = result[1]["job_id"]
+    body.update(revision=result[0]["revision"], target_revision=2)
+    assert (
+        admin.patch(
+            f"/api/admin/v1/imports/{batch_id}/items/{items[0]['id']}", headers=key(), json=body
+        ).status_code
+        == 200
+    )
+    confirmation = admin.get(f"/api/admin/v1/imports/{batch_id}/confirmation").json()
+    assert confirmation["count"] == 1
+    admin.post(
+        f"/api/admin/v1/imports/{batch_id}/save",
+        headers=key(),
+        json={"confirmed": True, "version": confirmation["version"]},
+    )
+    process_jobs(admin)
+    result = admin.get(f"/api/admin/v1/imports/{batch_id}").json()["items"]
+    assert [item["state"] for item in result] == ["saved", "saved"]
+    assert result[1]["job_id"] == succeeded_job
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 2
+    assert (
+        mini.get(f"/api/mini/v1/cards/{target['id']}").json()["version_id"]
+        == published["current_version_id"]
+    )
+
+
+def test_same_complete_object_is_skipped_across_batches_without_name_merging(admin):
+    from .content_helpers import key, picture, process_jobs, recording
+
+    raw = document("完整对象")
+    package = archive(
+        [
+            ("完整对象/内容.docx", raw),
+            ("完整对象/场景图.png", picture()),
+            ("完整对象/完整音频.wav", recording()),
+        ]
+    )
+    batches = []
+    for index in range(2):
+        batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "zip"}).json()
+        batch_id = batch["id"]
+        batches.append(batch_id)
+        admin.post(
+            f"/api/admin/v1/imports/{batch_id}/files?kind=zip",
+            headers=key(),
+            files={"file": (f"重命名{index}.zip", package, "application/zip")},
+        )
+        process_jobs(admin)
+        confirmation = admin.get(f"/api/admin/v1/imports/{batch_id}/confirmation").json()
+        if index == 0:
+            assert confirmation["count"] == 1
+            admin.post(
+                f"/api/admin/v1/imports/{batch_id}/save",
+                headers=key(),
+                json={"confirmed": True, "version": confirmation["version"]},
+            )
+            process_jobs(admin)
+        else:
+            assert confirmation["count"] == 0 and confirmation["duplicates"] == 1
+    assert admin.get("/api/admin/v1/cards").json()["total"] == 1

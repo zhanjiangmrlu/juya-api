@@ -9,6 +9,7 @@ from .content_contracts import SceneContent
 from .content_models import Card, CardDraft, CardVersion, Media, Preview
 from .database import timestamp
 from .errors import DomainError
+from .job_models import Job
 from .models import Audit
 from .security import fingerprint
 
@@ -233,3 +234,49 @@ def make_preview(db, card: Card, admin_id: str, revision: int, now):
         "expires_at": timestamp(preview.expires_at),
         "mode": "draft",
     }
+
+
+def candidate_media_ready(db, content, admin_id):
+    """A missing optional draft field is valid; an explicit unfinished/foreign reference is not."""
+    for field, kind in [("image_id", "image"), ("audio_id", "audio")]:
+        media_id = getattr(content, field)
+        if not media_id:
+            continue
+        medium = db.get(Media, media_id)
+        if (
+            not medium
+            or medium.owner_kind != "admin"
+            or medium.owner_id != admin_id
+            or medium.kind != kind
+        ):
+            raise DomainError(422, "media_invalid", "请选择已成功上传的场景素材")
+        job = db.get(Job, medium.job_id) if medium.job_id else None
+        if job and job.state == "failed":
+            raise DomainError(422, "media_invalid", "素材处理失败，请更换或重新处理")
+        if medium.state != "ready":
+            raise DomainError(409, "media_processing", "请等待素材处理完成，再保存草稿")
+
+
+def create_candidate(db, content, admin_id, now):
+    """Create a new stable card and candidate using the same rules for manual/import entry."""
+    candidate_media_ready(db, content, admin_id)
+    card = Card(sort_order=(db.scalar(select(func.max(Card.sort_order))) or 0) + 1, created_at=now)
+    db.add(card)
+    db.flush()
+    db.add(CardDraft(card_id=card.id, revision=1, payload=normalize(content), updated_at=now))
+    db.add(Audit(admin_id=admin_id, action="card.create", object_id=card.id, occurred_at=now))
+    db.flush()
+    return card
+
+
+def save_candidate(db, card_id, revision, content, admin_id, now):
+    """An import update can only replace the explicitly confirmed current candidate."""
+    card = require_card(db, card_id)
+    draft = revision_matches(db.get(CardDraft, card.id), revision)
+    candidate_media_ready(db, content, admin_id)
+    draft.payload = normalize(content)
+    draft.revision += 1
+    draft.updated_at = now
+    db.add(Audit(admin_id=admin_id, action="card.save", object_id=card.id, occurred_at=now))
+    db.flush()
+    return card

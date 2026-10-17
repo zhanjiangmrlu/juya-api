@@ -87,7 +87,11 @@ def process_jobs(client):
     from juya_api.worker import run_job
 
     app = client.app
-    with app.state.sessions() as db:
-        pending = db.scalars(select(Job.id).where(Job.state == "queued")).all()
-    for job_id in pending:
-        run_job(app.state.settings, app.state.sessions, job_id, clock=app.state.clock)
+    for _ in range(20):
+        with app.state.sessions() as db:
+            pending = db.scalars(select(Job.id).where(Job.state == "queued")).all()
+        if not pending:
+            return
+        for job_id in pending:
+            run_job(app.state.settings, app.state.sessions, job_id, clock=app.state.clock)
+    raise AssertionError("Worker did not settle accepted tasks")

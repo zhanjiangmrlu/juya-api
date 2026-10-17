@@ -8,12 +8,13 @@ from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
 from .content_models import Card, CardDraft, CardVersion, Media
 from .content_service import (
     card_view,
+    create_candidate,
     make_preview,
-    normalize,
     publish_version,
     published_card,
     require_card,
     revision_matches,
+    save_candidate,
 )
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
@@ -74,20 +75,7 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = Card(
-                sort_order=(db.scalar(select(func.max(Card.sort_order))) or 0) + 1, created_at=now
-            )
-            db.add(card)
-            db.flush()
-            db.add(
-                CardDraft(
-                    card_id=card.id, revision=1, payload=normalize(body.content), updated_at=now
-                )
-            )
-            db.add(
-                Audit(admin_id=admin.id, action="card.create", object_id=card.id, occurred_at=now)
-            )
-            db.flush()
+            card = create_candidate(db, body.content, admin.id, now)
             return card_view(db, card)
 
         return operate(
@@ -135,13 +123,7 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = require_card(db, card_id)
-            draft = revision_matches(db.get(CardDraft, card.id), body.revision)
-            draft.payload = normalize(body.content)
-            draft.revision += 1
-            draft.updated_at = now
-            db.add(Audit(admin_id=admin.id, action="card.save", object_id=card.id, occurred_at=now))
-            db.flush()
+            card = save_candidate(db, card_id, body.revision, body.content, admin.id, now)
             return card_view(db, card)
 
         return operate(
