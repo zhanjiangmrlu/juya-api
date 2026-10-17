@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "juya-api"
+version = "1.5.0"
+description = "Juya unified domain, independently deployed administration and mini-program APIs"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.34,<1", "pydantic-settings>=2.7,<3",
+  "sqlalchemy>=2.0.37,<3", "pymysql[rsa]>=1.1,<2", "alembic>=1.14,<2",
+  "httpx>=0.28,<1", "argon2-cffi>=23.1,<26", "cryptography>=44,<51",
+  "celery[redis]>=5.5,<6", "redis>=5.2,<8", "python-multipart>=0.0.22,<1",
+  "pillow>=12,<13", "python-docx>=1.2,<2", "defusedxml>=0.7,<1",
+  "alibabacloud-oss-v2>=1.4,<2", "tencentcloud-sdk-python-tts>=3.0,<4", "tzdata>=2025.2"
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3,<10", "pytest-cov>=6,<8", "ruff>=0.9,<1", "mypy>=1.14,<2", "types-PyMySQL"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/juya_api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["mysql: requires a dedicated real MySQL database", "cloud: invokes real cloud services"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.13"
+check_untyped_defs = true
