@@ -26,6 +26,12 @@ def test_committed_upload_survives_missing_dispatch_and_duplicate_broker_deliver
     from .content_helpers import key, picture
 
     system["time"][0] = datetime.now(UTC)
+    # The fixture's deterministic day may be yesterday; renew after advancing its clock.
+    login = admin.post(
+        "/api/admin/v1/auth/login", json={"username": "admin", "password": "correct-test-password"}
+    )
+    assert login.status_code == 200
+    admin.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     settings = system["settings"]
     settings.redis_url = os.environ["JUYA_TEST_REDIS_URL"]
     settings.worker_role = "admin"
@@ -89,10 +95,51 @@ def test_committed_upload_survives_missing_dispatch_and_duplicate_broker_deliver
             else:
                 pytest.fail("Real Worker did not finish the accepted media")
             assert status["width"] == 120 and status["height"] == 80
+            # A real administration worker also executes lifecycle tasks once.
+            card = admin.post(
+                "/api/admin/v1/cards", headers=key(), json={"content": {"name": "queue lifecycle"}}
+            ).json()
+            batch = admin.post(
+                "/api/admin/v1/card-action-batches",
+                headers=key(),
+                json={
+                    "action": "delete",
+                    "confirmed": True,
+                    "items": [
+                        {
+                            "card_id": card["id"],
+                            "revision": card["draft_revision"],
+                            "status": "draft",
+                            "version_id": None,
+                        }
+                    ],
+                },
+            ).json()
+            assert (
+                dispatch(
+                    system["sessions"],
+                    system["admin"].app.state.clock(),
+                    lambda job_id: celery.send_task("juya.execute", args=[job_id]),
+                    role="admin",
+                )
+                == 1
+            )
+            action_id = batch["items"][0]["job_id"]
+            celery.send_task("juya.execute", args=[action_id])
+            deadline = time.monotonic() + 30
+            while time.monotonic() < deadline:
+                state = admin.get("/api/admin/v1/card-action-batches/" + batch["id"]).json()
+                if state["items"][0]["state"] == "succeeded":
+                    break
+                time.sleep(0.2)
+            else:
+                pytest.fail("Real worker did not complete the management action")
+            assert admin.get("/api/admin/v1/cards/" + card["id"]).status_code == 410
             from juya_api.job_models import Job
 
             with system["sessions"]() as db:
                 assert db.get(Job, medium["job_id"]).attempts == 1
+                assert db.get(Job, action_id).attempts == 1
         finally:
             process.terminate()
             try:

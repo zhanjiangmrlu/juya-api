@@ -11,7 +11,7 @@ import tempfile
 import warnings
 import wave
 from datetime import timedelta
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Request, UploadFile
@@ -32,13 +32,30 @@ from .response_contracts import MediaMetadata, ResourceURL, UploadConfiguration
 from .security import digest, token
 from .storage import ObjectStorage
 from .transactions import operate
+from .zip_names import import_file_name
 
 
 def media_view(medium: Media, db=None) -> dict:
     """Return safe media metadata and controlled identifiers, never OSS object credentials."""
     job = db.get(Job, medium.job_id) if db is not None and medium.job_id else None
     failed = job is not None and job.state == "failed"
+    original_name = None
+    if db is not None and medium.owner_kind == "admin":
+        from sqlalchemy import select
+
+        from .admin_action_models import AdminMediaSource
+        from .import_models import ImportFile
+
+        source = db.get(AdminMediaSource, medium.id)
+        if source:
+            original_name = source.original_name
+        else:
+            imported_file = db.scalar(
+                select(ImportFile).where(ImportFile.media_id == medium.id).limit(1)
+            )
+            original_name = import_file_name(db, imported_file) if imported_file else None
     return {
+        "original_name": original_name,
         "job_id": medium.job_id,
         "error_code": job.error_code if failed and job else None,
         "error": "素材处理失败，请重试或重新上传" if failed else None,
@@ -220,7 +237,9 @@ def decoded_audio(data: bytes):
         raise DomainError(422, "audio_invalid", "音频无法读取，请更换完整音频文件") from None
 
 
-def save_media(db, settings, actor, role: str, kind: str, data: bytes, now) -> Media:
+def save_media(
+    db, settings, actor, role: str, kind: str, data: bytes, now, *, original_name=None
+) -> Media:
     """Persist decoded immutable originals and derived thumbnails as one database unit."""
     storage = ObjectStorage(settings)
     media_id = identifier()
@@ -245,6 +264,11 @@ def save_media(db, settings, actor, role: str, kind: str, data: bytes, now) -> M
     )
     medium.job_id = job.id
     db.flush()
+    if role == "admin" and original_name:
+        from .admin_action_models import AdminMediaSource
+
+        db.add(AdminMediaSource(media_id=medium.id, original_name=original_name))
+        db.flush()
     return medium
 
 
@@ -331,6 +355,9 @@ def admin_routes():
         data = file.file.read(limit + 1)
         if not data or len(data) > limit:
             raise DomainError(413, "upload_limit", "文件为空或超过当前上传限制")
+        name = PurePosixPath((file.filename or "").replace("\\", "/")).name
+        if not name or len(name) > 255 or any(ord(c) < 32 for c in name):
+            raise DomainError(422, "upload_filename", "文件名不可用，请重命名后上传")
         return operate(
             db,
             admin,
@@ -339,7 +366,9 @@ def admin_routes():
             "media.upload",
             {"kind": kind, "sha256": hashlib.sha256(data).hexdigest()},
             now,
-            lambda: media_view(save_media(db, settings, admin, "admin", kind, data, now), db),
+            lambda: media_view(
+                save_media(db, settings, admin, "admin", kind, data, now, original_name=name), db
+            ),
         )
 
     @router.post("/media/{media_id}/retry", response_model=MediaMetadata)

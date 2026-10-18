@@ -27,6 +27,7 @@ from .models import Administrator
 from .security import fingerprint
 from .storage import ObjectStorage
 from .transactions import actor_lock
+from .zip_names import import_file_name, readable_zip_name
 
 
 def owned_batch(db, batch_id, admin_id):
@@ -97,7 +98,7 @@ def source_view(db, item):
     return {
         "source_zip_id": root.id if root else None,
         "source_zip_name": root.name if root else None,
-        "source_folder": str(PurePosixPath(source.name).parent) if root else None,
+        "source_folder": str(PurePosixPath(import_file_name(db, source)).parent) if root else None,
     }
 
 
@@ -139,7 +140,7 @@ def file_view(db, row):
     )
     return {
         "id": row.id,
-        "name": row.name,
+        "name": import_file_name(db, row),
         "kind": row.kind,
         "size": row.size,
         "media_id": row.media_id,
@@ -443,12 +444,14 @@ def prepare_parse(settings, sessions, job, *, clock):
             by_folder: dict[str, list[dict[str, Any]]] = {}
             parse_progress(sessions, job, clock(), "reading", 0, len(folders))
             for member in members:
+                # Keep the raw lookup/UUID key so old queued jobs retain their identity.
+                name = readable_zip_name(member.filename, utf8=bool(member.flag_bits & 0x800))
                 kind = asset_kind(member.filename)
                 if kind == "unused":
                     prepared_files.append(
                         {
                             "id": str(uuid5(NAMESPACE_URL, source["id"] + ":" + member.filename)),
-                            "name": member.filename,
+                            "name": name,
                             "kind": "unused",
                             "storage_key": "",
                             "size": member.file_size,
@@ -474,7 +477,7 @@ def prepare_parse(settings, sessions, job, *, clock):
                 except DomainError as error:
                     entry = {
                         "id": file_id,
-                        "name": member.filename,
+                        "name": name,
                         "kind": kind,
                         "storage_key": "",
                         "size": member.file_size,
@@ -494,7 +497,7 @@ def prepare_parse(settings, sessions, job, *, clock):
                 storage.put(key, body, "application/octet-stream")
                 entry = {
                     "id": file_id,
-                    "name": member.filename,
+                    "name": name,
                     "kind": kind,
                     "storage_key": key,
                     "size": len(body),
@@ -538,7 +541,9 @@ def prepare_parse(settings, sessions, job, *, clock):
                             content[field] = values[0]["media_id"]
                     candidate(document["id"], 0, content, document["sha256"])
                 except DomainError as error:
-                    content = normalize(SceneContent(name=PurePosixPath(folder).name))
+                    content = normalize(
+                        SceneContent(name=PurePosixPath(document["name"]).parent.name)
+                    )
                     candidate(
                         document["id"],
                         0,
@@ -568,7 +573,10 @@ def prepare_parse(settings, sessions, job, *, clock):
         if existing + len(new_items) > settings.import_card_limit:
             raise DomainError(422, "import_card_limit", "本批卡片总数超过当前限制，请开始新的导入")
         for value in prepared_files:
-            if db.get(ImportFile, value["id"]):
+            existing_file = db.get(ImportFile, value["id"])
+            if existing_file:
+                # Retried old parses keep IDs and payloads while normalizing their labels.
+                existing_file.name = value["name"]
                 continue
             values = dict(value)
             media_id = values.pop("media_id")
@@ -619,7 +627,11 @@ def prepare_parse(settings, sessions, job, *, clock):
             "total": len(prepared_items),
         }
 
-    return {"file_id": source["id"], "items": len(prepared_items)}, apply
+    return {
+        "file_id": source["id"],
+        "items": len(prepared_items),
+        "filename_encoding": "unicode",
+    }, apply
 
 
 def prepare_save(settings, sessions, job, now):

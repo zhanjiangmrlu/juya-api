@@ -235,7 +235,9 @@ def routes():
                 created_at=now,
             )
             if kind in {"image", "audio"}:
-                medium = save_media(db, settings, admin, "admin", kind, data, now)
+                medium = save_media(
+                    db, settings, admin, "admin", kind, data, now, original_name=name
+                )
                 row.media_id = medium.id
                 row.storage_key = medium.storage_key
                 row.job_id = medium.job_id

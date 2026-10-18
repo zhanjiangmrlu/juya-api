@@ -15,6 +15,7 @@ from .content_contracts import SceneContent
 from .content_service import normalize, source_candidates
 from .errors import DomainError
 from .models import identifier
+from .zip_names import readable_zip_name
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
@@ -28,7 +29,7 @@ def checked_archive(data, *, expanded_limit=500 * 1024 * 1024, file_limit=1000):
             raise DomainError(422, "archive_limit", "压缩包展开后超过当前限制，请拆分资料包")
         seen = set()
         for item in members:
-            name = item.orig_filename
+            name = readable_zip_name(item.orig_filename, utf8=bool(item.flag_bits & 0x800))
             path = PurePosixPath(name)
             parts = name.rstrip("/").split("/")
             identity = unicodedata.normalize("NFC", name.rstrip("/")).casefold()

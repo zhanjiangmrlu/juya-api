@@ -6,7 +6,7 @@ from datetime import timedelta
 from sqlalchemy import func, select
 
 from .content_contracts import SceneContent
-from .content_models import Card, CardDraft, CardVersion, Media, Preview
+from .content_models import Card, CardDraft, CardVersion, Media, Preview, SettingCounter
 from .database import timestamp
 from .errors import DomainError
 from .job_models import Job
@@ -155,6 +155,7 @@ def card_view(db, card: Card) -> dict:
     return {
         "id": card.id,
         "display_name": display["name"],
+        "display_image_id": display["image_id"],
         "display_thumbnail_id": display_image.thumbnail_id if display_image else None,
         "status": card.status,
         "current_version_id": card.current_version_id,
@@ -166,6 +167,37 @@ def card_view(db, card: Card) -> dict:
         or current.content_hash != fingerprint(draft.payload),
         "issues": validate_publication(db, draft.payload),
     }
+
+
+def advance_catalog(db):
+    """Fence a temporary order even when an offline card is republished unchanged."""
+    counter = db.get(SettingCounter, "catalog_revision")
+    if counter is None:
+        db.add(SettingCounter(name="catalog_revision", value=1))
+    else:
+        counter.value += 1
+
+
+def lifecycle_action(db, card_id, revision, action, admin_id, now):
+    """Share soft deletion/offlining across single actions and lease-protected batch commits."""
+    card = require_card(db, card_id)
+    draft = revision_matches(db.get(CardDraft, card.id), revision)
+    was_published = card.status == "published"
+    if action == "offline":
+        if card.status != "published":
+            raise DomainError(409, "card_not_published", "仅已发布卡片可下线，请重新核对")
+        card.status = "offline"
+    elif action == "delete":
+        card.deleted_at, card.status = now, "deleted"
+    else:
+        raise DomainError(422, "action_invalid", "管理操作不可用")
+    draft.revision += 1
+    draft.updated_at = now
+    if was_published:
+        advance_catalog(db)
+    db.add(Audit(admin_id=admin_id, action="card." + action, object_id=card.id, occurred_at=now))
+    db.flush()
+    return {"id": card.id, "deleted": True} if action == "delete" else card_view(db, card)
 
 
 def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
@@ -193,6 +225,7 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
 def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: str, now):
     """Activate exactly the candidate that was previewed; keep old publications immutable."""
     draft, content_hash = reviewed_candidate(db, card, admin_id, revision, preview_id, now)
+    was_published = card.status == "published"
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
     if current and current.content_hash == content_hash:
         card.status = "published"
@@ -211,6 +244,8 @@ def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: st
         db.add(version)
         db.flush()
         card.current_version_id, card.status = version.id, "published"
+    if not was_published:
+        advance_catalog(db)
     db.add(Audit(admin_id=admin_id, action="card.publish", object_id=card.id, occurred_at=now))
     db.flush()
     return card_view(db, card)

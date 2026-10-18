@@ -92,6 +92,31 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
             from .pronunciation import prepare
 
             result, apply = prepare(settings, sessions, job, now(), tts)
+        elif job["kind"] == "card.action":
+            result = {"card_id": job["payload"]["card_id"]}
+
+            def apply(db, row):
+                from .admin_action_api import ActionSelection, validate_snapshot
+                from .content_service import lifecycle_action
+                from .models import Administrator
+                from .transactions import actor_lock
+
+                if job["owner_kind"] != "admin":
+                    raise DomainError(403, "action_role_invalid", "管理任务归属无效")
+                actor_lock(db, db.get(Administrator, job["owner_id"]), "admin")
+                payload = job["payload"]
+                selection = ActionSelection.model_validate(
+                    {k: v for k, v in payload.items() if k != "action"}
+                )
+                validate_snapshot(db, selection)
+                lifecycle_action(
+                    db,
+                    selection.card_id,
+                    selection.revision,
+                    payload["action"],
+                    job["owner_id"],
+                    now(),
+                )
         elif job["kind"] == "card.publish":
             result = {"card_id": job["payload"]["card_id"]}
 

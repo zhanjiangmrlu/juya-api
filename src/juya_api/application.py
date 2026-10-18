@@ -93,7 +93,7 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
     def ready():
         with sessions() as db:
             db.execute(text("SELECT 1"))
-            require_compatible_schema(db, minimum_revision=11 if role == "admin" else 10)
+            require_compatible_schema(db, minimum_revision=12 if role == "admin" else 10)
         return {"status": "ready", "service": role, "environment": settings.environment}
 
     return app

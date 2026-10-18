@@ -1,7 +1,7 @@
 """Thin role-specific scene HTTP adapters over the same publication domain."""
 
 from fastapi import APIRouter, Depends, Query, Request
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
@@ -9,11 +9,11 @@ from .content_models import Card, CardDraft, CardVersion, Media
 from .content_service import (
     card_view,
     create_candidate,
+    lifecycle_action,
     make_preview,
     publish_version,
     published_card,
     require_card,
-    revision_matches,
     save_candidate,
 )
 from .database import timestamp
@@ -22,8 +22,8 @@ from .import_models import ImportItem
 from .import_service import owned_batch
 from .learning_models import Completion, DailyLearning, Favorite
 from .learning_service import business_date, card_state
-from .models import Audit
 from .response_contracts import (
+    AdminCardPage,
     CardBrief,
     CardPreview,
     CardView,
@@ -38,17 +38,19 @@ from .transactions import operate
 def admin_routes():
     router = APIRouter(prefix="/api/admin/v1", tags=["scene management"])
 
-    @router.get("/cards", response_model=Page[CardView])
+    @router.get("/cards", response_model=AdminCardPage)
     def listing(
         request: Request,
         status: str = "all",
         search: str = "",
         batch_id: str | None = Query(None, min_length=1, max_length=36),
+        anchor_id: str | None = Query(None, min_length=1, max_length=36),
         page: int = Query(1, ge=1),
-        limit: int = Query(20, ge=1, le=100),
+        limit: int = Query(10, ge=1),
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
+        limit = min(limit, 10)
         query = select(Card).join(CardDraft).where(Card.deleted_at.is_(None))
         if batch_id:
             owned_batch(db, batch_id, admin.id)
@@ -66,6 +68,19 @@ def admin_routes():
                 CardDraft.payload["name"].as_string().contains(search.strip(), autoescape=True)
             )
         total = db.scalar(select(func.count()).select_from(query.subquery()))
+        total_pages = ((total or 0) + limit - 1) // limit
+        if anchor_id:
+            anchor = db.scalar(query.where(Card.id == anchor_id))
+            if anchor:
+                preceding = query.where(
+                    or_(
+                        Card.sort_order < anchor.sort_order,
+                        and_(Card.sort_order == anchor.sort_order, Card.id < anchor.id),
+                    )
+                )
+                rank = db.scalar(select(func.count()).select_from(preceding.subquery())) or 0
+                page = rank // limit + 1
+        page = min(page, max(1, total_pages))
         rows = db.scalars(
             query.order_by(Card.sort_order, Card.id).offset((page - 1) * limit).limit(limit)
         ).all()
@@ -74,6 +89,7 @@ def admin_routes():
             "total": total,
             "page": page,
             "limit": limit,
+            "total_pages": total_pages,
         }
 
     @router.post("/cards", status_code=201, response_model=CardView)
@@ -205,19 +221,7 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = require_card(db, card_id)
-            draft = db.get(CardDraft, card.id)
-            revision_matches(draft, body.revision)
-            assert draft is not None
-            card.status = "offline"
-            # Lifecycle changes invalidate old editors, previews and queued publications together.
-            draft.revision += 1
-            draft.updated_at = now
-            db.add(
-                Audit(admin_id=admin.id, action="card.offline", object_id=card.id, occurred_at=now)
-            )
-            db.flush()
-            return card_view(db, card)
+            return lifecycle_action(db, card_id, body.revision, "offline", admin.id, now)
 
         return operate(
             db,
@@ -242,13 +246,7 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = require_card(db, card_id)
-            revision_matches(db.get(CardDraft, card.id), body.revision)
-            card.deleted_at, card.status = now, "deleted"
-            db.add(
-                Audit(admin_id=admin.id, action="card.delete", object_id=card.id, occurred_at=now)
-            )
-            return {"id": card.id, "deleted": True}
+            return lifecycle_action(db, card_id, body.revision, "delete", admin.id, now)
 
         return operate(
             db,

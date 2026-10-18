@@ -1,5 +1,9 @@
 # SDD ledger — plan: docs/superpowers/plans/2026-10-17-rebuild.md
 
+2026-10-18本地提交前复核：用户要求提交代码，本轮管理后台／必要管理API、迁移0012及ZIP文件名修复统一整理为两个仓库的本地提交。最新后端150通过／7外部依赖跳过，Ruff检查／格式及mypy47模块通过；前端59通过、完整检查与构建通过。两端管理契约语义一致，小程序契约无差异；此次不推送、不部署。以下未提交说明保留为此前阶段的历史状态。
+
+2026-10-18后台批量操作与上传优化已按批准方案完成本地开发，未提交、推送或部署。新增管理批次／逐卡结果和素材来源迁移0012；管理列表最多10条、版本原图、批量下线／软删除、全局排序冲突、真实上传阶段及音频替换恢复。后端142通过／7外部跳过，前端57通过及完整检查／构建通过。独立MySQL24项与管理9项、边界2项复验及真实Redis/Celery1项通过；最终真实Chrome→管理API→独立MySQL／Redis／Celery Worker联合验收6项全通过。独立复核问题均补回归修复，无剩余重要问题。详细证据、边界和T114—T137对照见docs/implementation/admin-operations-progress.md及后台docs/verification/admin-operations-20261018.md；旧记录仍作为历史保留。
+
 ## Status
 
 Task 1: complete (auth and independent entrypoints; real MySQL 8.4 migration and concurrency verified)
@@ -202,3 +206,5 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 2026-10-17增量测试发布完成：后台92152b3、管理API及Worker/dispatcher6aca4f4已经通过原CLI发布引擎上线测试环境。CI39034384687真实MySQL/Redis125项及两角色镜像通过；本次只发布管理侧。新运行Worker的临时库/临时素材ZIP+流式WAV探针通过，真实Redis定向ping通过；未写真实业务库/OSS。线上Chrome登录与导入提示通过，六容器healthy、无OOM/自动重启，小程序三容器与发布前完全一致。无数据库迁移、数据清理或生产发布。详细证据及发布号见docs/verification/test-rollout-20261017.md同日增量记录。
 
 2026-10-17多ZIP测试发布完成：后端e503442、后台5e7e261已提交并推送test，CI39041233684全部通过。原CLI发布引擎先成功迁移0011，再仅替换管理API／Worker／调度进程及后台页面。发布号20261017T143926-e503442bd543-98d7dc与20261017T144627-5e7e261e9a6e-f75743，保留上一应用版本。发布前后端133项／前端42项及完整检查通过；新Worker镜像7项临时库／素材导入回归、实际Chrome公网登录与多ZIP／DOCX入口检查通过。两测试API公网HTTP200／ready，管理三容器healthy且无OOM／自动重启，小程序三容器身份及启动时间保持不变。验证未写共享导入业务数据，未发布生产。详细证据见docs/implementation/multi-zip-import-progress.md测试发布记录。
+
+2026-10-18文件名乱码修复：实际用户ZIP中文路径使用UTF-8字节但未设置语言标记，Python默认CP437读取导致编辑页、导入来源及预览音频名称乱码。新增严格可逆解码，保留原始成员查找键、UUID及素材字节；安全检查同时拒绝解码后重名。新导入保存正确标签，历史导入在返回来源和素材元数据时恢复显示，无需重导或修改历史业务记录。8项回归覆盖新旧记录、正常UTF-8、旧西文编码、成员读取及路径冲突；解析回执记录文件名已归一化，避免合法特殊字符二次解码，旧解析重放保留文件ID及单份卡片。完整后端150通过／7外部依赖跳过，Ruff检查／格式及mypy47模块通过。已重启本地管理API及受本地监督进程管理的Worker／dispatcher；Chrome实际旧卡编辑／预览和已有导入结果确认中文路径恢复，截图位于docs/verification/zip-filenames-fixed.png、zip-source-folders-fixed.png。没有提交、推送或云端发布；线上测试环境尚未更新。工作区其他未提交管理功能修改保留。

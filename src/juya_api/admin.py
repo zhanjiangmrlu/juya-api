@@ -1,5 +1,6 @@
 """Only this entrypoint is deployed on admin-api.juyayingyu.com."""
 
+from .admin_action_api import routes as action_routes
 from .application import application
 from .auth import admin_routes
 from .config import Settings
@@ -17,6 +18,7 @@ def create_app(settings: Settings | None = None, *, sessions=None, clock=None):
     app = application("admin", settings or Settings(), sessions, clock)
     app.include_router(admin_routes())
     app.include_router(content_routes())
+    app.include_router(action_routes())
     app.include_router(media_routes())
     app.include_router(users_routes())
     app.include_router(publication_routes())

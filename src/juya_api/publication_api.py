@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .content_models import Card, CardDraft, CardVersion, Media
+from .content_models import Card, CardDraft, CardVersion, Media, SettingCounter
 from .content_service import require_card, reviewed_candidate
 from .database import timestamp
 from .dependencies import administrator, database, operation_key
@@ -80,8 +80,14 @@ def catalog(db):
             )
         ).all()
     )
+    generation = db.get(SettingCounter, "catalog_revision")
     return {
-        "version": fingerprint([(r.id, r.sort_order) for r in rows]),
+        "version": fingerprint(
+            {
+                "generation": generation.value if generation else 0,
+                "items": [(r.id, r.sort_order) for r in rows],
+            }
+        ),
         "items": [
             {
                 "id": r.id,

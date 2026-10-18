@@ -66,6 +66,7 @@ class CardView(PublicModel):
     id: str
     display_name: str
     display_thumbnail_id: str | None
+    display_image_id: str | None = None
     status: str
     current_version_id: str | None
     draft_revision: int
@@ -74,6 +75,10 @@ class CardView(PublicModel):
     updated_at: str
     has_unpublished_changes: bool
     issues: list[FieldIssue]
+
+
+class AdminCardPage(Page[CardView]):
+    total_pages: int
 
 
 class CardPreview(PublicModel):

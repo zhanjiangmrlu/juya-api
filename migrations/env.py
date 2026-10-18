@@ -7,6 +7,7 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from juya_api import (  # noqa: F401
+    admin_action_models,
     content_models,
     import_models,
     job_models,
