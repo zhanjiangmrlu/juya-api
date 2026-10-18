@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-18",
+  "environment": "test",
+  "backend_commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+  "admin_commit": "6bedc86e1a191482f767c974ddf457e5208dd115",
+  "miniapp_commit": "3b8210c66a620b54bceb50f8a914c0a6026506b1",
+  "ci_run": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/39138543235",
+  "ci_passed": 181,
+  "schema_revision": "0013",
+  "admin_tests_passed": 63,
+  "mini_tests_passed": 50,
+  "releases": {
+    "admin_api": "20261018T153611-8d4e665f3ac1-5ccf47",
+    "mini_api": "20261018T153623-8d4e665f3ac1-b4b761",
+    "admin_web": "20261018T145937-6bedc86e1a19-10dac7"
+  },
+  "containers": [
+    {
+      "name": "juya-rebuild-test-admin-admin-api-1",
+      "commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "juya-rebuild-test-admin-admin-worker-1",
+      "commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "juya-rebuild-test-admin-admin-dispatcher-1",
+      "commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "juya-rebuild-test-mini-mini-api-1",
+      "commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "juya-rebuild-test-mini-mini-worker-1",
+      "commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "juya-rebuild-test-mini-mini-dispatcher-1",
+      "commit": "8d4e665f3ac18a2343f6b3d9256fe6d81b9c29fc",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "http": {
+    "environment": "test",
+    "index_and_assets_match_exact_build": true,
+    "asset_count": 4,
+    "health": [
+      {
+        "url": "https://test-admin-api.juyayingyu.com/health/ready",
+        "status": 200,
+        "service": "admin"
+      },
+      {
+        "url": "https://test-api.juyayingyu.com/health/ready",
+        "status": 200,
+        "service": "mini"
+      }
+    ],
+    "wechat_test_api_bound": true,
+    "wechat_project_config_sha256": "caf606572c413f9b5e230dddcc4a9bd35ee0f7f6a3b28ecd732eaa456b375c51"
+  },
+  "contracts": [
+    {
+      "role": "admin",
+      "deployed_contract_matches_commit": true,
+      "sha256": "34220ac4bfd800881488028e13dcbc227886c5fa683a3f96243157805ceccc46"
+    },
+    {
+      "role": "mini",
+      "deployed_contract_matches_commit": true,
+      "sha256": "943559aab91103465a8cbaba256d94207ac67d9e6a0063319ef5c7ef0c6b8895"
+    }
+  ],
+  "browser": {
+    "cloud_login": true,
+    "bilingual_search": true,
+    "independent_title_inputs": true,
+    "incomplete_title_hint": true,
+    "four_formats_and_mp3_hint": true,
+    "multi_zip_and_docx_entries": true,
+    "scene_and_import_business_data_unchanged": true,
+    "logged_out": true,
+    "js_errors": [],
+    "server_errors": []
+  },
+  "deployed_worker_regression": {
+    "formats": [
+      "MP3",
+      "M4A",
+      "WAV",
+      "AAC"
+    ],
+    "original_bytes_retained": true,
+    "complete_mp3_and_range": true,
+    "bilingual_publish_and_draft_isolation": true,
+    "optional_meaning": true,
+    "long_silence_aac": true,
+    "isolated_temporary_sql_and_media": true
+  },
+  "wechat": {
+    "version": "1.5.0-test.20261018",
+    "development_upload_succeeded": true,
+    "api": "https://test-api.juyayingyu.com",
+    "official_released": false,
+    "physical_device_acceptance_complete": false
+  },
+  "production_deployed": false,
+  "unrelated_local_share_changes_included": false,
+  "transport": "CI artifact ZIP hashes verified on server; original native CLI build_bundle, image identity checks, remote migration/publish, public health, guarded rollback and retention used. Exact CI source cloned cleanly; large artifacts packaged on server to avoid unstable client relay."
+}
