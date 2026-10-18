@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-18",
+  "environment": "test",
+  "backend_commit": "47fae395569ec03b51e83014e5d11ad55a872a29",
+  "frontend_commit": "2c52cd864225952cadd592fa843eb256d6ee4e86",
+  "ci_run": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/39114203966",
+  "ci_tests_passed": 157,
+  "frontend_tests_passed": 59,
+  "schema_revision": "0012",
+  "backend_release": "20261018T091633-47fae395569e-232880",
+  "frontend_release": "20261018T124123-2c52cd864225-9da5d8",
+  "admin_services_healthy": 3,
+  "admin_zero_restarts_and_oom": true,
+  "mini_container_identities_and_start_times_unchanged": true,
+  "http_verification": {
+    "frontend_index_and_assets_match_build": true,
+    "checked_assets": 4,
+    "health": [
+      {
+        "url": "https://test-admin-api.juyayingyu.com/health/ready",
+        "http": 200
+      },
+      {
+        "url": "https://test-api.juyayingyu.com/health/ready",
+        "http": 200
+      }
+    ]
+  },
+  "image_runtime_verification": {
+    "deployed_image_regressions": 9,
+    "passed": [
+      "legacy_zip_false",
+      "legacy_zip_true",
+      "explicit_utf8_valid",
+      "explicit_utf8_invalid",
+      "test_admin_pagination_caps_clamps_and_searches_the_entire_set",
+      "test_mixed_offline_is_durable_and_replays_without_reexecuting",
+      "test_only_stale_member_fails_and_requires_new_confirmation",
+      "test_sort_snapshot_expires_after_offline_and_republish_of_unchanged_content",
+      "test_uploaded_audio_filename_survives_status_reload"
+    ],
+    "isolated_temporary_database_and_media": true
+  },
+  "production_deployed": false,
+  "browser_full_workflow_verified": false
+}
