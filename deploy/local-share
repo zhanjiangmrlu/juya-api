@@ -1,0 +1,6 @@
+#!/bin/zsh
+set -eu
+task_root="$(cd -- "$(dirname -- "$0")" && pwd)"
+exec "$task_root/github-repos/juya-api/.venv/bin/python" \
+  "$task_root/github-repos/juya-api/deploy/local_share.py" \
+  --workspace "$task_root" "$@"
