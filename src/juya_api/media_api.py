@@ -39,6 +39,13 @@ def media_view(medium: Media, db=None) -> dict:
     """Return safe media metadata and controlled identifiers, never OSS object credentials."""
     job = db.get(Job, medium.job_id) if db is not None and medium.job_id else None
     failed = job is not None and job.state == "failed"
+    preparing_legacy = (
+        medium.kind == "audio"
+        and medium.state == "ready"
+        and not medium.playback_id
+        and job is not None
+        and job.state not in {"succeeded", "failed"}
+    )
     original_name = None
     if db is not None and medium.owner_kind == "admin":
         from sqlalchemy import select
@@ -54,14 +61,28 @@ def media_view(medium: Media, db=None) -> dict:
                 select(ImportFile).where(ImportFile.media_id == medium.id).limit(1)
             )
             original_name = import_file_name(db, imported_file) if imported_file else None
+    playback = db.get(Media, medium.playback_id) if db is not None and medium.playback_id else None
     return {
+        "playback_id": medium.playback_id,
+        "playback_content_type": playback.content_type if playback else None,
+        "processing_stage": "failed" if failed else medium.processing_stage,
         "original_name": original_name,
         "job_id": medium.job_id,
         "error_code": job.error_code if failed and job else None,
-        "error": "素材处理失败，请重试或重新上传" if failed else None,
+        "error": (
+            {
+                "audio_invalid": "音频格式无效、受保护或内容不完整，请更换可解码的完整文件",
+                "audio_format_mismatch": "音频真实格式与后缀不一致，请上传原始格式文件",
+                "audio_conversion_failed": "MP3兼容处理未通过完整性校验，请重试或更换文件",
+                "audio_conversion_unavailable": "音频转换暂不可用，请稍后重试",
+                "audio_decoder_unavailable": "音频校验服务暂不可用，请稍后重试",
+            }.get(job.error_code, "素材处理失败，请重试或重新上传")
+            if failed and job
+            else None
+        ),
         "id": medium.id,
         "kind": medium.kind,
-        "state": "failed" if failed else medium.state,
+        "state": "failed" if failed else "processing" if preparing_legacy else medium.state,
         "content_type": medium.content_type,
         "size": medium.size,
         "width": medium.width,
@@ -190,10 +211,7 @@ def decoded_audio(data: bytes):
                 s.get("codec_type") == "video" for s in streams
             ):
                 raise ValueError("no audio stream")
-            duration = float(info["format"]["duration"])
-            if not math.isfinite(duration) or duration <= 0:
-                raise ValueError("invalid duration")
-            subprocess.run(
+            decoded = subprocess.run(
                 [
                     decoder,
                     "-nostdin",
@@ -215,6 +233,9 @@ def decoded_audio(data: bytes):
                     "-vn",
                     "-sn",
                     "-dn",
+                    "-progress",
+                    "pipe:1",
+                    "-nostats",
                     "-f",
                     "null",
                     "-",
@@ -223,6 +244,15 @@ def decoded_audio(data: bytes):
                 timeout=60,
                 check=True,
             )
+            # ADTS/VBR container duration is an estimate; use completed decode timestamps.
+            times = [
+                int(line.split("=", 1)[1])
+                for line in decoded.stdout.decode("ascii").splitlines()
+                if line.startswith("out_time_us=")
+            ]
+            duration = max(times, default=0) / 1_000_000
+            if not math.isfinite(duration) or duration <= 0:
+                raise ValueError("invalid decoded duration")
             name = info["format"]["format_name"]
             if name == "wav":
                 return "audio/wav", duration
@@ -241,6 +271,12 @@ def save_media(
     db, settings, actor, role: str, kind: str, data: bytes, now, *, original_name=None
 ) -> Media:
     """Persist decoded immutable originals and derived thumbnails as one database unit."""
+    if (
+        kind == "audio"
+        and original_name
+        and PurePosixPath(original_name).suffix.lower() not in {".mp3", ".m4a", ".wav", ".aac"}
+    ):
+        raise DomainError(422, "audio_format_unsupported", "仅支持 MP3、M4A、WAV、AAC 完整音频")
     storage = ObjectStorage(settings)
     media_id = identifier()
     checksum = hashlib.sha256(data).hexdigest()
@@ -252,6 +288,7 @@ def save_media(
         owner_id=actor.id,
         kind=kind,
         state="processing",
+        processing_stage="validating",
         storage_key=storage_key,
         content_type="application/octet-stream",
         size=len(data),
@@ -280,18 +317,47 @@ def retry_media(db, settings, actor, role, media_id, key, now):
         if not medium or medium.owner_kind != role or medium.owner_id != actor.id:
             raise DomainError(404, "media_missing", "素材不可用")
         previous = db.get(Job, medium.job_id) if medium.job_id else None
-        if not previous or previous.state != "failed":
+        legacy = medium.kind == "audio" and medium.state == "ready" and not medium.playback_id
+        if previous and previous.state not in {"succeeded", "failed"}:
             return media_view(medium, db)
-        if previous.error_code in {"image_invalid", "audio_invalid", "media_invalid"}:
+        if not legacy and (not previous or previous.state != "failed"):
+            return media_view(medium, db)
+        if previous and previous.error_code in {
+            "image_invalid",
+            "audio_invalid",
+            "media_invalid",
+            "audio_format_mismatch",
+            "audio_format_unsupported",
+        }:
             raise DomainError(422, "media_invalid", "素材无法读取，请重新选择文件")
         job = enqueue(
             db, "media.decode", role, actor.id, {"media_id": medium.id}, now, settings=settings
         )
-        medium.job_id, medium.state = job.id, "processing"
+        medium.job_id = job.id
+        # Published legacy references remain readable while their derivative is prepared.
+        if not legacy:
+            medium.state = "processing"
+        medium.processing_stage = "validating" if legacy else medium.processing_stage
         db.flush()
         return media_view(medium, db)
 
     return operate(db, actor, role, key, "media.retry:" + media_id, {}, now, execute)
+
+
+def playback_medium(db, medium: Media) -> Media:
+    """Resolve playback only after the caller authorized the original logical reference."""
+    if medium.kind != "audio" or not medium.playback_id or medium.playback_id == medium.id:
+        return medium
+    playback = db.get(Media, medium.playback_id)
+    if (
+        not playback
+        or playback.state != "ready"
+        or playback.kind != "audio_playback"
+        or playback.owner_kind != medium.owner_kind
+        or playback.owner_id != medium.owner_id
+    ):
+        raise DomainError(503, "audio_playback_unavailable", "播放资源暂不可用，请稍后重试")
+    return playback
 
 
 def deliver(medium: Media, request: Request):
@@ -404,7 +470,7 @@ def admin_routes():
         medium = db.get(Media, media_id)
         if not medium or medium.state != "ready":
             raise DomainError(404, "media_missing", "素材不可用")
-        return deliver(medium, request)
+        return deliver(playback_medium(db, medium), request)
 
     @router.get("/media/{media_id}/status", response_model=MediaMetadata)
     def status(
@@ -487,6 +553,6 @@ def mini_routes():
         medium = db.get(Media, ticket.media_id)
         if not medium or medium.state != "ready":
             raise DomainError(404, "media_missing", "素材不可用")
-        return deliver(medium, request)
+        return deliver(playback_medium(db, medium), request)
 
     return router

@@ -233,7 +233,7 @@ def test_old_lease_cannot_overwrite_import_progress(admin, system):
     assert progress == {"phase": "parsing", "processed": 1, "total": 3}
 
 
-def test_new_admin_requires_progress_migration_but_mini_keeps_previous_contract(system):
+def test_new_audio_capable_apis_require_additive_playback_migration(system):
     from sqlalchemy import text
 
     from juya_api.content_models import SettingCounter
@@ -244,7 +244,7 @@ def test_new_admin_requires_progress_migration_but_mini_keeps_previous_contract(
         db.execute(text("INSERT INTO alembic_version VALUES ('0010')"))
         db.merge(SettingCounter(name="schema_contract", value=1))
     assert system["admin"].get("/health/ready").status_code == 503
-    assert system["mini"].get("/health/ready").status_code == 200
+    assert system["mini"].get("/health/ready").status_code == 503
 
 
 def test_docx_mode_preserves_conflicting_file_kind_rejection(admin):

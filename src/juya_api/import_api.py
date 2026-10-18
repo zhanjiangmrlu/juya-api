@@ -48,6 +48,7 @@ class ImportProgress(BaseModel):
 
 
 class ImportFileView(BaseModel):
+    processing_stage: str | None = None
     id: str
     name: str
     kind: str

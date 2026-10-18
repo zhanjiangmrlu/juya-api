@@ -64,6 +64,8 @@ class Media(Base):
     height: Mapped[int | None] = mapped_column(Integer)
     duration: Mapped[float | None] = mapped_column(Float)
     thumbnail_id: Mapped[str | None] = mapped_column(String(36))
+    playback_id: Mapped[str | None] = mapped_column(String(36))
+    processing_stage: Mapped[str | None] = mapped_column(String(24))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
 
 

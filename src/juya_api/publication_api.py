@@ -22,6 +22,7 @@ from .transactions import operate
 class OrderedCard(BaseModel):
     id: str
     name: str
+    title_en: str = ""
     image_id: str | None
     thumbnail_id: str | None = None
 
@@ -54,6 +55,7 @@ class PublicationResult(BaseModel):
     id: str
     card_id: str
     name: str
+    title_en: str = ""
     state: str
     error_code: str | None
     job_id: str
@@ -92,6 +94,7 @@ def catalog(db):
             {
                 "id": r.id,
                 "name": r.payload["name"],
+                "title_en": r.payload.get("title_en", ""),
                 "image_id": r.payload["image_id"],
                 "thumbnail_id": thumbnails.get(r.payload["image_id"]),
             }
@@ -124,6 +127,7 @@ def batch_view(db, batch):
                 "id": item.id,
                 "card_id": item.card_id,
                 "name": item.name,
+                "title_en": item.title_en,
                 "state": job.state,
                 "error_code": job.error_code,
                 "job_id": job.id,
@@ -211,6 +215,7 @@ def routes():
                     batch_id=batch.id,
                     card_id=value.card_id,
                     name=draft.payload["name"],
+                    title_en=draft.payload.get("title_en", ""),
                     revision=value.revision,
                     preview_id=value.preview_id,
                     position=position,

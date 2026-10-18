@@ -51,7 +51,12 @@ def admin_routes():
         db: Session = Depends(database, scope="function"),
     ):
         limit = min(limit, 10)
-        query = select(Card).join(CardDraft).where(Card.deleted_at.is_(None))
+        query = (
+            select(Card)
+            .join(CardDraft)
+            .outerjoin(CardVersion, CardVersion.id == Card.current_version_id)
+            .where(Card.deleted_at.is_(None))
+        )
         if batch_id:
             owned_batch(db, batch_id, admin.id)
             query = query.where(
@@ -65,7 +70,18 @@ def admin_routes():
             query = query.where(Card.status == status)
         if search.strip():
             query = query.where(
-                CardDraft.payload["name"].as_string().contains(search.strip(), autoescape=True)
+                or_(
+                    CardDraft.payload["name"].as_string().contains(search.strip(), autoescape=True),
+                    func.lower(CardDraft.payload["title_en"].as_string()).contains(
+                        search.strip().lower(), autoescape=True
+                    ),
+                    CardVersion.payload["name"]
+                    .as_string()
+                    .contains(search.strip(), autoescape=True),
+                    func.lower(CardVersion.payload["title_en"].as_string()).contains(
+                        search.strip().lower(), autoescape=True
+                    ),
+                )
             )
         total = db.scalar(select(func.count()).select_from(query.subquery()))
         total_pages = ((total or 0) + limit - 1) // limit
@@ -327,6 +343,7 @@ def mini_routes():
                 {
                     "id": card.id,
                     "name": version.payload["name"],
+                    "title_en": version.payload.get("title_en", ""),
                     "version_id": version.id,
                     "thumbnail_id": image.thumbnail_id if image else None,
                     "published_at": timestamp(version.published_at),

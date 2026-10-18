@@ -46,6 +46,7 @@ class ActionResult(BaseModel):
     id: str
     card_id: str
     name: str
+    title_en: str = ""
     state: str
     error_code: str | None
     job_id: str | None
@@ -92,6 +93,7 @@ def view(db, batch):
                 "id": item.id,
                 "card_id": item.card_id,
                 "name": item.name,
+                "title_en": item.title_en,
                 "state": job.state if job else "skipped",
                 "error_code": error,
                 "job_id": item.job_id,
@@ -152,6 +154,7 @@ def routes():
                     batch_id=batch.id,
                     card_id=value.card_id,
                     name=name,
+                    title_en=card_view(db, card)["display_title_en"] if card else "",
                     revision=value.revision,
                     status=value.status,
                     version_id=value.version_id,

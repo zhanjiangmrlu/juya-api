@@ -6884,6 +6884,11 @@
             "type": "string",
             "title": "Name"
           },
+          "title_en": {
+            "type": "string",
+            "title": "Title En",
+            "default": ""
+          },
           "state": {
             "type": "string",
             "title": "State"
@@ -7324,6 +7329,11 @@
             "type": "string",
             "title": "Display Name"
           },
+          "display_title_en": {
+            "type": "string",
+            "title": "Display Title En",
+            "default": ""
+          },
           "display_thumbnail_id": {
             "anyOf": [
               {
@@ -7577,6 +7587,11 @@
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "Title En",
+            "default": ""
           },
           "thumbnail_id": {
             "anyOf": [
@@ -7876,6 +7891,17 @@
       },
       "ImportFileView": {
         "properties": {
+          "processing_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Stage"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -8190,6 +8216,11 @@
             "type": "string",
             "title": "Name"
           },
+          "title_en": {
+            "type": "string",
+            "title": "Title En",
+            "default": ""
+          },
           "thumbnail_id": {
             "anyOf": [
               {
@@ -8264,6 +8295,39 @@
       },
       "MediaMetadata": {
         "properties": {
+          "playback_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playback Id"
+          },
+          "playback_content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playback Content Type"
+          },
+          "processing_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Stage"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -8417,6 +8481,11 @@
             "type": "string",
             "title": "Name"
           },
+          "title_en": {
+            "type": "string",
+            "title": "Title En",
+            "default": ""
+          },
           "image_id": {
             "anyOf": [
               {
@@ -8556,6 +8625,11 @@
           "name": {
             "type": "string",
             "title": "Name"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "Title En",
+            "default": ""
           },
           "state": {
             "type": "string",
@@ -8699,6 +8773,12 @@
             "type": "string",
             "maxLength": 160,
             "title": "Name",
+            "default": ""
+          },
+          "title_en": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Title En",
             "default": ""
           },
           "image_id": {

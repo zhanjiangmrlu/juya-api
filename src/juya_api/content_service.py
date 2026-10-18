@@ -39,6 +39,7 @@ def normalize(content: SceneContent) -> dict:
     """Drop empty optional chunks and bind only unambiguous vocabulary occurrences."""
     value = content.model_dump(mode="json")
     value["name"] = value["name"].strip()
+    value["title_en"] = value["title_en"].strip()
     value["chunks"] = [c for c in value["chunks"] if c["english"].strip() or c["chinese"].strip()]
     for word in value["vocabulary"]:
         if word["source"] is None:
@@ -56,7 +57,9 @@ def validate_publication(db, content: dict) -> list[dict]:
         issues.append({"field": field, "code": code, "message": message})
 
     if not content["name"].strip():
-        issue("name", "required", "请填写卡片名称")
+        issue("name", "required", "请填写中文标题")
+    if not content.get("title_en", "").strip():
+        issue("title_en", "required", "待补充英文标题")
     for field, kind in [("image_id", "image"), ("audio_id", "audio")]:
         medium = db.get(Media, content[field]) if content[field] else None
         if (
@@ -66,6 +69,21 @@ def validate_publication(db, content: dict) -> list[dict]:
             or medium.state != "ready"
         ):
             issue(field, "media_required", "请上传已完成处理的场景图片或完整音频")
+        elif kind == "audio":
+            playback = db.get(Media, medium.playback_id) if medium.playback_id else None
+            if (
+                not playback
+                or playback.state != "ready"
+                or playback.content_type != "audio/mpeg"
+                or playback.owner_kind != medium.owner_kind
+                or playback.owner_id != medium.owner_id
+                or (playback.id != medium.id and playback.kind != "audio_playback")
+            ):
+                issue(
+                    field,
+                    "audio_playback_required",
+                    "完整音频需兼容处理为MP3，请在音频区处理后再发布",
+                )
     if not content["dialogue"]:
         issue("dialogue", "required", "请至少填写一组完整对话")
     lines = {}
@@ -83,8 +101,8 @@ def validate_publication(db, content: dict) -> list[dict]:
         if word["id"] in word_ids:
             issue(f"vocabulary.{i}", "duplicate_reference", "词汇引用重复，请重新核对")
         word_ids.add(word["id"])
-        if not word["english"].strip() or not word["meaning"].strip():
-            issue(f"vocabulary.{i}", "required", "请填写词汇英文及本句释义")
+        if not word["english"].strip():
+            issue(f"vocabulary.{i}", "required", "请填写词汇英文")
         if word["pronunciation_issue"]:
             issue(f"vocabulary.{i}", "pronunciation_unconfirmed", "请先核对词汇读音")
         source = word["source"]
@@ -155,6 +173,7 @@ def card_view(db, card: Card) -> dict:
     return {
         "id": card.id,
         "display_name": display["name"],
+        "display_title_en": display.get("title_en", ""),
         "display_image_id": display["image_id"],
         "display_thumbnail_id": display_image.thumbnail_id if display_image else None,
         "status": card.status,

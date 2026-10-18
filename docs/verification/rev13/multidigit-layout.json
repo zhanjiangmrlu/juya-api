@@ -1,0 +1,17 @@
+{
+  "scope": "Browser-only visual fixture overrides numeric statistics response to 123/12/1234; no server statistics or records modified",
+  "centers": [
+    {
+      "centerDelta": 0,
+      "width": 111.34375
+    },
+    {
+      "centerDelta": 0,
+      "width": 111.34375
+    },
+    {
+      "centerDelta": 0,
+      "width": 111.34375
+    }
+  ]
+}

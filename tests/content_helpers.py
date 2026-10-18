@@ -41,6 +41,7 @@ def content(admin):
     process_jobs(admin)
     return {
         "name": "在咖啡店点单",
+        "title_en": "Ordering Coffee",
         "image_id": image.json()["id"],
         "audio_id": audio.json()["id"],
         "dialogue": [

@@ -107,9 +107,28 @@ def heading_styles(archive):
     return ids
 
 
+def english_titles(elements):
+    """Read only title metadata before the first content section within one H1."""
+    values = set()
+    for element in elements:
+        if element.tag == W + "tbl":
+            break
+        if element.tag != W + "p":
+            continue
+        text = paragraph_text(element).strip()
+        if text in {"场景对话", "重点词汇", "语块", "语块（选填）", "语块(选填)"}:
+            break
+        match = re.fullmatch(r"英文标题\s*[:：]\s*(.*)", text)
+        if match and match[1].strip():
+            values.add(match[1].strip())
+    return values
+
+
 def parse_docx_section(name, elements):
     """Parse exactly one explicit H1 section; malformed neighbors cannot discard this card."""
     current: dict[str, Any] = {"name": name, "dialogue": [], "vocabulary": [], "chunks": []}
+    titles = english_titles(elements)
+    current["title_en"] = next(iter(titles)) if len(titles) == 1 else ""
     section = ""
     source_hints = []
     for element in elements:
@@ -117,6 +136,8 @@ def parse_docx_section(name, elements):
             text = paragraph_text(element).strip()
             if text in {"场景对话", "重点词汇", "语块", "语块（选填）", "语块(选填)"}:
                 section = "语块" if text.startswith("语块") else text
+            elif not section and re.fullmatch(r"英文标题\s*[:：].*", text):
+                continue
             elif text:
                 raise DomainError(
                     422, "docx_structure", "卡片正文请使用固定小标题和表格，不按任意段落猜测配对"
@@ -230,7 +251,16 @@ def parse_docx_items(data, *, card_limit=50):
         for index, (name, elements) in enumerate(sections):
             try:
                 content = parse_docx_section(name, elements)
-                results.append({"content": content, "readable": True, "issues": []})
+                issues = []
+                if len(english_titles(elements)) > 1:
+                    issues.append(
+                        {
+                            "field": "title_en",
+                            "code": "title_en_conflict",
+                            "message": "英文标题存在冲突，请核对后填写确认值",
+                        }
+                    )
+                results.append({"content": content, "readable": True, "issues": issues})
             except DomainError as error:
                 # Show only a bounded title for an unreadable card; retain the original source file.
                 results.append(

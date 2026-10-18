@@ -1,0 +1,42 @@
+{
+  "scope": "local disposable API and identity fixtures; H5 Chrome, not native device acceptance",
+  "rates": [
+    {
+      "rate": 1,
+      "measured": 1.048
+    },
+    {
+      "rate": 1.25,
+      "measured": 1.204
+    },
+    {
+      "rate": 1.5,
+      "measured": 1.501
+    },
+    {
+      "rate": 1.75,
+      "measured": 1.749
+    },
+    {
+      "rate": 2,
+      "measured": 1.993
+    }
+  ],
+  "dimensions": {
+    "english": 20.0003,
+    "phonetic": 20.0003,
+    "meaning": 15.9999,
+    "source": 15.9999,
+    "overlap": false
+  },
+  "centers": [
+    0,
+    0,
+    0
+  ],
+  "gaps": {
+    "row": 48,
+    "logout": 27.984375
+  },
+  "errors": []
+}

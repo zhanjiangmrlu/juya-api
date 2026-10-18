@@ -20,7 +20,7 @@ from .content_service import (
 from .database import timestamp
 from .errors import DomainError
 from .import_models import ImportBatch, ImportFile, ImportIdentity, ImportItem
-from .import_parser import checked_archive, member_bytes, parse_docx, parse_docx_items
+from .import_parser import checked_archive, member_bytes, parse_docx_items
 from .job_models import Job
 from .jobs import enqueue
 from .models import Administrator
@@ -45,6 +45,8 @@ def item_job(db, item):
 def content_hash(db, content):
     """Ignore generated IDs, retaining text, confirmed sources and actual immutable media hashes."""
     value = copy.deepcopy(content)
+    if not value.get("title_en"):
+        value.pop("title_en", None)
     lines = {line["id"]: index for index, line in enumerate(value["dialogue"])}
     for field in ["image_id", "audio_id"]:
         medium = db.get(Media, value[field]) if value[field] else None
@@ -144,6 +146,7 @@ def file_view(db, row):
         "kind": row.kind,
         "size": row.size,
         "media_id": row.media_id,
+        "processing_stage": medium.processing_stage if medium else None,
         "state": state,
         "job_id": job.id if job else None,
         "error_code": row.error_code or (job.error_code if job and job.state == "failed" else None),
@@ -157,7 +160,12 @@ def item_view(db, item):
     image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
     hashed = content_hash(db, item.content)
     identity = find_identity(db, item)
-    issues = list(item.parser_issues) + validate_publication(db, item.content)
+    issues = [
+        i
+        for i in item.parser_issues
+        if i["code"] != "title_en_conflict" or not item.content.get("title_en", "").strip()
+    ]
+    issues += validate_publication(db, item.content)
     if not item.readable:
         state = "unreadable"
     elif job and job.state in {"queued", "running", "retry"}:
@@ -525,9 +533,10 @@ def prepare_parse(settings, sessions, job, *, clock):
                             document["error_code"],
                             "此文件夹内容DOCX无法读取或超过限制，请修正文件",
                         )
-                    contents = parse_docx(
+                    parsed_items = parse_docx_items(
                         storage.read(document["storage_key"]), card_limit=settings.import_card_limit
                     )
+                    contents = [i["content"] for i in parsed_items]
                     if len(contents) != 1:
                         raise DomainError(
                             422,
@@ -539,7 +548,14 @@ def prepare_parse(settings, sessions, job, *, clock):
                         values = [f for f in files if f["kind"] == kind]
                         if len(values) == 1:
                             content[field] = values[0]["media_id"]
-                    candidate(document["id"], 0, content, document["sha256"])
+                    candidate(
+                        document["id"],
+                        0,
+                        content,
+                        document["sha256"],
+                        readable=parsed_items[0]["readable"],
+                        issues=parsed_items[0]["issues"],
+                    )
                 except DomainError as error:
                     content = normalize(
                         SceneContent(name=PurePosixPath(document["name"]).parent.name)

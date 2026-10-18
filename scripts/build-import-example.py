@@ -23,6 +23,7 @@ def main():
     document.core_properties.author = "句芽英语"
     document.core_properties.last_modified_by = "句芽英语"
     document.add_heading("在咖啡店点单", level=1)
+    document.add_paragraph("英文标题：Ordering Coffee")
     document.add_heading("场景对话", level=2)
     table = document.add_table(rows=1, cols=3)
     for cell, value in zip(table.rows[0].cells, ["人物", "英文", "中文"], strict=True):
@@ -37,7 +38,7 @@ def main():
     table = document.add_table(rows=1, cols=4)
     for cell, value in zip(
         table.rows[0].cells,
-        ["词汇", "本句释义", "音标（选填）", "对应英文原句（建议填写）"],
+        ["词汇", "本句释义（选填）", "音标（选填）", "对应英文原句（建议填写）"],
         strict=True,
     ):
         cell.text = value
@@ -69,7 +70,12 @@ def main():
         archive.writestr("在咖啡店点单/完整音频.wav", audio)
         archive.writestr(
             "填写说明.txt",
-            "一张卡片一个文件夹，配套一份内容DOCX、一张完整场景图及一份完整对话音频。\n示例可替换为你自己的资料；导入只生成草稿，发布前仍需核对。\n独立DOCX入口允许多个一级标题，ZIP的每个文件夹只能包含一个一级标题。\n语块选填，不需要上传词汇音频或语块图片。\n",
+            "一张卡片一个文件夹，配套一份内容DOCX、一张完整场景图及一份完整对话音频。\n"
+            "示例可替换为你自己的资料；导入只生成草稿，发布前仍需核对。\n"
+            "独立DOCX入口允许多个一级标题，ZIP的每个文件夹只能包含一个一级标题。\n"
+            "一级标题填写中文标题，紧接正文填写英文标题：Ordering Coffee；新发布需双标题完整。\n"
+            "音频支持MP3、M4A、WAV、AAC；保留原件并兼容处理为MP3。\n"
+            "本句释义和音标独立选填；语块选填，不需要上传词汇音频或语块图片。\n",
         )
     print(f"Built {target.name}; {duration:.2f}s reviewed sample audio")
 

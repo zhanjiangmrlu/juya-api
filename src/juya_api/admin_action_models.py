@@ -24,6 +24,7 @@ class AdminActionItem(Base):
     batch_id: Mapped[str] = mapped_column(ForeignKey("admin_action_batches.id"), index=True)
     card_id: Mapped[str] = mapped_column(String(36))
     name: Mapped[str] = mapped_column(String(160))
+    title_en: Mapped[str] = mapped_column(String(300), default="", server_default="")
     revision: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(16))
     version_id: Mapped[str | None] = mapped_column(String(36))

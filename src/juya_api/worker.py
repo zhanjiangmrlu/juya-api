@@ -16,6 +16,7 @@ from .storage import ObjectStorage
 
 def prepare_media(settings, sessions, payload):
     """Decode in the isolated worker, outside the HTTP and database transactions."""
+    from .audio_processing import playback_mp3
     from .media_api import decoded_audio, decoded_image
 
     with sessions() as db:
@@ -24,11 +25,33 @@ def prepare_media(settings, sessions, payload):
             raise DomainError(404, "media_missing", "素材不可用")
         kind, source_key, size = medium.kind, medium.storage_key, medium.size
         owner_kind, owner_id, media_id = medium.owner_kind, medium.owner_id, medium.id
+        previous_type, previous_duration = medium.content_type, medium.duration
+        previous_stage, active_job_id = medium.processing_stage, medium.job_id
+        expected_hash = medium.sha256
+        original_name = None
+        if kind == "audio" and owner_kind == "admin":
+            from sqlalchemy import select
+
+            from .admin_action_models import AdminMediaSource
+            from .import_models import ImportFile
+
+            source = db.get(AdminMediaSource, media_id)
+            imported = (
+                db.scalar(select(ImportFile).where(ImportFile.media_id == media_id).limit(1))
+                if not source
+                else None
+            )
+            original_name = source.original_name if source else imported.name if imported else None
     storage = ObjectStorage(settings)
     data = storage.read(source_key)
-    if len(data) != size or len(data) > settings.audio_limit_mb * 1024 * 1024:
+    if (
+        len(data) != size
+        or hashlib.sha256(data).hexdigest() != expected_hash
+        or len(data) > settings.audio_limit_mb * 1024 * 1024
+    ):
         raise DomainError(422, "media_invalid", "素材无法读取")
     thumbnail = None
+    playback = None
     if kind in {"image", "avatar"}:
         content_type, width, height, thumbnail_data, dimensions = decoded_image(data)
         thumb_id = str(uuid5(NAMESPACE_URL, media_id + ":thumbnail"))
@@ -52,15 +75,69 @@ def prepare_media(settings, sessions, payload):
             content_type=content_type, width=width, height=height, thumbnail_id=thumb_id
         )
     else:
-        content_type, duration = decoded_audio(data)
-        metadata = dict(content_type=content_type, duration=duration)
+        if previous_stage == "converting" and previous_duration:
+            content_type, duration = previous_type, previous_duration
+        else:
+            content_type, duration = decoded_audio(data)
+        if original_name:
+            from pathlib import PurePosixPath
+
+            expected_type = {
+                ".wav": "audio/wav",
+                ".mp3": "audio/mpeg",
+                ".m4a": "audio/mp4",
+                ".aac": "audio/aac",
+            }.get(PurePosixPath(original_name).suffix.lower())
+            if expected_type != content_type:
+                raise DomainError(
+                    422, "audio_format_mismatch", "音频真实格式与文件后缀不一致，请上传原始格式文件"
+                )
+        with sessions.begin() as db:
+            row = db.get(Media, media_id)
+            if not row or row.job_id != active_job_id:
+                raise DomainError(409, "media_changed", "素材处理状态已更新")
+            row.content_type, row.duration, row.processing_stage = (
+                content_type,
+                duration,
+                "converting",
+            )
+        output = playback_mp3(data, content_type, duration, settings.audio_limit_mb * 1024 * 1024)
+        playback_id = media_id
+        if content_type != "audio/mpeg":
+            playback_id = str(uuid5(NAMESPACE_URL, media_id + ":mp3-v1"))
+            checksum = hashlib.sha256(output).hexdigest()
+            key = f"{settings.environment}/media/{playback_id}/{checksum}"
+            storage.put(key, output, "audio/mpeg")
+            playback = dict(
+                id=playback_id,
+                owner_kind=owner_kind,
+                owner_id=owner_id,
+                kind="audio_playback",
+                state="ready",
+                storage_key=key,
+                content_type="audio/mpeg",
+                size=len(output),
+                sha256=checksum,
+                duration=duration,
+            )
+        metadata = dict(
+            content_type=content_type,
+            duration=duration,
+            playback_id=playback_id,
+            processing_stage="ready",
+        )
 
     def apply(db, job):
         row = db.get(Media, media_id)
         if not row or row.job_id != job.id:
             raise DomainError(409, "media_changed", "素材处理状态已更新")
-        if thumbnail and not db.get(Media, thumbnail["id"]):
-            db.add(Media(**thumbnail, created_at=job.updated_at))
+        for artifact in [thumbnail, playback]:
+            if artifact:
+                existing = db.get(Media, artifact["id"])
+                if existing and existing.sha256 != artifact["sha256"]:
+                    raise DomainError(409, "media_derivative_changed", "播放资源处理结果已变化")
+                if not existing:
+                    db.add(Media(**artifact, created_at=job.updated_at))
         for name, value in metadata.items():
             setattr(row, name, value)
         row.state = "ready"

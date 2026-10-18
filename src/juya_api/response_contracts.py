@@ -65,6 +65,7 @@ class FieldIssue(PublicModel):
 class CardView(PublicModel):
     id: str
     display_name: str
+    display_title_en: str = ""
     display_thumbnail_id: str | None
     display_image_id: str | None = None
     status: str
@@ -98,6 +99,7 @@ class CardState(PublicModel):
 class CardBrief(PublicModel):
     id: str
     name: str
+    title_en: str = ""
     version_id: str
     thumbnail_id: str | None
     published_at: str
@@ -126,6 +128,9 @@ class DeletedCard(PublicModel):
 
 
 class MediaMetadata(PublicModel):
+    playback_id: str | None = None
+    playback_content_type: str | None = None
+    processing_stage: str | None = None
     id: str
     kind: str
     state: str
@@ -176,6 +181,7 @@ class FavoriteResponse(PublicModel):
 class CardSummary(PublicModel):
     id: str
     name: str
+    title_en: str = ""
     thumbnail_id: str | None
     available: bool
     version_id: str | None

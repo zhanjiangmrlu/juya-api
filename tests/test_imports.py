@@ -8,10 +8,12 @@ import pytest
 from docx import Document
 
 
-def document(*names):
+def document(*names, titles=True):
     doc = Document()
     for name in names:
         doc.add_heading(name, level=1)
+        if titles:
+            doc.add_paragraph("英文标题：Ordering Coffee")
         doc.add_heading("场景对话", level=2)
         table = doc.add_table(rows=1, cols=3)
         for cell, text in zip(table.rows[0].cells, ["人物", "英文", "中文"], strict=True):

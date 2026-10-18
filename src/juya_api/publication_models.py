@@ -23,6 +23,7 @@ class PublicationItem(Base):
     batch_id: Mapped[str] = mapped_column(ForeignKey("publication_batches.id"), index=True)
     card_id: Mapped[str] = mapped_column(ForeignKey("cards.id"))
     name: Mapped[str] = mapped_column(String(160))
+    title_en: Mapped[str] = mapped_column(String(300), default="", server_default="")
     revision: Mapped[int] = mapped_column(Integer)
     preview_id: Mapped[str] = mapped_column(String(36))
     job_id: Mapped[str] = mapped_column(ForeignKey("jobs.id"))

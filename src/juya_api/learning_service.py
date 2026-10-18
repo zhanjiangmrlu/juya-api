@@ -78,6 +78,7 @@ def card_summary(db, card_id: str) -> dict:
     return {
         "id": card_id,
         "name": version.payload["name"] if version else "场景卡暂不可用",
+        "title_en": version.payload.get("title_en", "") if version else "",
         "thumbnail_id": image.thumbnail_id if image else None,
         "available": available,
         "version_id": version.id if version and available else None,

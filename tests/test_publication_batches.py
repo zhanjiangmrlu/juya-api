@@ -25,6 +25,7 @@ def test_partial_publish_recovers_durably_without_republishing_success(admin, mi
     )
     assert created.status_code == 201, created.text
     batch = created.json()
+    assert batch["items"][0]["title_en"] == "Ordering Coffee"
     assert (
         admin.post(
             "/api/admin/v1/publication-batches",

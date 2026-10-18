@@ -43,7 +43,8 @@ def test_audio_ticket_streams_ranges_and_is_revoked_by_offline(admin, mini):
     url = ticket.json()["url"]
     audio = mini.get(url, headers={"Range": "bytes=0-15"})
     assert audio.status_code == 206
-    assert audio.content[:4] == b"RIFF"
+    assert audio.headers["content-type"] == "audio/mpeg"
+    assert not audio.content.startswith(b"RIFF")
     assert len(audio.content) == 16
     assert audio.headers["cache-control"] == "no-store"
     assert (

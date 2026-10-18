@@ -1,0 +1,48 @@
+{
+  "scope": "Disposable local API; Chrome H5 browser only, no native device acceptance",
+  "profiles": [
+    {
+      "name": "no-contact",
+      "height": 48,
+      "overflow": false,
+      "logoutGap": 27.984375
+    },
+    {
+      "name": "phone",
+      "height": 48,
+      "overflow": false,
+      "logoutGap": 27.984375
+    },
+    {
+      "name": "wechat",
+      "height": 48,
+      "overflow": false,
+      "logoutGap": 27.984375
+    },
+    {
+      "name": "both",
+      "height": 48,
+      "overflow": false,
+      "logoutGap": 27.984375
+    },
+    {
+      "name": "long-name",
+      "height": 48,
+      "overflow": false,
+      "logoutGap": 27.984375
+    },
+    {
+      "name": "long-wechat",
+      "height": 48,
+      "overflow": false,
+      "logoutGap": 27.984375
+    }
+  ],
+  "admin": {
+    "bilingualSearch": true,
+    "saveReopen": true,
+    "candidatePreview": true,
+    "publishedEnglishUnchanged": true
+  },
+  "errors": []
+}

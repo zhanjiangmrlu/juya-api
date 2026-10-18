@@ -37,6 +37,7 @@ class Chunk(BaseModel):
 
 class SceneContent(BaseModel):
     name: str = Field(default="", max_length=160)
+    title_en: str = Field(default="", max_length=300)
     image_id: str | None = Field(default=None, max_length=36)
     audio_id: str | None = Field(default=None, max_length=36)
     dialogue: list[Dialogue] = Field(default_factory=list, max_length=200)
@@ -46,7 +47,7 @@ class SceneContent(BaseModel):
     @model_validator(mode="after")
     def bounded_text(self):
         """Bound combined text memory for shared drafts and fifty-card import batches."""
-        values = [self.name]
+        values = [self.name, self.title_en]
         for line in self.dialogue:
             values.extend([line.speaker, line.english, line.chinese])
         for word in self.vocabulary:
