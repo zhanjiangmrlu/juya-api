@@ -41,6 +41,8 @@ jobs:
           python-version: '3.13.16'
       - run: python -m pip install uv==0.13.1
       - run: uv sync --frozen
+      - name: Install audio verification tools
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y ffmpeg
       - run: uv run ruff check . && uv run ruff format --check . && uv run mypy src
       - run: uv run pytest -q
       - run: uv run python scripts/export-openapi.py && git diff --exit-code -- openapi
