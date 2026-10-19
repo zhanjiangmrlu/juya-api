@@ -221,3 +221,5 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 2026-10-18本地固定域名分享：新增三个dev域名的独立HTTPS Nginx入口与限权SSH反向隧道，业务前端、两API、Redis、Worker和调度在本机运行。用户批准将原0012数据库与素材复制，分享副本升级0013；原数据保留。新增start/status/stop、进程归属验证、首连失败退出、断线重连、三路实例就绪检查及独立小程序分享构建。9项工具测试、Ruff、真实公网登录/上传/ZIP处理/发布/Range/WSS、断线与启停验证通过；独立审查修复转发头继承等问题并复核。恢复工作后使用最新提交重新构建和启动，用户扫码并以手机流量确认登录、卡片、音频均正常，本地后端收到真实微信登录。微信后台设体验版需用户手动选择本次分享上传版本，正式版未发布。详见docs/operations/local-share.md及local-share-verification.md。
 
 2026-10-19本地分享刷新优化：修复开发资源被全局no-store阻止缓存的问题，保留Vite依赖immutable及源码no-cache；启用SSH隧道压缩、后台开发站点gzip和HTTP/2。三轮真实浏览器测量首次7.1～11.5秒、重复刷新约0.84秒，首次传输11.6MB降至2.8MB，文案热更新0.78秒且无整页导航。公网登录/会话/卡片读取/退出及API不缓存、Cookie标记、来源隔离和内部入口隔离通过；9项工具测试及Ruff通过。Nginx备份校验后平滑加载，仅重建本工具SSH隧道；后台业务源码和小程序未改，测试探针文案已恢复。详细记录见docs/operations/local-share-verification.md。
+
+2026-10-19本地H5分享：将dev-h5.juyayingyu.com接入同一分享环境，新增独立H5进程4174及云端回环34174，复用本地8002用户API，保留旧QA5174。新增H5独立模式、开发主机名校验、单独依赖缓存及输出路径、HTTPS证书与SSH四端口精确许可；未注入合成会话。真实公网手机尺寸浏览器6.0秒打开登录页、1.3秒文案热更新且无整页导航，同源API实例与本地相符，QA/内部/管理路径404。H5停止503、start恢复及原入口检查通过；工具12项、小程序51项及完整check、微信独立构建通过。H5现有代码不支持wx.login，登录后业务仍由微信体验版验收。本次不上传体验版；详见docs/operations/local-share-verification.md。

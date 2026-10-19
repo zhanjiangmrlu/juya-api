@@ -22,9 +22,10 @@ DOMAINS = {
     "admin": "dev-admin.juyayingyu.com",
     "admin-api": "dev-admin-api.juyayingyu.com",
     "mini-api": "dev-api.juyayingyu.com",
+    "h5": "dev-h5.juyayingyu.com",
 }
-PORTS = {"redis": 16379, "admin": 8001, "mini": 8002, "web": 4173}
-FORWARDS = {34173: 4173, 38001: 8001, 38002: 8002}
+PORTS = {"redis": 16379, "admin": 8001, "mini": 8002, "web": 4173, "h5": 4174}
+FORWARDS = {34173: 4173, 38001: 8001, 38002: 8002, 34174: 4174}
 
 
 def private_json(path, value):
@@ -165,6 +166,10 @@ def child_command(workspace, config, role):
         return [sys.executable, "-m", "juya_api.worker_main", "--pool", "solo"], backend
     if role == "dispatcher":
         return [sys.executable, "-m", "juya_api.dispatch"], backend
+    if role == "h5":
+        return [str(workspace / ".tools/node/bin/pnpm"), "dev:h5:local-share"], Path(
+            config.get("mini_dir", workspace / ".worktrees/juya-miniapp")
+        )
     if role == "web":
         return [
             str(workspace / ".tools/node/bin/pnpm"),
@@ -222,6 +227,11 @@ def serve(workspace, role, owner):
     if role == "web":
         env["VITE_API_BASE_URL"] = ""
         env["VITE_DEV_API_PROXY_TARGET"] = "http://127.0.0.1:8001"
+    if role == "h5":
+        env["VITE_API_BASE_URL"] = ""
+        env["VITE_DEV_API_PROXY_TARGET"] = "http://127.0.0.1:8002"
+        mini_dir = Path(config.get("mini_dir", workspace / ".worktrees/juya-miniapp"))
+        env["UNI_OUTPUT_DIR"] = str(mini_dir / "dist/local-share/h5")
     if role in {"admin", "mini"}:
         os.environ.clear()
         os.environ.update(env)
@@ -293,7 +303,8 @@ def start(workspace, directory):
     ).stdout.strip()
     config["settings"] = share_settings(config["settings"], lan_address=address or None)
     config.setdefault("instance_id", uuid.uuid4().hex)
-    fingerprint = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()
+    definition = {"config": config, "ports": PORTS, "forwards": FORWARDS}
+    fingerprint = hashlib.sha256(json.dumps(definition, sort_keys=True).encode()).hexdigest()
     state = read_state(directory / "state.json")
     for role, port in PORTS.items():
         if not owned_alive(state["processes"].get(role, {})):
@@ -308,7 +319,7 @@ def start(workspace, directory):
     owner = uuid.uuid4().hex
     launched = []
     try:
-        for role in ["redis", "admin", "mini", "worker", "dispatcher", "web", "tunnel"]:
+        for role in ["redis", "admin", "mini", "worker", "dispatcher", "web", "h5", "tunnel"]:
             if owned_alive(state["processes"].get(role, {})):
                 continue
             log_path = directory / (role + ".log")
@@ -349,8 +360,8 @@ def start(workspace, directory):
                         f"http://127.0.0.1:{PORTS[role]}/health/ready", marker=config["instance_id"]
                     )
                     ready = result["ok"] and result.get("local_share")
-                elif role == "web":
-                    ready = probe("http://127.0.0.1:4173/")["ok"]
+                elif role in {"web", "h5"}:
+                    ready = probe(f"http://127.0.0.1:{PORTS[role]}/")["ok"]
                 elif role == "tunnel":
                     ready = probe(
                         "https://" + DOMAINS["admin"] + "/api/admin/v1/auth/session",
@@ -382,8 +393,9 @@ def status(workspace, directory):
     """Report process and route health without printing configuration or credentials."""
     state = read_state(directory / "state.json")
     processes = {name: owned_alive(record) for name, record in state["processes"].items()}
+    required_roles = {*PORTS, "worker", "dispatcher", "tunnel"}
     result = {
-        "running": bool(processes) and all(processes.values()),
+        "running": required_roles.issubset(processes) and all(processes.values()),
         "processes": processes,
         "urls": {k: "https://" + v for k, v in DOMAINS.items()},
     }
@@ -395,10 +407,12 @@ def status(workspace, directory):
             if role in {"admin", "mini"}
         }
         result["https"] = {"admin-web": probe(result["urls"]["admin"] + "/")}
+        result["https"]["h5-web"] = probe(result["urls"]["h5"] + "/")
         for name, suffix in [
             ("admin", "/api/admin/v1/auth/session"),
             ("admin-api", "/api/admin/v1/auth/session"),
             ("mini-api", "/api/mini/v1/me"),
+            ("h5", "/api/mini/v1/me"),
         ]:
             result["https"][name] = probe(
                 result["urls"][name] + suffix, expected=(401,), marker=config["instance_id"]

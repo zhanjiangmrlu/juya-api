@@ -130,3 +130,107 @@ def test_first_ssh_failure_exits_instead_of_retrying_forever(tmp_path, monkeypat
     finally:
         for sig, handler in before.items():
             signal.signal(sig, handler)
+
+
+def test_status_rejects_a_disconnected_h5_api_even_when_other_routes_are_ready(
+    tmp_path, monkeypatch
+):
+    tool = controller()
+    directory = tmp_path / ".private/local-share"
+    tool.private_json(
+        directory / "config.json", {"instance_id": "this-local-instance", "settings": {}}
+    )
+    tool.private_json(
+        directory / "state.json",
+        {
+            "controller": tool.IDENTITY,
+            "processes": {
+                role: {}
+                for role in [
+                    "redis",
+                    "admin",
+                    "mini",
+                    "worker",
+                    "dispatcher",
+                    "web",
+                    "h5",
+                    "tunnel",
+                ]
+            },
+        },
+    )
+    monkeypatch.setattr(tool, "owned_alive", lambda _: True)
+    monkeypatch.setattr(tool, "redis_ready", lambda _: True)
+    calls = []
+
+    def probe(url, **options):
+        calls.append((url, options))
+        return {"ok": url != "https://dev-h5.juyayingyu.com/api/mini/v1/me"}
+
+    monkeypatch.setattr(tool, "probe", probe)
+    result = tool.status(tmp_path, directory)
+    assert result["running"] is False
+    assert (
+        "https://dev-h5.juyayingyu.com/api/mini/v1/me",
+        {"expected": (401,), "marker": "this-local-instance"},
+    ) in calls
+
+
+def test_status_requires_an_owned_h5_process_even_if_public_routes_answer(tmp_path, monkeypatch):
+    tool = controller()
+    directory = tmp_path / ".private/local-share"
+    tool.private_json(directory / "config.json", {"instance_id": "this-instance", "settings": {}})
+    tool.private_json(
+        directory / "state.json",
+        {
+            "controller": tool.IDENTITY,
+            "processes": {
+                role: {}
+                for role in ["redis", "admin", "mini", "worker", "dispatcher", "web", "tunnel"]
+            },
+        },
+    )
+    monkeypatch.setattr(tool, "owned_alive", lambda _: True)
+    monkeypatch.setattr(tool, "redis_ready", lambda _: True)
+    monkeypatch.setattr(tool, "probe", lambda *_args, **_kwargs: {"ok": True})
+    assert tool.status(tmp_path, directory)["running"] is False
+
+
+def test_start_retires_old_tunnel_when_the_forwarding_spec_is_upgraded(tmp_path, monkeypatch):
+    import hashlib
+    from types import SimpleNamespace
+
+    tool = controller()
+    directory = tmp_path / ".private/local-share"
+    config = {
+        "instance_id": "this-instance",
+        "settings": tool.share_settings(
+            {
+                "database_url": "sqlite:////tmp/local-share.sqlite",
+            }
+        ),
+    }
+    tool.private_json(directory / "config.json", config)
+    old_state = {
+        "controller": tool.IDENTITY,
+        "config_digest": hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest(),
+        "processes": {
+            role: {"role": role} for role in [*tool.PORTS, "worker", "dispatcher", "tunnel"]
+        },
+    }
+    tool.private_json(directory / "state.json", old_state)
+    stopped = []
+    monkeypatch.setattr(tool, "owned_alive", bool)
+    monkeypatch.setattr(tool, "stop_owned", lambda record: stopped.append(record["role"]))
+    monkeypatch.setattr(
+        tool.subprocess, "run", lambda *_args, **_kwargs: SimpleNamespace(stdout="")
+    )
+    monkeypatch.setattr(tool, "status", lambda *_args: {"running": True})
+
+    def intercepted_launch(*_args, **_kwargs):
+        raise RuntimeError("controlled launch boundary")
+
+    monkeypatch.setattr(tool.subprocess, "Popen", intercepted_launch)
+    with pytest.raises(RuntimeError, match="controlled launch boundary"):
+        tool.start(tmp_path, directory)
+    assert "tunnel" in stopped

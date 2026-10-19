@@ -46,3 +46,20 @@
 官方 SSH 调试输出确认双向协商 `zlib@openssh.com`；TLS ALPN 确认为 `h2`。实际依赖返回 gzip 和原有 immutable 缓存，源码返回 no-cache。公网登录、会话恢复、卡片读取、退出均通过，API 仍为 no-store，Cookie 安全标记、非允许来源 403 和内部路径 404 检查通过。工具 9 项测试、Ruff 检查及格式检查通过；Nginx 校验成功后平滑加载。
 
 部署前备份为 `/root/juya-local-share-perf-backup-20261019T002711Z/juya-dev-local.conf`。私密测量回执位于工作区 `.private/local-share/performance-verification.json` 及 `performance-business-check.json`，不纳入 Git。
+
+## H5 固定开发域名（2026-10-19）
+
+新增 `https://dev-h5.juyayingyu.com`，DNS 指向 8.163.84.24，独立证书 `juya-dev-h5` 已签发，HTTPS 校验及自动续期配置有效。页面通过云端回环 34174 转到本机独立 H5 4174；同源 `/api/mini/v1/` 转到与小程序相同的本机 8002，响应实例标记匹配。现有后台及 API 服务、旧 QA 5174 均继续保留。
+
+- 实际浏览器以手机尺寸访问，6.019 秒显示登录页，没有脚本错误；页面调用同源 me 返回正常 401，实例与分享后端相同。
+- 临时修改登录文案，1.294 秒后显示更新，没有整页导航；随后恢复源码并确认页面同步恢复。
+- 实际 HTTPS 协商 h2，内部 QA、docs、health 和管理 API 路径均 404；原三个开发入口及测试后台访问检查通过。
+- 只停止本工具 H5 进程时，H5 页面返回 503 local_unavailable，后台继续 200；再次 start 后八个进程及四个域名状态正常。
+- 云端四个转发端口均只监听 127.0.0.1。SSH 监听权限扩展至精确四端口，并增加服务端 15 秒、最多漏答 2 次保活；旧分享连接遗留监听已核对归属后清理。
+- 本地分享工具 12 项测试、小程序 51 项测试、完整格式/ESLint/Stylelint/类型检查通过；独立小程序分享构建的 9 页面及两导航检查通过。云端 Nginx、sshd 配置校验通过。
+
+H5 没有新增登录方式，也未使用 QA 合成会话；当前业务代码在普通 H5 中拒绝 wx.login，完整登录后学习流程仍由微信体验版验证，不能将本节结果等同于 H5 完整业务验收。
+
+云端备份：`/root/juya-local-share-h5-backup-20261019T004119Z`。私密回执：`.private/local-share/h5-routing-check.json`、`h5-browser-check.json` 和 `h5-lifecycle-check.json`。本次不上传或替换微信体验版。
+
+独立审查补充了两项启动回归：状态必须包含全部八个自有角色，配置指纹同时覆盖本地端口与反向转发清单，升级端口后不会复用旧三端口隧道。两项均先观察到失败，再修复通过。
