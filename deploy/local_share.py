@@ -180,6 +180,7 @@ def child_command(workspace, config, role):
     if role == "tunnel":
         command = [
             "/usr/bin/ssh",
+            "-C",
             "-nNT",
             "-i",
             str(workspace / ".private/local-share/id_ed25519"),
