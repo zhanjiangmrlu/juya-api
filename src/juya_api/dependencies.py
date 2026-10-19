@@ -12,10 +12,22 @@ from .security import digest
 ADMIN_COOKIE = "juya_admin_session"
 
 
+def write_transaction(request: Request):
+    """Mark a read-shaped route that persists data before authorization opens its session."""
+    request.state.database_write_intent = True
+
+
 def database(request: Request):
     """Commit all business records together, or roll back the entire failed request."""
     with request.app.state.sessions.begin() as session:
         session.info["settings"] = request.app.state.settings
+        if session.get_bind().dialect.name == "sqlite":
+            # Ordinary reads share the database with a reserved writer; writes
+            # must acquire that reservation before reading authorization state.
+            write_intent = request.method not in {"GET", "HEAD", "OPTIONS"} or getattr(
+                request.state, "database_write_intent", False
+            )
+            session.connection(execution_options={"sqlite_write_intent": write_intent})
         yield session
 
 

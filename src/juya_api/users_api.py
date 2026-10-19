@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from .auth import user_view
 from .content_models import Card
 from .database import timestamp
-from .dependencies import administrator, database
+from .dependencies import administrator, database, write_transaction
 from .errors import DomainError
 from .learning_models import Checkin
 from .learning_service import (
@@ -74,7 +74,7 @@ def routes():
             "updated_at": timestamp(now),
         }
 
-    @router.get("/users", response_model=AdminUserPage)
+    @router.get("/users", response_model=AdminUserPage, dependencies=[Depends(write_transaction)])
     def listing(
         request: Request,
         search: str = Query("", max_length=200),
@@ -126,7 +126,9 @@ def routes():
             "statistical_date": today.isoformat(),
         }
 
-    @router.get("/users/{user_id}", response_model=AdminUser)
+    @router.get(
+        "/users/{user_id}", response_model=AdminUser, dependencies=[Depends(write_transaction)]
+    )
     def detail(
         user_id: str,
         request: Request,

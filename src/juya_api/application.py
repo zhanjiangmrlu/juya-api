@@ -92,6 +92,8 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
     @app.get("/health/ready", include_in_schema=False)
     def ready():
         with sessions() as db:
+            if db.get_bind().dialect.name == "sqlite":
+                db.connection(execution_options={"sqlite_write_intent": False})
             db.execute(text("SELECT 1"))
             require_compatible_schema(db, minimum_revision=13)
         return {"status": "ready", "service": role, "environment": settings.environment}

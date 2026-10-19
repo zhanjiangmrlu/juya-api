@@ -53,6 +53,14 @@ def make_database(settings: Settings):
 
         @event.listens_for(engine, "begin")
         def begin_transaction(connection):
-            connection.exec_driver_sql("BEGIN")
+            # Local requests can read authorization before persisting a ticket.
+            # Reserve the SQLite writer before those reads so concurrent requests
+            # wait at BEGIN instead of failing a deferred read-to-write upgrade.
+            statement = (
+                "BEGIN IMMEDIATE"
+                if connection.get_execution_options().get("sqlite_write_intent", True)
+                else "BEGIN"
+            )
+            connection.exec_driver_sql(statement)
 
     return engine, sessionmaker(bind=engine, class_=Session, expire_on_commit=False)

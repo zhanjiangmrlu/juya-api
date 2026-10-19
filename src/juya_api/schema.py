@@ -13,7 +13,9 @@ CODE_CONTRACT = 1
 
 def require_compatible_schema(db, *, minimum_revision=MINIMUM_REVISION):
     """Allow newer expansion revisions but reject an incomplete schema or retired code contract."""
-    inspector = inspect(db.get_bind())
+    # Keep schema inspection in the caller's transaction rather than opening a
+    # second connection that contends with SQLite's reserved writer lock.
+    inspector = inspect(db.connection())
     if not all(
         inspector.has_table(name) for name in ["users", "setting_counters", "alembic_version"]
     ):

@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from .content_models import Media, MediaTicket
 from .content_service import published_card
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key
+from .dependencies import administrator, database, learner, operation_key, write_transaction
 from .errors import DomainError
 from .job_models import Job
 from .jobs import enqueue
@@ -489,7 +489,11 @@ def admin_routes():
 def mini_routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["controlled published resources"])
 
-    @router.get("/cards/{card_id}/media/{media_id}/url", response_model=ResourceURL)
+    @router.get(
+        "/cards/{card_id}/media/{media_id}/url",
+        response_model=ResourceURL,
+        dependencies=[Depends(write_transaction)],
+    )
     def issue(
         card_id: str,
         media_id: str,
