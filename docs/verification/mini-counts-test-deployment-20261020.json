@@ -1,0 +1,35 @@
+{
+  "deployed_at_utc": "2026-10-20T13:23:05Z",
+  "environment": "test",
+  "project": "juya-miniapp-api",
+  "backend_commit": "f9fd476aec69f9c0aeabfc688b8b3b0c37b7a5bf",
+  "release_id": "20261020T132101-f9fd476aec69-62c637",
+  "ci_run": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/39428175138",
+  "ci_tests_passed": 193,
+  "ci_tests_skipped": 3,
+  "artifact_zip_sha256": "b6148ff07de066f58d0508430327cc2f77ea71b93adac16bef42ff352c878281",
+  "image_id": "sha256:85f9ddba6cf887af63c8b70df14e985e40036cc1f6357f437a632dd653e8ccca",
+  "mini_services_healthy": 3,
+  "mini_zero_restarts_and_oom": true,
+  "native_release_engine": true,
+  "retention_completed": true,
+  "public_health": [
+    {"url": "https://test-api.juyayingyu.com/health/ready", "http": 200, "role": "mini", "environment": "test"},
+    {"url": "https://test-admin-api.juyayingyu.com/health/ready", "http": 200, "role": "admin", "environment": "test"}
+  ],
+  "runtime_openapi_fields_verified": ["vocabulary_count", "chunk_count"],
+  "list_data_verification": {
+    "method": "read_only_running_image_handler_inspection",
+    "checked_items": 7,
+    "counts_match_current_published_versions": true,
+    "schema_revision": "0013",
+    "database_writes": false,
+    "authenticated_public_list_http_verified": false
+  },
+  "admin_container_identities_and_start_times_unchanged": true,
+  "mysql_and_both_redis_containers_unchanged": true,
+  "migration_performed": false,
+  "production_deployed": false,
+  "miniapp_upload_performed": false,
+  "physical_device_verified": false
+}

@@ -228,3 +228,5 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 
 
 2026-10-20学习列表内容数量补齐：对照Figma193:1617，原小程序列表接口未提供词汇/语块统计，组件也未渲染数量行。CardBrief新增非负vocabulary_count与chunk_count，从当前已发布版本payload计算，沿用原列表批量读取，不增加逐卡详情请求或数据库迁移；两端OpenAPI及小程序生成类型同步。场景卡在中文标题和学习状态下方按设计展示11px/18.7px灰绿数量行，零值部分省略，不向无效历史卡暴露数量。学习状态仍由真实completed记录决定，未修改成绩。后端Ruff/格式/mypy48模块通过，小程序pnpm check及本地分享微信9页构建通过；本轮未新增或运行自动化测试，只同步已有组件测试的契约数据。仅重载归属校验通过的本地mini进程，其他七进程保留；用户手动完成隐私同意和真实登录后，开发者工具实见戏剧社8词汇/5语块、书评10词汇/5语块，与本地已发布内容一致，零语块卡只显示1个词汇。当前账号完成数0，未展示已学提示；未写入学习记录。私密截图位于工作区.private/scene-card-metadata/local-list.png。用户原模拟器dist/build连接云端test-api，新字段尚未部署云端测试；本轮仅本地分享环境生效，未上传体验版。并行登录页修改保留。
+
+2026-10-20测试后端发布完成：用户授权后将f9fd476推送origin/test，既有GitHub CI39428175138完成193通过/3跳过及两角色镜像构建。通过原CLI发布引擎的归档摘要、镜像身份、发布锁、健康检查和版本保留流程，仅更新测试小程序API及Worker/dispatcher；发布号20261020T132101-f9fd476aec69-62c637，三个容器均healthy、重启及OOM为零。两测试API公网ready/HTTP200，运行中OpenAPI包含vocabulary_count/chunk_count；在新镜像内调用真实列表处理函数只读检查7张线上卡片，数量均与当前已发布版本一致。该检查不等同于经过用户鉴权的公网列表端到端验收，未代替微信真机验收。未执行数据库迁移或业务数据写入，schema保持0013；管理侧三个容器及MySQL/两个Redis身份和启动时间保持不变。生产未发布；小程序上传由用户另一对话负责，本轮未操作。安全汇总见docs/verification/mini-counts-test-deployment-20261020.json。
