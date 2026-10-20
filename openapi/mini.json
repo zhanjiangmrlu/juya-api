@@ -4060,6 +4060,18 @@
             "type": "string",
             "title": "Published At"
           },
+          "vocabulary_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vocabulary Count",
+            "default": 0
+          },
+          "chunk_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Chunk Count",
+            "default": 0
+          },
           "state": {
             "$ref": "#/components/schemas/CardState"
           }

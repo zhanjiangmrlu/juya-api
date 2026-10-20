@@ -2,7 +2,7 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .content_contracts import SceneContent
 
@@ -103,6 +103,8 @@ class CardBrief(PublicModel):
     version_id: str
     thumbnail_id: str | None
     published_at: str
+    vocabulary_count: int = Field(default=0, ge=0)
+    chunk_count: int = Field(default=0, ge=0)
     state: CardState
 
 

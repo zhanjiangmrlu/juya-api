@@ -347,6 +347,8 @@ def mini_routes():
                     "version_id": version.id,
                     "thumbnail_id": image.thumbnail_id if image else None,
                     "published_at": timestamp(version.published_at),
+                    "vocabulary_count": len(version.payload.get("vocabulary") or []),
+                    "chunk_count": len(version.payload.get("chunks") or []),
                     "state": {
                         "completed": card.id in completed,
                         "today_completed": card.id in daily,
