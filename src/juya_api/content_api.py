@@ -50,7 +50,9 @@ def admin_routes():
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
+        """按最新发布倒序分页；未发布卡片使用创建时间，定位沿用相同排序"""
         limit = min(limit, 10)
+        listed_at = func.coalesce(CardVersion.published_at, Card.created_at)
         query = (
             select(Card)
             .join(CardDraft)
@@ -86,19 +88,20 @@ def admin_routes():
         total = db.scalar(select(func.count()).select_from(query.subquery()))
         total_pages = ((total or 0) + limit - 1) // limit
         if anchor_id:
-            anchor = db.scalar(query.where(Card.id == anchor_id))
+            anchor = db.execute(query.add_columns(listed_at).where(Card.id == anchor_id)).first()
             if anchor:
+                anchor_card, anchor_time = anchor[0], anchor[1]
                 preceding = query.where(
                     or_(
-                        Card.sort_order < anchor.sort_order,
-                        and_(Card.sort_order == anchor.sort_order, Card.id < anchor.id),
+                        listed_at > anchor_time,
+                        and_(listed_at == anchor_time, Card.id > anchor_card.id),
                     )
                 )
                 rank = db.scalar(select(func.count()).select_from(preceding.subquery())) or 0
                 page = rank // limit + 1
         page = min(page, max(1, total_pages))
         rows = db.scalars(
-            query.order_by(Card.sort_order, Card.id).offset((page - 1) * limit).limit(limit)
+            query.order_by(listed_at.desc(), Card.id.desc()).offset((page - 1) * limit).limit(limit)
         ).all()
         return {
             "items": [card_view(db, card) for card in rows],

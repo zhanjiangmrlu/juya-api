@@ -384,6 +384,7 @@
           "scene management"
         ],
         "summary": "Listing",
+        "description": "按最新发布倒序分页；未发布卡片使用创建时间，定位沿用相同排序",
         "operationId": "listing_api_admin_v1_cards_get",
         "parameters": [
           {
