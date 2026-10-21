@@ -366,10 +366,13 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
+        """Read the authorized publication and its thumbnail, including direct detail entry."""
         card, version = published_card(db, card_id, version_id)
         audio = db.get(Media, version.payload["audio_id"])
+        image = db.get(Media, version.payload["image_id"])
         return {
             "audio_duration": audio.duration if audio else None,
+            "thumbnail_id": image.thumbnail_id if image else None,
             "card_id": card.id,
             "version_id": version.id,
             "content": version.payload,

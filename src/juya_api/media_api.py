@@ -360,9 +360,9 @@ def playback_medium(db, medium: Media) -> Media:
     return playback
 
 
-def deliver(medium: Media, request: Request):
+def deliver(medium: Media, request: Request, *, data: bytes | None = None):
     """Support native audio seeking while protecting metadata and all range requests."""
-    size = medium.size
+    size = len(data) if data is not None else medium.size
     start, end, status = 0, size - 1, 200
     headers = {
         "Cache-Control": "no-store",
@@ -388,6 +388,13 @@ def deliver(medium: Media, request: Request):
         status = 206
         headers["Content-Range"] = f"bytes {start}-{end}/{size}"
     headers["Content-Length"] = str(end - start + 1)
+    if data is not None:
+        return Response(
+            content=data[start : end + 1] if request.method != "HEAD" else None,
+            status_code=status,
+            headers=headers,
+            media_type="image/webp",
+        )
     storage = ObjectStorage(request.app.state.settings)
     if request.method == "HEAD":
         stream = storage.stream(medium.storage_key, 0, 0)
@@ -400,6 +407,14 @@ def deliver(medium: Media, request: Request):
         headers=headers,
         media_type=medium.content_type,
     )
+
+
+def deliver_thumbnail(medium: Media, request: Request):
+    """Return the fixed small profile only after the route authorizes this thumbnail."""
+    if medium.kind != "thumbnail":
+        raise DomainError(422, "thumbnail_required", "列表缩图参数仅支持缩略图素材")
+    data = request.app.state.list_thumbnails.read(medium, ObjectStorage(request.app.state.settings))
+    return deliver(medium, request, data=data)
 
 
 def admin_routes():
@@ -464,12 +479,15 @@ def admin_routes():
     def read(
         media_id: str,
         request: Request,
+        thumbnail: Literal["list"] | None = None,
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
         medium = db.get(Media, media_id)
         if not medium or medium.state != "ready":
             raise DomainError(404, "media_missing", "素材不可用")
+        if thumbnail is not None:
+            return deliver_thumbnail(medium, request)
         return deliver(playback_medium(db, medium), request)
 
     @router.get("/media/{media_id}/status", response_model=MediaMetadata)
@@ -538,7 +556,12 @@ def mini_routes():
 
     @router.head("/media/{credential}", include_in_schema=False)
     @router.get("/media/{credential}")
-    def read(credential: str, request: Request, db: Session = Depends(database, scope="function")):
+    def read(
+        credential: str,
+        request: Request,
+        thumbnail: Literal["list"] | None = None,
+        db: Session = Depends(database, scope="function"),
+    ):
         now = request.app.state.clock()
         ticket = db.get(MediaTicket, digest(credential))
         if not ticket or ticket.expires_at <= now:
@@ -557,6 +580,8 @@ def mini_routes():
         medium = db.get(Media, ticket.media_id)
         if not medium or medium.state != "ready":
             raise DomainError(404, "media_missing", "素材不可用")
+        if thumbnail is not None:
+            return deliver_thumbnail(medium, request)
         return deliver(playback_medium(db, medium), request)
 
     return router

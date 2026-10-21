@@ -110,6 +110,7 @@ class CardBrief(PublicModel):
 
 class PublishedDetail(PublicModel):
     audio_duration: float | None
+    thumbnail_id: str | None = None
     card_id: str
     version_id: str
     content: SceneContent
