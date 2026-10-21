@@ -29,7 +29,7 @@ from .import_service import (
 from .job_models import Job
 from .jobs import enqueue
 from .media_api import save_media
-from .models import identifier
+from .models import Audit, identifier
 from .response_contracts import FieldIssue
 from .storage import ObjectStorage
 from .transactions import operate
@@ -117,6 +117,31 @@ class AcceptSave(BaseModel):
     version: str = Field(min_length=64, max_length=64)
     confirmed: Literal[True]
     item_ids: list[str] | None = Field(default=None, min_length=1, max_length=50)
+
+
+class RemoveImportFiles(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    # Failed ZIP roots do not count toward the card limit; the whole selection is atomic
+    file_ids: list[Annotated[str, Field(min_length=1, max_length=36)]] = Field(min_length=1)
+
+
+class RemoveImportItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str = Field(min_length=1, max_length=36)
+    revision: int = Field(ge=1)
+
+
+class RemoveImportItems(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    items: list[RemoveImportItem] = Field(min_length=1, max_length=50)
+
+
+def require_removable(items):
+    """Accepted save tasks and their durable card results cannot be discarded."""
+    if any(item.job_id or item.saved_card_id for item in items):
+        raise DomainError(
+            409, "import_removal_saved", "资料已提交保存，请保留导入结果并在卡片管理中处理"
+        )
 
 
 def routes():
@@ -266,6 +291,120 @@ def routes():
             key,
             "import.file:" + batch_id,
             {"name": name, "kind": kind, "sha256": sha},
+            now,
+            execute,
+        )
+
+    @router.post("/imports/{batch_id}/files/remove", response_model=ImportBatchView)
+    def remove_files(
+        batch_id: str,
+        body: RemoveImportFiles,
+        request: Request,
+        admin=Depends(administrator),
+        key: str = Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """Discard selected ZIP staging atomically; immutable media and receipts remain."""
+        now = request.app.state.clock()
+
+        def execute():
+            batch = owned_batch(db, batch_id, admin.id)
+            ids = set(body.file_ids)
+            roots = db.scalars(select(ImportFile).where(ImportFile.id.in_(ids))).all()
+            if len(roots) != len(ids) or any(
+                row.batch_id != batch_id or row.parent_id or row.kind != "zip" for row in roots
+            ):
+                raise DomainError(404, "import_file_missing", "未找到本次导入ZIP，请刷新后重新选择")
+            files = db.scalars(
+                select(ImportFile).where(
+                    ImportFile.batch_id == batch_id,
+                    (ImportFile.id.in_(ids)) | (ImportFile.parent_id.in_(ids)),
+                )
+            ).all()
+            items = db.scalars(
+                select(ImportItem).where(
+                    ImportItem.batch_id == batch_id,
+                    ImportItem.source_file_id.in_([row.id for row in files]),
+                )
+            ).all()
+            require_removable(items)
+            for item in items:
+                db.delete(item)
+            db.flush()
+            for row in files:
+                db.delete(row)
+            db.add(
+                Audit(
+                    admin_id=admin.id,
+                    action="import.remove_files",
+                    object_id=batch_id,
+                    occurred_at=now,
+                )
+            )
+            db.flush()
+            return batch_view(db, batch)
+
+        return operate(
+            db,
+            admin,
+            "admin",
+            key,
+            "import.files.remove:" + batch_id,
+            body.model_dump(),
+            now,
+            execute,
+        )
+
+    @router.post("/imports/{batch_id}/items/remove", response_model=ImportBatchView)
+    def remove_items(
+        batch_id: str,
+        body: RemoveImportItems,
+        request: Request,
+        admin=Depends(administrator),
+        key: str = Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """Remove only reviewed item revisions, retaining siblings and source archives."""
+        now = request.app.state.clock()
+
+        def execute():
+            batch = owned_batch(db, batch_id, admin.id)
+            requested = {value.id: value.revision for value in body.items}
+            if len(requested) != len(body.items):
+                raise DomainError(422, "import_selection_invalid", "请勿重复选择同一张卡片")
+            items = db.scalars(
+                select(ImportItem).where(
+                    ImportItem.batch_id == batch_id,
+                    ImportItem.id.in_(requested),
+                )
+            ).all()
+            if len(items) != len(requested):
+                raise DomainError(
+                    404, "import_item_missing", "未找到本次核对资料，请刷新后重新选择"
+                )
+            require_removable(items)
+            if any(item.revision != requested[item.id] for item in items):
+                raise DomainError(409, "import_changed", "核对资料已变化，请刷新后重新选择移除范围")
+            for item in items:
+                db.delete(item)
+            db.add(
+                Audit(
+                    admin_id=admin.id,
+                    action="import.remove_items",
+                    object_id=batch_id,
+                    occurred_at=now,
+                )
+            )
+            db.flush()
+            return batch_view(db, batch)
+
+        return operate(
+            db,
+            admin,
+            "admin",
+            key,
+            "import.items.remove:" + batch_id,
+            body.model_dump(),
             now,
             execute,
         )

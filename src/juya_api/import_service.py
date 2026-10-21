@@ -9,7 +9,7 @@ from uuid import NAMESPACE_URL, uuid5
 from sqlalchemy import func, select
 
 from .content_contracts import SceneContent
-from .content_models import CardDraft, Media
+from .content_models import Card, CardDraft, Media
 from .content_service import (
     create_candidate,
     normalize,
@@ -72,10 +72,16 @@ def object_key(db, item):
     )
 
 
+def live_card(db, card_id):
+    """Resolve historical import references only while their card remains editable."""
+    card = db.get(Card, card_id) if card_id else None
+    return card if card and not card.deleted_at else None
+
+
 def find_identity(db, item):
-    """Retain complete identities and recognize incomplete drafts saved by older releases."""
+    """Ignore deleted mappings, including incomplete drafts saved by older releases."""
     identity = db.get(ImportIdentity, object_key(db, item))
-    if identity:
+    if identity and live_card(db, identity.card_id):
         return identity
     previous = db.scalars(
         select(ImportItem).where(
@@ -86,8 +92,10 @@ def find_identity(db, item):
     hashed = content_hash(db, item.content)
     for candidate in previous:
         legacy = db.get(ImportIdentity, fingerprint({"incomplete_item": candidate.id}))
-        if legacy and (
-            legacy.content_hash == hashed or object_key(db, candidate) == object_key(db, item)
+        if (
+            legacy
+            and live_card(db, legacy.card_id)
+            and (legacy.content_hash == hashed or object_key(db, candidate) == object_key(db, item))
         ):
             return legacy
     return None
@@ -156,7 +164,9 @@ def file_view(db, row):
 
 
 def item_view(db, item):
+    """Derive current staging state without treating deleted cards as saved results."""
     job = item_job(db, item)
+    saved_card = live_card(db, item.saved_card_id)
     image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
     hashed = content_hash(db, item.content)
     identity = find_identity(db, item)
@@ -176,12 +186,13 @@ def item_view(db, item):
         job
         and job.result
         and job.result.get("skipped")
+        and saved_card
         and item.last_saved_hash == hashed
         and not item.target_card_id
     ):
         state = "duplicate"
     elif (
-        item.saved_card_id
+        saved_card
         and item.last_saved_hash == hashed
         and (not item.target_card_id or item.target_card_id == item.saved_card_id)
     ):
@@ -664,7 +675,9 @@ def prepare_save(settings, sessions, job, now):
         hashed = content_hash(db, payload["content"])
         identity_key = object_key(db, item)
         identity = find_identity(db, item)
-        target = payload.get("target_card_id") or item.saved_card_id
+        target = payload.get("target_card_id") or (
+            item.saved_card_id if live_card(db, item.saved_card_id) else None
+        )
         target_revision = (
             payload.get("target_revision")
             if payload.get("target_card_id")
