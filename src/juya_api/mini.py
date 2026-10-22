@@ -4,6 +4,8 @@ from .application import application
 from .auth import WechatGateway, mini_routes
 from .config import Settings
 from .content_api import mini_routes as content_routes
+from .dictionary import LocalDictionary
+from .dictionary_api import routes as dictionary_routes
 from .learning_api import routes as learning_routes
 from .list_thumbnails import ListThumbnails
 from .media_api import mini_routes as media_routes
@@ -14,11 +16,14 @@ from .queue_api import routes as queue_routes
 from .reading_api import routes as reading_routes
 
 
-def create_app(settings: Settings | None = None, *, sessions=None, clock=None, wechat=None):
+def create_app(
+    settings: Settings | None = None, *, sessions=None, clock=None, wechat=None, dictionary=None
+):
     """Construct the learner-only API with a replaceable external WeChat gateway."""
     settings = settings or Settings()
     app = application("mini", settings, sessions, clock)
     app.state.wechat = wechat or WechatGateway(settings)
+    app.state.dictionary = dictionary if dictionary is not None else LocalDictionary(settings)
     app.state.list_thumbnails = ListThumbnails()
     app.include_router(mini_routes())
     app.include_router(content_routes())
@@ -29,4 +34,5 @@ def create_app(settings: Settings | None = None, *, sessions=None, clock=None, w
     app.include_router(pronunciation_routes("mini"))
     app.include_router(queue_routes())
     app.include_router(reading_routes())
+    app.include_router(dictionary_routes())
     return app
