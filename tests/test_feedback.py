@@ -370,6 +370,8 @@ def test_readiness_rejects_schema_before_feedback_tables(system):
     from juya_api.content_models import SettingCounter
 
     with system["sessions"].begin() as db:
+        # MySQL fixtures reuse the dedicated test schema; metadata excludes this marker
+        db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES ('0014')"))
         db.merge(SettingCounter(name="schema_contract", value=1))

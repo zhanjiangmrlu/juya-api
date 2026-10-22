@@ -33,3 +33,5 @@
 - [腾讯官方单页说明](https://cloud.tencent.com/document/product/1301/107818)：朋友圈单页不等于启动完整小程序，只承接分享页；相关平台限制应真实验证。该页关于微搭全托管授权等要求属于微搭产品，不能推断为本项目通用限制
 - 2026-10-22可读取官方 typings／腾讯说明，微信直接文档页本次读取失败；不能据旧类型注释断言当前 iOS 能力。开发按能力检测与安全摘要承接，实际 AppID、基础库及 iOS／Android 真机另验
 - 已定位当前设计资源 assets/brand-share.png 和 brand-share-square.png，后续批4复用品牌图；场景图生成等比展示副本，不改原图、不暴露原私有媒体地址
+- 当前[微信官方启动参数类型](https://raw.githubusercontent.com/wechat-miniprogram/api-typings/master/types/wx/lib.wx.api.d.ts)包含 `apiCategory='browseOnly'`（仅浏览，朋友圈快照页等）。批4应在应用及页面鉴权／资料恢复之前识别该模式，不能只凭“来自朋友圈”假定完整运行态
+- 单页只展示安全摘要，并引导使用平台自身的完整小程序入口；本次尚未取得单页脚本可主动切换完整模式的官方证据。实际受限模式与完整承接需微信真机验证
