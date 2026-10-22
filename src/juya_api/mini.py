@@ -16,6 +16,8 @@ from .profile_api import routes as profile_routes
 from .pronunciation_api import routes as pronunciation_routes
 from .queue_api import routes as queue_routes
 from .reading_api import routes as reading_routes
+from .share_api import routes as share_routes
+from .share_images import ShareImages
 
 
 def create_app(
@@ -36,6 +38,9 @@ def create_app(
         feedback_safety if feedback_safety is not None else FeedbackSafetyGateway(settings)
     )
     app.state.list_thumbnails = ListThumbnails()
+    app.state.share_images = ShareImages(
+        max_source_bytes=min(settings.image_limit_mb, 20) * 1024 * 1024
+    )
     app.include_router(mini_routes())
     app.include_router(content_routes())
     app.include_router(media_routes())
@@ -47,4 +52,5 @@ def create_app(
     app.include_router(reading_routes())
     app.include_router(dictionary_routes())
     app.include_router(feedback_routes("mini"))
+    app.include_router(share_routes())
     return app
