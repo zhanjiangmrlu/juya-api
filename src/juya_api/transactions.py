@@ -21,9 +21,8 @@ def actor_lock(db, actor, role: str):
     )
 
 
-def operate(db, actor, role: str, key: str, action: str, payload, now, execute):
-    """Replay committed outcomes before rechecking mutable state such as day/version."""
-    actor_lock(db, actor, role)
+def previous_result(db, actor, role: str, key: str, action: str, payload):
+    """Read a committed receipt before slow preflight; the writer must still recheck under lock."""
     settings = db.info["settings"]
     scope = role + ":" + actor.id
     identity = (scope, digest(key))
@@ -35,6 +34,21 @@ def operate(db, actor, role: str, key: str, action: str, payload, now, execute):
         if previous.fingerprint != request_hash:
             raise DomainError(409, "operation_conflict", "操作内容已变化，请重新确认")
         return json.loads(decrypt(settings, previous.result) or "{}")
+    return None
+
+
+def operate(db, actor, role: str, key: str, action: str, payload, now, execute):
+    """Replay committed outcomes before rechecking mutable state such as day/version."""
+    actor_lock(db, actor, role)
+    previous = previous_result(db, actor, role, key, action, payload)
+    if previous is not None:
+        return previous
+    settings = db.info["settings"]
+    scope = role + ":" + actor.id
+    identity = (scope, digest(key))
+    request_hash = lookup(
+        settings, "operation:" + scope, fingerprint({"action": action, "payload": payload})
+    )
     result = execute()
     db.add(
         Operation(
@@ -43,7 +57,7 @@ def operate(db, actor, role: str, key: str, action: str, payload, now, execute):
             action=action,
             fingerprint=request_hash,
             result=encrypt(settings, json.dumps(result, ensure_ascii=False)),
-            accepted_at=now,
+            accepted_at=now() if callable(now) else now,
         )
     )
     db.flush()

@@ -10,6 +10,7 @@ from juya_api import (  # noqa: F401
     admin_action_models,
     content_models,
     discovery_models,
+    feedback_models,
     import_models,
     job_models,
     learning_models,

@@ -31,11 +31,15 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
     assert system["mini"].get("/health/ready").status_code == 503
     with sessions.begin() as db:
         db.execute(text("UPDATE alembic_version SET version_num='0014'"))
+    assert client.get("/health/ready").status_code == 503
+    assert system["mini"].get("/health/ready").status_code == 503
+    with sessions.begin() as db:
+        db.execute(text("UPDATE alembic_version SET version_num='0015'"))
     assert client.get("/health/ready").status_code == 200
     assert system["mini"].get("/health/ready").status_code == 200
     # 后续附加迁移仍可供当前代码使用，不允许跳过当前所需表
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0015'"))
+        db.execute(text("UPDATE alembic_version SET version_num='0016'"))
     assert client.get("/health/ready").status_code == 200
     with sessions.begin() as db:
         db.get(SettingCounter, "schema_contract").value = 2

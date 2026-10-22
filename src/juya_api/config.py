@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     tts_codec: Literal["mp3", "wav"] = "mp3"
     tts_daily_budget: int = 2000
     dictionary_path: Path | None = None
+    feedback_safety_url: str = ""
+    feedback_safety_token: str = Field(default="", repr=False)
     image_limit_mb: int = 10
     audio_limit_mb: int = 50
     archive_limit_mb: int = 100
