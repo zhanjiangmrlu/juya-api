@@ -134,8 +134,18 @@ def test_same_incomplete_object_is_skipped_after_renamed_zip_reimport(admin):
 def test_identical_zip_with_a_different_name_reuses_batch_file(admin):
     batch_id = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "zip"}).json()["id"]
     entries = [("场景/内容.docx", document("一次接收"))]
-    first = upload_zip(admin, batch_id, "one.zip", entries)
-    second = upload_zip(admin, batch_id, "renamed.zip", entries)
+    # 同一文件重命名必须重传同一字节，重建ZIP会因时间戳改变文件哈希
+    raw = archive(entries)
+    results = [
+        admin.post(
+            f"/api/admin/v1/imports/{batch_id}/files?kind=zip",
+            headers=key(),
+            files={"file": (name, raw, "application/zip")},
+        )
+        for name in ["one.zip", "renamed.zip"]
+    ]
+    assert all(response.status_code == 201 for response in results)
+    first, second = [response.json() for response in results]
     assert second["id"] == first["id"]
     process_jobs(admin)
     assert len(admin.get(f"/api/admin/v1/imports/{batch_id}").json()["items"]) == 1

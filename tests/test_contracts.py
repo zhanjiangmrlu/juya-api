@@ -16,11 +16,17 @@ def test_list_and_detail_include_actual_completion_and_favorite_state(admin, min
         ).status_code
         == 200
     )
-    listed = mini.get("/api/mini/v1/cards").json()["items"][0]
+    listing = mini.get("/api/mini/v1/cards").json()
+    assert listing["items"] == []
+    assert listing["published_total"] == 1
     detail = mini.get(f"/api/mini/v1/cards/{card['id']}").json()
-    assert listed["state"] == {"completed": True, "today_completed": True, "favorite": True}
-    assert detail["state"] == listed["state"]
-    assert mini.get("/api/mini/v1/favorites").json()["items"][0]["state"] == listed["state"]
+    assert detail["state"] == {
+        "completed": True,
+        "today_completed": True,
+        "favorite": True,
+        "started": True,
+    }
+    assert mini.get("/api/mini/v1/favorites").json()["items"][0]["state"] == detail["state"]
 
 
 def test_published_admin_preview_never_replaces_it_with_an_unpublished_candidate(admin, mini):

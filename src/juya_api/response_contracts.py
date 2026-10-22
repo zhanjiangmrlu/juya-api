@@ -94,6 +94,7 @@ class CardState(PublicModel):
     completed: bool
     today_completed: bool
     favorite: bool
+    started: bool = False
 
 
 class CardBrief(PublicModel):
@@ -108,6 +109,16 @@ class CardBrief(PublicModel):
     state: CardState
 
 
+class LearningCardPage(Page[CardBrief]):
+    published_total: int
+
+
+class ReadingPosition(PublicModel):
+    version_id: str = Field(min_length=1, max_length=36)
+    anchor: str = Field(min_length=1, max_length=100)
+    progress: float = Field(ge=0, le=1, allow_inf_nan=False)
+
+
 class PublishedDetail(PublicModel):
     audio_duration: float | None
     thumbnail_id: str | None = None
@@ -116,6 +127,8 @@ class PublishedDetail(PublicModel):
     content: SceneContent
     published_at: str
     state: CardState
+    reading_position: ReadingPosition | None = None
+    reading_position_reset: bool = False
 
 
 class PublishedPreview(PublicModel):

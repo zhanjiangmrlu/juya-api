@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from .content_models import Card, CardVersion, Media
 from .content_service import published_card
 from .database import timestamp
+from .discovery_models import ReadingStart
 from .learning_models import Checkin, Completion, DailyLearning, Favorite
 from .models import User
 
@@ -89,11 +90,13 @@ def card_summary(db, card_id: str) -> dict:
 
 
 def card_state(db, user_id: str, card_id: str, now) -> dict:
+    """读取指定用户和稳定卡片在服务端当前日期的真实学习状态"""
     today = business_date(now)
     return {
         "completed": db.get(Completion, (user_id, card_id)) is not None,
         "today_completed": db.get(DailyLearning, (user_id, card_id, today)) is not None,
         "favorite": db.get(Favorite, (user_id, card_id)) is not None,
+        "started": db.get(ReadingStart, (user_id, card_id)) is not None,
     }
 
 

@@ -384,6 +384,7 @@
           "published learning content"
         ],
         "summary": "Listing",
+        "description": "先按本人完成记录过滤再分页，并独立返回当前发布总数",
         "operationId": "listing_api_mini_v1_cards_get",
         "parameters": [
           {
@@ -416,7 +417,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_CardBrief_"
+                  "$ref": "#/components/schemas/LearningCardPage"
                 }
               }
             }
@@ -530,7 +531,7 @@
           "published learning content"
         ],
         "summary": "Detail",
-        "description": "Read the authorized publication and its thumbnail, including direct detail entry.",
+        "description": "读取卡片当前版本并仅为当前用户记录首次有效打开，不计成绩",
         "operationId": "detail_api_mini_v1_cards__card_id__get",
         "parameters": [
           {
@@ -556,6 +557,16 @@
                 }
               ],
               "title": "Version Id"
+            }
+          },
+          {
+            "name": "mark_started",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Mark Started"
             }
           }
         ],
@@ -3977,6 +3988,437 @@
           }
         }
       }
+    },
+    "/api/mini/v1/learning-queues": {
+      "post": {
+        "tags": [
+          "source learning queues"
+        ],
+        "summary": "Create",
+        "description": "为当前用户的来源条件建立可幂等恢复的固定顺序快照",
+        "operationId": "create_api_mini_v1_learning_queues_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLearningQueue"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mini/v1/learning-queues/{queue_id}": {
+      "get": {
+        "tags": [
+          "source learning queues"
+        ],
+        "summary": "Read",
+        "description": "读取本人快照索引，失效项保留位置，不能让分页移位",
+        "operationId": "read_api_mini_v1_learning_queues__queue_id__get",
+        "parameters": [
+          {
+            "name": "queue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Queue Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueuePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/mini/v1/cards/{card_id}/reading-position": {
+      "put": {
+        "tags": [
+          "trusted reading position"
+        ],
+        "summary": "Save",
+        "description": "保存当前用户在卡片同版正文中的锚点和块内相对进度",
+        "operationId": "save_api_mini_v1_cards__card_id__reading_position_put",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveReadingPosition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadingPosition"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4118,6 +4560,11 @@
           "favorite": {
             "type": "boolean",
             "title": "Favorite"
+          },
+          "started": {
+            "type": "boolean",
+            "title": "Started",
+            "default": false
           }
         },
         "type": "object",
@@ -4268,6 +4715,45 @@
           "consent_version"
         ],
         "title": "ContactChange"
+      },
+      "CreateLearningQueue": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "learning",
+              "favorites",
+              "records",
+              "day"
+            ],
+            "title": "Source"
+          },
+          "card_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Card Id"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "card_id"
+        ],
+        "title": "CreateLearningQueue"
       },
       "CurrentVersion": {
         "properties": {
@@ -4482,6 +4968,42 @@
           "favorite"
         ],
         "title": "FavoriteResponse"
+      },
+      "LearningCardPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CardBrief"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "published_total": {
+            "type": "integer",
+            "title": "Published Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit",
+          "published_total"
+        ],
+        "title": "LearningCardPage"
       },
       "LearningRecord": {
         "properties": {
@@ -4748,37 +5270,6 @@
         ],
         "title": "OperationResponse"
       },
-      "Page_CardBrief_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/CardBrief"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "page": {
-            "type": "integer",
-            "title": "Page"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "limit"
-        ],
-        "title": "Page[CardBrief]"
-      },
       "Page_CheckinRecord_": {
         "properties": {
           "items": {
@@ -5020,6 +5511,21 @@
           },
           "state": {
             "$ref": "#/components/schemas/CardState"
+          },
+          "reading_position": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadingPosition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reading_position_reset": {
+            "type": "boolean",
+            "title": "Reading Position Reset",
+            "default": false
           }
         },
         "type": "object",
@@ -5032,6 +5538,124 @@
           "state"
         ],
         "title": "PublishedDetail"
+      },
+      "QueueCreated": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "learning",
+              "favorites",
+              "records",
+              "day"
+            ],
+            "title": "Source"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "total"
+        ],
+        "title": "QueueCreated"
+      },
+      "QueueItemView": {
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "state": {
+            "$ref": "#/components/schemas/CardState"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_id",
+          "state",
+          "available"
+        ],
+        "title": "QueueItemView"
+      },
+      "QueuePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/QueueItemView"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "next_offset"
+        ],
+        "title": "QueuePage"
+      },
+      "ReadingPosition": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Version Id"
+          },
+          "anchor": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Anchor"
+          },
+          "progress": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Progress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version_id",
+          "anchor",
+          "progress"
+        ],
+        "title": "ReadingPosition"
       },
       "ResourceURL": {
         "properties": {
@@ -5050,6 +5674,36 @@
           "expires_at"
         ],
         "title": "ResourceURL"
+      },
+      "SaveReadingPosition": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Version Id"
+          },
+          "anchor": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Anchor"
+          },
+          "progress": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Progress"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_id",
+          "anchor",
+          "progress"
+        ],
+        "title": "SaveReadingPosition"
       },
       "SceneContent": {
         "properties": {

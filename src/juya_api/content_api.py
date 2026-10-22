@@ -17,18 +17,19 @@ from .content_service import (
     save_candidate,
 )
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key
+from .dependencies import administrator, database, learner, operation_key, write_transaction
+from .discovery_models import ReadingStart
 from .import_models import ImportItem
 from .import_service import owned_batch
 from .learning_models import Completion, DailyLearning, Favorite
 from .learning_service import business_date, card_state
+from .persistence import insert_once
 from .response_contracts import (
     AdminCardPage,
-    CardBrief,
     CardPreview,
     CardView,
     DeletedCard,
-    Page,
+    LearningCardPage,
     PublishedDetail,
     PublishedPreview,
 )
@@ -284,7 +285,7 @@ def admin_routes():
 def mini_routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["published learning content"])
 
-    @router.get("/cards", response_model=Page[CardBrief])
+    @router.get("/cards", response_model=LearningCardPage)
     def listing(
         request: Request,
         page: int = Query(1, ge=1),
@@ -292,7 +293,12 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
+        """先按本人完成记录过滤再分页，并独立返回当前发布总数"""
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
+        published_total = db.scalar(select(func.count()).select_from(query.subquery()))
+        query = query.where(
+            Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id))
+        )
         total = db.scalar(select(func.count()).select_from(query.subquery()))
         rows = db.scalars(
             query.order_by(Card.sort_order, Card.id).offset((page - 1) * limit).limit(limit)
@@ -337,6 +343,13 @@ def mini_routes():
                 )
             )
         )
+        started = set(
+            db.scalars(
+                select(ReadingStart.card_id).where(
+                    ReadingStart.user_id == user.id, ReadingStart.card_id.in_(ids)
+                )
+            )
+        )
         items = []
         for card in rows:
             assert card.current_version_id is not None
@@ -356,23 +369,44 @@ def mini_routes():
                         "completed": card.id in completed,
                         "today_completed": card.id in daily,
                         "favorite": card.id in favorites,
+                        "started": card.id in started,
                     },
                 }
             )
-        return {"items": items, "total": total, "page": page, "limit": limit}
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "published_total": published_total,
+        }
 
-    @router.get("/cards/{card_id}", response_model=PublishedDetail)
+    @router.get(
+        "/cards/{card_id}",
+        response_model=PublishedDetail,
+        dependencies=[Depends(write_transaction)],
+    )
     def detail(
         card_id: str,
         request: Request,
         version_id: str | None = None,
+        mark_started: bool = True,
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
-        """Read the authorized publication and its thumbnail, including direct detail entry."""
+        """读取卡片当前版本并仅为当前用户记录首次有效打开，不计成绩"""
         card, version = published_card(db, card_id, version_id)
+        # 列表缩略图缺失时仅补读素材元信息，不能当作用户已打开场景
+        if mark_started:
+            insert_once(
+                db,
+                ReadingStart,
+                {"user_id": user.id, "card_id": card.id, "started_at": request.app.state.clock()},
+                ["user_id", "card_id"],
+            )
         audio = db.get(Media, version.payload["audio_id"])
         image = db.get(Media, version.payload["image_id"])
+        reading = db.get(ReadingStart, (user.id, card.id))
         return {
             "audio_duration": audio.duration if audio else None,
             "thumbnail_id": image.thumbnail_id if image else None,
@@ -381,6 +415,12 @@ def mini_routes():
             "content": version.payload,
             "published_at": timestamp(version.published_at),
             "state": card_state(db, user.id, card.id, request.app.state.clock()),
+            "reading_position": reading.position
+            if reading and reading.position and reading.position.get("version_id") == version.id
+            else None,
+            "reading_position_reset": bool(
+                reading and reading.position and reading.position.get("version_id") != version.id
+            ),
         }
 
     return router

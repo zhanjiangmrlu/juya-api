@@ -10,6 +10,8 @@ from .media_api import mini_routes as media_routes
 from .operation_api import routes as operation_routes
 from .profile_api import routes as profile_routes
 from .pronunciation_api import routes as pronunciation_routes
+from .queue_api import routes as queue_routes
+from .reading_api import routes as reading_routes
 
 
 def create_app(settings: Settings | None = None, *, sessions=None, clock=None, wechat=None):
@@ -25,4 +27,6 @@ def create_app(settings: Settings | None = None, *, sessions=None, clock=None, w
     app.include_router(profile_routes())
     app.include_router(operation_routes("mini"))
     app.include_router(pronunciation_routes("mini"))
+    app.include_router(queue_routes())
+    app.include_router(reading_routes())
     return app
