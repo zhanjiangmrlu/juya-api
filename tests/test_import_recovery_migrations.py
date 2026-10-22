@@ -1,13 +1,11 @@
 """Import recovery migration preserves facts and derives only recorded activity times."""
 
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from io import StringIO
 
-import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import MetaData, create_engine, inspect, select, text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 
@@ -17,7 +15,80 @@ def migration_config(monkeypatch, url):
     return Config("alembic.ini")
 
 
-def test_fresh_import_timestamp_is_required_and_matches_runtime_metadata(tmp_path, monkeypatch):
+def test_old_image_insert_after_upgrade_has_real_time_fallback_and_accepts_new_writes(
+    tmp_path, monkeypatch
+):
+    from fastapi.testclient import TestClient
+
+    from juya_api.admin import create_app
+    from juya_api.auth import create_administrator
+    from juya_api.config import Settings
+    from juya_api.database import make_database
+    from juya_api.import_models import ImportBatch
+
+    from .content_helpers import key, picture
+
+    url = "sqlite+pysqlite:///" + str(tmp_path / "old-image-import.db")
+    config = migration_config(monkeypatch, url)
+    command.upgrade(config, "0015")
+    settings = Settings(
+        environment="test",
+        database_url=url,
+        media_root=tmp_path / "media",
+        field_encryption_key="yK1Xc0sWCxUQxXvHPEgY46iVE1mW6BwJqHWSeg1oEJ4=",
+        lookup_key="test-lookup-secret-with-at-least-32-characters",
+    )
+    engine, sessions = make_database(settings)
+    created = datetime(2026, 10, 17, 8, 0, 0, 123456)
+    now = [created.replace(tzinfo=UTC) + timedelta(hours=1)]
+    try:
+        with sessions.begin() as db:
+            admin = create_administrator(db, "admin", "correct-test-password")
+            admin_id = admin.id
+        command.upgrade(config, "0016")
+        with sessions.begin() as db:
+            # The previous image's mapped INSERT omits the new column after expansion.
+            db.execute(
+                text(
+                    "INSERT INTO import_batches (id, admin_id, mode, created_at) "
+                    "VALUES (:id, :admin_id, 'docx', :created_at)"
+                ),
+                {
+                    "id": "old-image-batch",
+                    "admin_id": admin_id,
+                    "created_at": created.isoformat(" ", timespec="microseconds"),
+                },
+            )
+            assert db.get(ImportBatch, "old-image-batch").updated_at is None
+        with TestClient(
+            create_app(settings, sessions=sessions, clock=lambda: now[0]),
+            base_url="https://testserver",
+        ) as client:
+            login = client.post(
+                "/api/admin/v1/auth/login",
+                json={"username": "admin", "password": "correct-test-password"},
+            )
+            assert login.status_code == 200, login.text
+            client.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+            restored = client.get("/api/admin/v1/imports/old-image-batch")
+            assert restored.status_code == 200, restored.text
+            assert restored.json()["updated_at"] == "2026-10-17T08:00:00.123456Z"
+            uploaded = client.post(
+                "/api/admin/v1/imports/old-image-batch/files?kind=image",
+                headers=key(),
+                files={"file": ("new-write.png", picture(), "image/png")},
+            )
+            assert uploaded.status_code == 201, uploaded.text
+            current = client.get("/api/admin/v1/imports/old-image-batch").json()
+            assert current["updated_at"] == "2026-10-17T09:00:00.123456Z"
+        with sessions() as db:
+            assert db.get(ImportBatch, "old-image-batch").updated_at == now[0].replace(tzinfo=None)
+        command.check(config)
+    finally:
+        engine.dispose()
+
+
+def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_path, monkeypatch):
     url = "sqlite+pysqlite:///" + str(tmp_path / "fresh-import.db")
     config = migration_config(monkeypatch, url)
     command.upgrade(config, "head")
@@ -27,7 +98,7 @@ def test_fresh_import_timestamp_is_required_and_matches_runtime_metadata(tmp_pat
             column["name"]: column for column in inspect(engine).get_columns("import_batches")
         }
         assert "updated_at" in columns
-        assert columns["updated_at"]["nullable"] is False
+        assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
             assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0016"
@@ -38,7 +109,7 @@ def test_fresh_import_timestamp_is_required_and_matches_runtime_metadata(tmp_pat
                     "VALUES ('admin', 'fixture-admin', 'fixture-only')"
                 )
             )
-        with pytest.raises(IntegrityError), engine.begin() as db:
+        with engine.begin() as db:
             db.execute(
                 text(
                     "INSERT INTO import_batches (id, admin_id, mode, created_at, updated_at) "
@@ -222,7 +293,7 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
     command.upgrade(config, "head")
     columns = {column["name"]: column for column in inspect(engine).get_columns("import_batches")}
     assert "updated_at" in columns
-    assert columns["updated_at"]["nullable"] is False
+    assert columns["updated_at"]["nullable"] is True
     metadata_after = MetaData()
     metadata_after.reflect(engine)
     with engine.connect() as connection:
@@ -270,7 +341,7 @@ def test_import_timestamp_migration_emits_mysql_microsecond_ddl_without_live_con
     command.upgrade(config, "0015:head", sql=True)
     ddl = output.getvalue()
     assert "ADD COLUMN updated_at DATETIME(6)" in ddl
-    assert "updated_at DATETIME(6) NOT NULL" in ddl
+    assert "updated_at DATETIME(6) NOT NULL" not in ddl
     assert "UPDATE import_batches SET updated_at=import_batches.created_at" in ddl
     assert "CURRENT_TIMESTAMP" not in ddl.upper()
     assert "NOW()" not in ddl.upper()

@@ -347,6 +347,105 @@ def test_upload_refreshes_preflight_batch_after_a_later_staging_edit_commits(adm
     assert recovery(admin, batch_id).json()["updated_at"] == "2026-10-17T08:02:00.000000Z"
 
 
+@pytest.mark.parametrize("accept_minute", [1, 5])
+def test_delayed_stage_retains_worker_finish_time_when_unbinding_its_job(
+    admin, system, monkeypatch, accept_minute
+):
+    """Run the real route around an actor-lock wait without claiming SQLite row concurrency."""
+    from types import SimpleNamespace
+
+    from juya_api import import_api
+    from juya_api.import_api import StageItem
+    from juya_api.models import Administrator
+    from juya_api.worker import run_job
+
+    batch_id, _ = uploaded(admin, data=document("完成一项", "另一项仍在保存"))
+    process_jobs(admin)
+    item = save(admin, batch_id)["items"][0]
+    base = system["time"][0]
+    system["time"][0] = base + timedelta(minutes=1)
+    with system["sessions"]() as db:
+        actor = db.scalar(select(Administrator))
+    route = next(
+        route.endpoint
+        for route in import_api.routes().routes
+        if route.path == "/api/admin/v1/imports/{batch_id}/items/{item_id}"
+    )
+    operate = import_api.operate
+
+    def finish_before_actor_lock(*args):
+        # The route already captured minute 1; its worker wins the lock and commits minute 4.
+        moments = iter(base + timedelta(minutes=value) for value in (2, 3, 4))
+        run_job(system["settings"], system["sessions"], item["job_id"], clock=lambda: next(moments))
+        before = recovery(admin, batch_id).json()
+        assert before["updated_at"] == "2026-10-17T08:04:00.000000Z"
+        assert before["resumable"]
+        system["time"][0] = base + timedelta(minutes=accept_minute)
+        return operate(*args)
+
+    monkeypatch.setattr(import_api, "operate", finish_before_actor_lock)
+    with system["sessions"].begin() as db:
+        db.info["settings"] = system["settings"]
+        route(
+            batch_id,
+            item["id"],
+            StageItem(revision=item["revision"], content=item["content"], selected=False),
+            SimpleNamespace(app=admin.app),
+            admin=actor,
+            key=key()["Idempotency-Key"],
+            db=db,
+        )
+    current = recovery(admin, batch_id).json()
+    assert current["resumable"]
+    assert [value["state"] for value in current["items"]] == ["saved", "saving"]
+    assert current["updated_at"] == f"2026-10-17T08:0{max(4, accept_minute)}:00.000000Z"
+
+
+@pytest.mark.parametrize("mutation", ["remove", "retry"])
+def test_unlinking_last_source_job_keeps_its_maximum_recorded_activity(admin, system, mutation):
+    from .test_imports import archive
+
+    if mutation == "remove":
+        batch_id = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": "zip"}).json()[
+            "id"
+        ]
+        file = admin.post(
+            f"/api/admin/v1/imports/{batch_id}/files?kind=zip",
+            headers=key(),
+            files={
+                "file": (
+                    "source.zip",
+                    archive([("卡/内容.docx", document("卡"))]),
+                    "application/zip",
+                )
+            },
+        ).json()
+    else:
+        batch_id, file = uploaded(admin)
+    recorded = system["time"][0].replace(tzinfo=None) + timedelta(minutes=4)
+    with system["sessions"].begin() as db:
+        job = db.get(Job, file["job_id"])
+        job.state, job.error_code, job.updated_at = "failed", "worker_interrupted", recorded
+    before = recovery(admin, batch_id).json()
+    assert before["updated_at"] == "2026-10-17T08:04:00.000000Z"
+    system["time"][0] += timedelta(minutes=1)
+    if mutation == "remove":
+        changed = admin.post(
+            f"/api/admin/v1/imports/{batch_id}/files/remove",
+            headers=key(),
+            json={"file_ids": [file["id"]]},
+        )
+    else:
+        changed = admin.post(
+            f"/api/admin/v1/imports/{batch_id}/files/{file['id']}/retry", headers=key()
+        )
+    assert changed.status_code == 200, changed.text
+    current = admin.get(f"/api/admin/v1/imports/{batch_id}").json()
+    assert current["updated_at"] == before["updated_at"]
+    with system["sessions"]() as db:
+        assert db.get(ImportBatch, batch_id).updated_at == recorded
+
+
 @pytest.mark.mysql
 def test_mysql_progress_and_zip_removal_do_not_invert_file_and_batch_locks(admin, system):
     """Hold the worker's file lock while removal holds the batch, then finish without a cycle."""

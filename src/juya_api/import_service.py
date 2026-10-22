@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from .content_contracts import SceneContent
 from .content_models import Card, CardDraft, Media
@@ -45,10 +45,39 @@ INVALID_SOURCE_ERRORS = {
 }
 
 
-def touch_batch(batch, now):
-    """Record an actual import mutation without moving the last known timestamp backwards."""
-    moment = naive_utc(now)
-    batch.updated_at = max(naive_utc(batch.updated_at or batch.created_at), moment)
+def touch_batch(batch, now, *, db=None, job_ids=()):
+    """Keep accepted activity, including tasks whose references this mutation replaces."""
+    moments = [batch.created_at, batch.updated_at, now() if callable(now) else now]
+    if db is not None:
+        # Plain reads preserve the existing actor/job/file write-lock order. Do not
+        # flush an item deletion or job-pointer change merely to collect its time.
+        with db.no_autoflush:
+            moments.append(
+                db.scalar(
+                    select(func.max(ImportFile.created_at)).where(ImportFile.batch_id == batch.id)
+                )
+            )
+            moments.append(
+                db.scalar(
+                    select(func.max(Job.updated_at)).where(
+                        or_(
+                            Job.id.in_(job_ids),
+                            Job.id.in_(
+                                select(ImportFile.job_id).where(ImportFile.batch_id == batch.id)
+                            ),
+                            Job.id.in_(
+                                select(ImportItem.job_id).where(ImportItem.batch_id == batch.id)
+                            ),
+                            Job.id.in_(
+                                select(Media.job_id)
+                                .join(ImportFile, ImportFile.media_id == Media.id)
+                                .where(ImportFile.batch_id == batch.id)
+                            ),
+                        )
+                    )
+                )
+            )
+    batch.updated_at = max(naive_utc(value) for value in moments if value)
 
 
 def owned_batch(db, batch_id, admin_id):
@@ -405,7 +434,7 @@ def resolve(db, batch, settings, now):
         if content != item.content:
             item.content = content
             item.revision += 1
-            touch_batch(batch, now)
+            touch_batch(batch, now, db=db)
     db.flush()
     return batch_view(db, batch, settings)
 

@@ -3,6 +3,8 @@
 Old review-only edits did not persist a timestamp. Their exact time cannot be
 reconstructed: retain the latest recorded batch/file/referenced task instant.
 The application records review and other batch writes from this revision on.
+Keep the added column nullable so a previous image can still insert batches
+after expansion or application rollback; new reads fall back to recorded facts.
 """
 
 import sqlalchemy as sa
@@ -64,11 +66,6 @@ def upgrade():
     for source in sources:
         latest = source.scalar_subquery()
         op.execute(batches.update().where(latest > batches.c.updated_at).values(updated_at=latest))
-    if op.get_bind().dialect.name == "sqlite":
-        with op.batch_alter_table("import_batches") as batch:
-            batch.alter_column("updated_at", existing_type=instant(), nullable=False)
-    else:
-        op.alter_column("import_batches", "updated_at", existing_type=instant(), nullable=False)
 
 
 def downgrade():

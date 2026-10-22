@@ -172,6 +172,7 @@ def test_runtime_preflight_rejects_admin_schema_before_import_timestamp(
     from juya_api.content_models import SettingCounter
 
     with system["sessions"].begin() as db:
+        db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
         db.merge(SettingCounter(name="schema_contract", value=1))
@@ -213,6 +214,7 @@ def test_admin_bootstrap_requires_current_admin_schema(system, monkeypatch, revi
 
     with system["sessions"].begin() as db:
         db.execute(text("DELETE FROM administrators"))
+        db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
         db.merge(SettingCounter(name="schema_contract", value=1))

@@ -166,11 +166,12 @@ def routes():
         def execute():
             if body.single_card and body.mode != "docx":
                 raise DomainError(422, "import_mode", "单卡导入请选择DOCX")
+            accepted = request.app.state.clock()
             batch = ImportBatch(
                 admin_id=admin.id,
                 mode="single" if body.single_card else body.mode,
-                created_at=now,
-                updated_at=now,
+                created_at=accepted,
+                updated_at=accepted,
             )
             db.add(batch)
             db.flush()
@@ -321,7 +322,7 @@ def routes():
                     settings=settings,
                 ).id
             db.add(row)
-            touch_batch(batch, now)
+            touch_batch(batch, request.app.state.clock, db=db)
             db.flush()
             return file_view(db, row)
 
@@ -369,12 +370,21 @@ def routes():
                 )
             ).all()
             require_removable(items)
+            removed_job_ids = {
+                value
+                for value in (
+                    *[row.job_id for row in files],
+                    *[file_view(db, row)["job_id"] for row in files],
+                    *[item.job_id for item in items],
+                )
+                if value
+            }
+            touch_batch(batch, request.app.state.clock, db=db, job_ids=removed_job_ids)
             for item in items:
                 db.delete(item)
             db.flush()
             for row in files:
                 db.delete(row)
-            touch_batch(batch, now)
             db.add(
                 Audit(
                     admin_id=admin.id,
@@ -384,6 +394,9 @@ def routes():
                 )
             )
             db.flush()
+            # A parse-progress writer may have held the file lock until this
+            # deletion. Read its final committed time using the retained IDs.
+            touch_batch(batch, request.app.state.clock, db=db, job_ids=removed_job_ids)
             return batch_view(db, batch, request.app.state.settings)
 
         return operate(
@@ -427,9 +440,9 @@ def routes():
             require_removable(items)
             if any(item.revision != requested[item.id] for item in items):
                 raise DomainError(409, "import_changed", "核对资料已变化，请刷新后重新选择移除范围")
+            touch_batch(batch, request.app.state.clock, db=db)
             for item in items:
                 db.delete(item)
-            touch_batch(batch, now)
             db.add(
                 Audit(
                     admin_id=admin.id,
@@ -494,7 +507,7 @@ def routes():
             row.job_id = job.id
             if medium:
                 medium.job_id, medium.state = job.id, "processing"
-            touch_batch(batch, now)
+            touch_batch(batch, request.app.state.clock, db=db, job_ids=[previous.id])
             db.flush()
             return file_view(db, row)
 
@@ -520,7 +533,7 @@ def routes():
                 db,
                 owned_batch(db, batch_id, admin.id),
                 request.app.state.settings,
-                request.app.state.clock(),
+                request.app.state.clock,
             ),
         )
 
@@ -562,8 +575,14 @@ def routes():
             item.target_card_id = body.target_card_id
             item.target_revision = body.target_revision
             item.revision += 1
+            previous_job_id = item.job_id
             item.job_id = None
-            touch_batch(batch, now)
+            touch_batch(
+                batch,
+                request.app.state.clock,
+                db=db,
+                job_ids=[previous_job_id] if previous_job_id else (),
+            )
             db.flush()
             return item_view(db, item)
 
@@ -610,6 +629,7 @@ def routes():
                 .where(ImportItem.batch_id == batch_id)
                 .order_by(ImportItem.position, ImportItem.id)
             ).all()
+            previous_job_ids = set()
             for item in items:
                 value = item_view(db, item)
                 if (
@@ -619,6 +639,8 @@ def routes():
                     or value["state"] in {"saved", "duplicate", "saving"}
                 ):
                     continue
+                if item.job_id:
+                    previous_job_ids.add(item.job_id)
                 item.job_id = enqueue(
                     db,
                     "import.save",
@@ -634,7 +656,7 @@ def routes():
                     now,
                     settings=request.app.state.settings,
                 ).id
-            touch_batch(batch, now)
+            touch_batch(batch, request.app.state.clock, db=db, job_ids=previous_job_ids)
             db.flush()
             return batch_view(db, batch, request.app.state.settings)
 

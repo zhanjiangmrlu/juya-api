@@ -15,7 +15,7 @@ class ImportBatch(Base):
     admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"), index=True)
     mode: Mapped[str] = mapped_column(String(16))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
-    updated_at: Mapped[datetime] = mapped_column(
+    updated_at: Mapped[datetime | None] = mapped_column(
         UTCDateTime, default=lambda context: context.get_current_parameters()["created_at"]
     )
 
