@@ -35,11 +35,15 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
     assert system["mini"].get("/health/ready").status_code == 503
     with sessions.begin() as db:
         db.execute(text("UPDATE alembic_version SET version_num='0015'"))
-    assert client.get("/health/ready").status_code == 200
+    assert client.get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 200
     # 后续附加迁移仍可供当前代码使用，不允许跳过当前所需表
     with sessions.begin() as db:
         db.execute(text("UPDATE alembic_version SET version_num='0016'"))
+    assert client.get("/health/ready").status_code == 200
+    assert system["mini"].get("/health/ready").status_code == 200
+    with sessions.begin() as db:
+        db.execute(text("UPDATE alembic_version SET version_num='0017'"))
     assert client.get("/health/ready").status_code == 200
     with sessions.begin() as db:
         db.get(SettingCounter, "schema_contract").value = 2
@@ -69,6 +73,7 @@ def test_runtime_preflight_rejects_cross_environment_dependencies(system):
 
     path = Path(__file__).resolve().parents[1] / "deploy/runtime-preflight.py"
     spec = importlib.util.spec_from_file_location("runtime_preflight", path)
+    assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     values = {
@@ -99,8 +104,22 @@ def test_runtime_preflight_rejects_cross_environment_dependencies(system):
             module.check_target(Settings(**{**values, key: wrong}), "test", "admin", "test-private")
 
 
-@pytest.mark.parametrize("role,expected", [("admin", 1), ("mini", 0)])
-def test_worker_probe_checks_the_selected_roles_schema(system, monkeypatch, role, expected):
+@pytest.mark.parametrize(
+    "role,revision,expected",
+    [
+        ("admin", "0010", 1),
+        ("admin", "0012", 1),
+        ("admin", "0015", 1),
+        ("admin", "0016", 0),
+        ("admin", "0017", 0),
+        ("mini", "0009", 1),
+        ("mini", "0010", 0),
+        ("mini", "0015", 0),
+    ],
+)
+def test_worker_probe_checks_the_selected_roles_schema(
+    system, monkeypatch, role, revision, expected
+):
     import importlib.util
     from pathlib import Path
 
@@ -112,7 +131,7 @@ def test_worker_probe_checks_the_selected_roles_schema(system, monkeypatch, role
     with system["sessions"].begin() as db:
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
-        db.execute(text("INSERT INTO alembic_version VALUES ('0010')"))
+        db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
         db.merge(SettingCounter(name="schema_contract", value=1))
     settings = config.Settings(
         **{**system["settings"].model_dump(), "image_role": role, "worker_role": role}
@@ -133,6 +152,85 @@ def test_worker_probe_checks_the_selected_roles_schema(system, monkeypatch, role
     monkeypatch.setattr("sys.argv", ["container-health.py", "worker"])
     path = Path(__file__).resolve().parents[1] / "deploy/container-health.py"
     spec = importlib.util.spec_from_file_location("worker_health", path)
+    assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     assert module.main() == expected
+
+
+@pytest.mark.parametrize(
+    "role,revision,expected",
+    [("admin", "0015", 1), ("admin", "0016", 0), ("mini", "0010", 0)],
+)
+def test_runtime_preflight_rejects_admin_schema_before_import_timestamp(
+    system, monkeypatch, role, revision, expected
+):
+    import importlib.util
+    from pathlib import Path
+
+    from juya_api.config import Settings
+    from juya_api.content_models import SettingCounter
+
+    with system["sessions"].begin() as db:
+        db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
+        db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
+        db.merge(SettingCounter(name="schema_contract", value=1))
+    settings = Settings(**{**system["settings"].model_dump(), "image_role": role})
+
+    class Broker:
+        def ping(self):
+            return True
+
+        def close(self):
+            pass
+
+    path = Path(__file__).resolve().parents[1] / "deploy/runtime-preflight.py"
+    spec = importlib.util.spec_from_file_location("runtime_preflight_schema", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module, "Settings", lambda: settings)
+    monkeypatch.setattr(module, "check_target", lambda *args: None)
+    monkeypatch.setattr(module.Redis, "from_url", lambda *args, **kwargs: Broker())
+    monkeypatch.setattr(
+        module, "make_database", lambda settings: (system["engine"], system["sessions"])
+    )
+    monkeypatch.setattr("sys.argv", ["runtime-preflight.py", "test", role])
+    assert module.main() == expected
+
+
+@pytest.mark.parametrize("revision,expected", [("0015", 1), ("0016", 0)])
+def test_admin_bootstrap_requires_current_admin_schema(system, monkeypatch, revision, expected):
+    import importlib.util
+    from io import StringIO
+    from pathlib import Path
+
+    from sqlalchemy import select
+
+    from juya_api.config import Settings
+    from juya_api.content_models import SettingCounter
+    from juya_api.models import Administrator
+
+    with system["sessions"].begin() as db:
+        db.execute(text("DELETE FROM administrators"))
+        db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
+        db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
+        db.merge(SettingCounter(name="schema_contract", value=1))
+    settings = Settings(**{**system["settings"].model_dump(), "image_role": "admin"})
+    path = Path(__file__).resolve().parents[1] / "deploy/bootstrap-admin.py"
+    spec = importlib.util.spec_from_file_location("bootstrap_admin_schema", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module, "Settings", lambda: settings)
+    monkeypatch.setattr(
+        module, "make_database", lambda settings: (system["engine"], system["sessions"])
+    )
+    monkeypatch.setattr("sys.argv", ["bootstrap-admin.py", "--username", "migration-admin"])
+    monkeypatch.setattr("sys.stdin", StringIO("correct-bootstrap-password\n"))
+    assert module.main() == expected
+    with system["sessions"]() as db:
+        administrator = db.scalar(
+            select(Administrator).where(Administrator.username == "migration-admin")
+        )
+        assert (administrator is not None) == (expected == 0)

@@ -17,7 +17,7 @@ from .content_service import (
     save_candidate,
     validate_publication,
 )
-from .database import timestamp
+from .database import naive_utc, timestamp
 from .errors import DomainError
 from .import_models import ImportBatch, ImportFile, ImportIdentity, ImportItem
 from .import_parser import checked_archive, member_bytes, parse_docx_items
@@ -28,6 +28,27 @@ from .security import fingerprint
 from .storage import ObjectStorage
 from .transactions import actor_lock
 from .zip_names import import_file_name, readable_zip_name
+
+INVALID_SOURCE_ERRORS = {
+    "image_invalid",
+    "audio_invalid",
+    "audio_format_mismatch",
+    "media_invalid",
+    "docx_invalid",
+    "docx_structure",
+    "single_docx_multiple",
+    "archive_unsafe",
+    "archive_invalid",
+    "archive_limit",
+    "import_empty",
+    "import_card_limit",
+}
+
+
+def touch_batch(batch, now):
+    """Record an actual import mutation without moving the last known timestamp backwards."""
+    moment = naive_utc(now)
+    batch.updated_at = max(naive_utc(batch.updated_at or batch.created_at), moment)
 
 
 def owned_batch(db, batch_id, admin_id):
@@ -222,7 +243,8 @@ def item_view(db, item):
     }
 
 
-def batch_view(db, batch):
+def batch_view(db, batch, settings):
+    """Describe durable recovery inputs separately from ordinary historical result access."""
     files = db.scalars(
         select(ImportFile)
         .where(ImportFile.batch_id == batch.id)
@@ -239,12 +261,61 @@ def batch_view(db, batch):
         for field in ["image_id", "audio_id"]
         if item.content[field]
     }
+    file_values = [file_view(db, row) for row in files]
+    item_values = [item_view(db, item) for item in items]
+    pending_items = [
+        value
+        for value in item_values
+        if value["readable"] and value["state"] not in {"saved", "duplicate"}
+    ]
+    has_result = any(
+        value["job_id"] or value["saved_card_id"] or value["state"] == "duplicate"
+        for value in item_values
+    )
+    processing = any(value["state"] == "processing" for value in file_values)
+    stage = (
+        "result"
+        if has_result
+        else "processing"
+        if processing
+        else "review"
+        if pending_items
+        else "upload"
+    )
+    resumable = bool(pending_items)
+    if not resumable and batch.mode != "single":
+        storage = ObjectStorage(settings)
+        for row, value in zip(files, file_values, strict=True):
+            parse_source = row.kind in {"zip", "docx"}
+            attachment_only = not items and row.kind in {"image", "audio"} and not row.parent_id
+            retryable = (
+                value["state"] == "failed"
+                and not row.error_code
+                and value["error_code"] not in INVALID_SOURCE_ERRORS
+            )
+            needs_input = (parse_source or attachment_only) and (
+                value["state"] == "processing"
+                or retryable
+                or (attachment_only and value["state"] == "ready")
+            )
+            if needs_input and storage.exists(row.storage_key):
+                resumable = True
+                break
+    # Jobs also record asynchronous progress/failure times independently of staging mutations.
+    job_ids = {value["job_id"] for value in file_values + item_values if value["job_id"]}
+    moments = [batch.created_at, batch.updated_at, *(row.created_at for row in files)]
+    if job_ids:
+        moments.extend(db.scalars(select(Job.updated_at).where(Job.id.in_(job_ids))).all())
     return {
         "id": batch.id,
         "mode": batch.mode,
         "created_at": timestamp(batch.created_at),
-        "files": [file_view(db, row) for row in files],
-        "items": [item_view(db, item) for item in items],
+        "updated_at": timestamp(max(naive_utc(value) for value in moments if value)),
+        "resumable": resumable and batch.mode != "single",
+        "stage": stage,
+        "source_names": [value["name"] for value in file_values if not value["parent_id"]],
+        "files": file_values,
+        "items": item_values,
         "unused_file_ids": [
             row.id
             for row in files
@@ -308,7 +379,7 @@ def confirmation(db, batch, item_ids=None):
     }
 
 
-def resolve(db, batch):
+def resolve(db, batch, settings, now):
     """Only unique exact names suggest independent DOCX media; never match by upload order."""
     files = db.scalars(
         select(ImportFile).where(
@@ -334,8 +405,9 @@ def resolve(db, batch):
         if content != item.content:
             item.content = content
             item.revision += 1
+            touch_batch(batch, now)
     db.flush()
-    return batch_view(db, batch)
+    return batch_view(db, batch, settings)
 
 
 def asset_kind(name):
@@ -380,6 +452,8 @@ def parse_progress(sessions, job, now, phase, processed, total):
         if not source or source.job_id != current.id:
             raise DomainError(409, "import_changed", "导入文件状态已变化")
         source.progress = {"phase": phase, "processed": processed, "total": total}
+        # Keep the existing job→file lock path; a batch write here would invert removal's order.
+        current.updated_at = now
 
 
 def prepare_parse(settings, sessions, job, *, clock):
@@ -653,6 +727,7 @@ def prepare_parse(settings, sessions, job, *, clock):
             "processed": len(prepared_items),
             "total": len(prepared_items),
         }
+        touch_batch(db.get(ImportBatch, source["batch_id"]), row.updated_at)
 
     return {
         "file_id": source["id"],
@@ -698,6 +773,7 @@ def prepare_save(settings, sessions, job, now):
         item.saved_card_id = card.id
         item.saved_draft_revision = draft.revision
         item.last_saved_hash = hashed
+        touch_batch(db.get(ImportBatch, item.batch_id), now)
         db.merge(
             ImportIdentity(
                 object_key=identity_key,

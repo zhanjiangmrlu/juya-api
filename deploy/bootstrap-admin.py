@@ -23,7 +23,7 @@ def main():
         engine, sessions = make_database(settings)
         try:
             with sessions.begin() as db:
-                require_compatible_schema(db, minimum_revision=12)
+                require_compatible_schema(db, minimum_revision=16)
                 create_administrator(db, args.username, password)
         finally:
             engine.dispose()

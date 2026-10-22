@@ -95,7 +95,7 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
             if db.get_bind().dialect.name == "sqlite":
                 db.connection(execution_options={"sqlite_write_intent": False})
             db.execute(text("SELECT 1"))
-            require_compatible_schema(db, minimum_revision=15)
+            require_compatible_schema(db, minimum_revision=16 if role == "admin" else 15)
         return {"status": "ready", "service": role, "environment": settings.environment}
 
     return app

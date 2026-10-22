@@ -17,6 +17,7 @@ from .dependencies import administrator, database, operation_key
 from .errors import DomainError
 from .import_models import ImportBatch, ImportFile, ImportItem
 from .import_service import (
+    INVALID_SOURCE_ERRORS,
     batch_view,
     confirmation,
     file_view,
@@ -24,6 +25,7 @@ from .import_service import (
     item_view,
     owned_batch,
     resolve,
+    touch_batch,
     validate_source_media,
 )
 from .job_models import Job
@@ -87,6 +89,10 @@ class ImportBatchView(BaseModel):
     id: str
     mode: str
     created_at: str
+    updated_at: str
+    resumable: bool
+    stage: Literal["upload", "processing", "review", "result"]
+    source_names: list[str]
     files: list[ImportFileView]
     items: list[ImportItemView]
     unused_file_ids: list[str]
@@ -161,23 +167,39 @@ def routes():
             if body.single_card and body.mode != "docx":
                 raise DomainError(422, "import_mode", "单卡导入请选择DOCX")
             batch = ImportBatch(
-                admin_id=admin.id, mode="single" if body.single_card else body.mode, created_at=now
+                admin_id=admin.id,
+                mode="single" if body.single_card else body.mode,
+                created_at=now,
+                updated_at=now,
             )
             db.add(batch)
             db.flush()
-            return batch_view(db, batch)
+            return batch_view(db, batch, request.app.state.settings)
 
         return operate(db, admin, "admin", key, "import.create", body.model_dump(), now, execute)
 
     @router.get("/imports", response_model=list[ImportBatchView])
-    def recent(admin=Depends(administrator), db: Session = Depends(database, scope="function")):
-        rows = db.scalars(
+    def recent(
+        request: Request,
+        resumable_only: bool = False,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """Recovery is the complete owned set; the default recent-history query stays compatible."""
+        query = (
             select(ImportBatch)
             .where(ImportBatch.admin_id == admin.id, ImportBatch.mode != "single")
             .order_by(ImportBatch.created_at.desc(), ImportBatch.id.desc())
-            .limit(5)
-        ).all()
-        return [batch_view(db, batch) for batch in rows]
+        )
+        rows = db.scalars(query if resumable_only else query.limit(5)).all()
+        values = [batch_view(db, batch, request.app.state.settings) for batch in rows]
+        if resumable_only:
+            return sorted(
+                [value for value in values if value["resumable"]],
+                key=lambda value: (value["updated_at"], value["id"]),
+                reverse=True,
+            )
+        return values
 
     @router.get("/imports/example", response_class=FileResponse)
     def example(admin=Depends(administrator)):
@@ -190,10 +212,26 @@ def routes():
     @router.get("/imports/{batch_id}", response_model=ImportBatchView)
     def read(
         batch_id: str,
+        request: Request,
+        require_resumable: bool = False,
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
-        return batch_view(db, owned_batch(db, batch_id, admin.id))
+        if require_resumable:
+            batch = db.get(ImportBatch, batch_id)
+            if not batch or batch.admin_id != admin.id:
+                raise DomainError(
+                    409, "import_not_resumable", "该批次已失效或无权访问，请刷新待处理批次"
+                )
+            value = batch_view(db, batch, request.app.state.settings)
+            if not value["resumable"]:
+                raise DomainError(
+                    409,
+                    "import_not_resumable",
+                    "该批次已处理完成或暂存资料不可恢复，请刷新列表；缺失原文件请重新选择上传",
+                )
+            return value
+        return batch_view(db, owned_batch(db, batch_id, admin.id), request.app.state.settings)
 
     @router.post("/imports/{batch_id}/files", status_code=201, response_model=ImportFileView)
     def upload(
@@ -233,6 +271,8 @@ def routes():
         sha = hashlib.sha256(data).hexdigest()
 
         def execute():
+            # Preflight loaded this batch before the actor lock; retain newer accepted edits.
+            db.refresh(batch, attribute_names=["updated_at"])
             previous = db.scalar(
                 select(ImportFile).where(
                     ImportFile.batch_id == batch_id,
@@ -281,6 +321,7 @@ def routes():
                     settings=settings,
                 ).id
             db.add(row)
+            touch_batch(batch, now)
             db.flush()
             return file_view(db, row)
 
@@ -333,6 +374,7 @@ def routes():
             db.flush()
             for row in files:
                 db.delete(row)
+            touch_batch(batch, now)
             db.add(
                 Audit(
                     admin_id=admin.id,
@@ -342,7 +384,7 @@ def routes():
                 )
             )
             db.flush()
-            return batch_view(db, batch)
+            return batch_view(db, batch, request.app.state.settings)
 
         return operate(
             db,
@@ -387,6 +429,7 @@ def routes():
                 raise DomainError(409, "import_changed", "核对资料已变化，请刷新后重新选择移除范围")
             for item in items:
                 db.delete(item)
+            touch_batch(batch, now)
             db.add(
                 Audit(
                     admin_id=admin.id,
@@ -396,7 +439,7 @@ def routes():
                 )
             )
             db.flush()
-            return batch_view(db, batch)
+            return batch_view(db, batch, request.app.state.settings)
 
         return operate(
             db,
@@ -421,7 +464,7 @@ def routes():
         now, settings = request.app.state.clock(), request.app.state.settings
 
         def execute():
-            owned_batch(db, batch_id, admin.id)
+            batch = owned_batch(db, batch_id, admin.id)
             row = db.get(ImportFile, file_id)
             if not row or row.batch_id != batch_id:
                 raise DomainError(404, "import_file_missing", "未找到本次导入文件")
@@ -433,21 +476,12 @@ def routes():
             previous = db.get(Job, medium.job_id if medium else row.job_id)
             if not previous or previous.state != "failed":
                 return file_view(db, row)
-            if previous.error_code in {
-                "image_invalid",
-                "audio_invalid",
-                "media_invalid",
-                "docx_invalid",
-                "docx_structure",
-                "single_docx_multiple",
-                "archive_unsafe",
-                "archive_limit",
-                "import_empty",
-                "import_card_limit",
-            }:
+            if previous.error_code in INVALID_SOURCE_ERRORS:
                 raise DomainError(
                     422, "import_file_invalid", "原文件无法读取，请按提示修正后重新上传"
                 )
+            if not ObjectStorage(settings).exists(row.storage_key):
+                raise DomainError(409, "import_not_resumable", "原文件已不可用，请重新选择文件上传")
             job = enqueue(
                 db,
                 "media.decode" if medium else "import.parse",
@@ -460,6 +494,7 @@ def routes():
             row.job_id = job.id
             if medium:
                 medium.job_id, medium.state = job.id, "processing"
+            touch_batch(batch, now)
             db.flush()
             return file_view(db, row)
 
@@ -481,7 +516,12 @@ def routes():
             "import.resolve:" + batch_id,
             {},
             request.app.state.clock(),
-            lambda: resolve(db, owned_batch(db, batch_id, admin.id)),
+            lambda: resolve(
+                db,
+                owned_batch(db, batch_id, admin.id),
+                request.app.state.settings,
+                request.app.state.clock(),
+            ),
         )
 
     @router.patch("/imports/{batch_id}/items/{item_id}", response_model=ImportItemView)
@@ -523,6 +563,7 @@ def routes():
             item.target_revision = body.target_revision
             item.revision += 1
             item.job_id = None
+            touch_batch(batch, now)
             db.flush()
             return item_view(db, item)
 
@@ -593,8 +634,9 @@ def routes():
                     now,
                     settings=request.app.state.settings,
                 ).id
+            touch_batch(batch, now)
             db.flush()
-            return batch_view(db, batch)
+            return batch_view(db, batch, request.app.state.settings)
 
         return operate(
             db,

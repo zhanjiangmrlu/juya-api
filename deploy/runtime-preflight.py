@@ -63,7 +63,7 @@ def main():
                 db.execute(text("SELECT 1"))
                 if len(sys.argv) == 3:
                     require_compatible_schema(
-                        db, minimum_revision=12 if settings.image_role == "admin" else 10
+                        db, minimum_revision=16 if settings.image_role == "admin" else 10
                     )
         finally:
             engine.dispose()

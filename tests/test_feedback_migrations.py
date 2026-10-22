@@ -77,16 +77,18 @@ def test_feedback_upgrade_and_downgrade_preserve_existing_learning(tmp_path, mon
     assert "event_position" in {
         column["name"] for column in inspect(engine).get_columns("feedback_images")
     }
+    command.upgrade(config, "head")
     command.check(config)
     for revision in ["0014", "0015"]:
         (command.downgrade if revision == "0014" else command.upgrade)(config, revision)
-        with engine.connect() as db:
-            assert db.scalar(text("SELECT count(*) FROM users")) == 1
-            assert db.scalar(text("SELECT count(*) FROM completions")) == 1
-            assert db.scalar(text("SELECT count(*) FROM daily_learning")) == 1
-            assert db.scalar(text("SELECT count(*) FROM checkins")) == 1
-            assert str(db.scalar(text("SELECT first_completed_at FROM completions"))).startswith(
-                "2026-10-17 08:00:00"
-            )
+        with engine.connect() as connection:
+            assert connection.scalar(text("SELECT count(*) FROM users")) == 1
+            assert connection.scalar(text("SELECT count(*) FROM completions")) == 1
+            assert connection.scalar(text("SELECT count(*) FROM daily_learning")) == 1
+            assert connection.scalar(text("SELECT count(*) FROM checkins")) == 1
+            assert str(
+                connection.scalar(text("SELECT first_completed_at FROM completions"))
+            ).startswith("2026-10-17 08:00:00")
+    command.upgrade(config, "head")
     command.check(config)
     engine.dispose()

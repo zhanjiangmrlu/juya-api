@@ -74,6 +74,21 @@ class ObjectStorage:
         except FileNotFoundError:
             raise DomainError(404, "media_missing", "素材不可用") from None
 
+    def exists(self, key: str) -> bool:
+        """Check durable input without downloading it; an unavailable store is not an empty one."""
+        if not key:
+            return False
+        if self.client:
+            try:
+                return self.client.is_object_exist(self.settings.oss_bucket, key)
+            except Exception:
+                raise DomainError(503, "storage_unavailable", "暂存资料查询失败，请重试") from None
+        try:
+            path = self.path(key)
+            return path.is_file() and path.stat().st_size > 0
+        except OSError:
+            raise DomainError(503, "storage_unavailable", "暂存资料查询失败，请重试") from None
+
     def stream(self, key: str, start: int, end: int):
         """Open the upstream before returning a response so storage failures stay typed."""
         try:
