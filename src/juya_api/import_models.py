@@ -18,6 +18,7 @@ class ImportBatch(Base):
     updated_at: Mapped[datetime | None] = mapped_column(
         UTCDateTime, default=lambda context: context.get_current_parameters()["created_at"]
     )
+    deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
 
 class ImportFile(Base):

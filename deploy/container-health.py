@@ -33,7 +33,7 @@ def main():
             try:
                 with sessions() as db:
                     require_compatible_schema(
-                        db, minimum_revision=16 if settings.worker_role == "admin" else 10
+                        db, minimum_revision=17 if settings.worker_role == "admin" else 10
                     )
             finally:
                 engine.dispose()

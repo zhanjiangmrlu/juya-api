@@ -158,7 +158,7 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
                 }
 
         original = facts()
-        command.upgrade(config, "0016")
+        command.upgrade(config, "head")
         assert facts() == original
         column = next(
             column
@@ -204,7 +204,7 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
             column["name"] for column in inspect(engine).get_columns("import_batches")
         }
         assert facts() == before_round_trip
-        command.upgrade(config, "0016")
+        command.upgrade(config, "head")
         assert facts() == before_round_trip
         with Session(engine) as db:
             assert dict(db.execute(select(ImportBatch.id, ImportBatch.updated_at)).all()) == {

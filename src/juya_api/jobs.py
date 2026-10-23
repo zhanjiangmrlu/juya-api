@@ -6,8 +6,9 @@ from datetime import timedelta
 from sqlalchemy import and_, or_, select, true
 
 from .job_models import Job
-from .models import identifier
+from .models import Administrator, identifier
 from .security import decrypt, encrypt
+from .transactions import actor_lock
 
 
 def enqueue(db, kind, owner_kind, owner_id, payload, now, *, settings):
@@ -64,6 +65,7 @@ def dispatch(sessions, now, publish, *, limit=50, role=None):
 def claim(sessions, job_id, now, *, settings, role=None):
     """Claim once under a row lock, recovering a crashed worker after five minutes."""
     with sessions.begin() as db:
+        lock_admin_job(db, job_id, role=role)
         row = db.scalar(
             select(Job)
             .where(Job.id == job_id, Job.owner_kind == role if role else true())
@@ -75,11 +77,13 @@ def claim(sessions, job_id, now, *, settings, role=None):
             return None
         if row.attempts >= row.max_attempts:
             row.state, row.error_code, row.updated_at = "failed", "worker_interrupted", now
+            touch_import_job(db, row, now)
             return None
         row.attempts += 1
         row.lease = identifier()
         row.lease_expires_at = now + timedelta(minutes=5)
         row.state, row.updated_at = "running", now
+        touch_import_job(db, row, now)
         payload = decrypt(settings, row.payload)
         return {
             "id": row.id,
@@ -95,6 +99,7 @@ def claim(sessions, job_id, now, *, settings, role=None):
 def finish(sessions, job_id, lease, now, result, *, apply=None):
     """Commit side effects and the terminal receipt together; a stale worker cannot write."""
     with sessions.begin() as db:
+        lock_admin_job(db, job_id)
         row = db.scalar(select(Job).where(Job.id == job_id).with_for_update())
         if not row or row.state != "running" or row.lease != lease or row.lease_expires_at < now:
             return False
@@ -102,6 +107,7 @@ def finish(sessions, job_id, lease, now, result, *, apply=None):
             apply(db, row)
         row.state, row.result, row.updated_at = "succeeded", result, now
         row.error_code, row.lease, row.lease_expires_at = None, None, None
+        touch_import_job(db, row, now)
         return True
 
 
@@ -110,6 +116,7 @@ def fail(sessions, job_id, lease, now, code, *, temporary=False, apply=None):
     if not code.replace("_", "").isalnum() or len(code) > 64:
         code = "task_failed"
     with sessions.begin() as db:
+        lock_admin_job(db, job_id)
         row = db.scalar(select(Job).where(Job.id == job_id).with_for_update())
         if not row or row.state != "running" or row.lease != lease or row.lease_expires_at < now:
             return False
@@ -121,4 +128,39 @@ def fail(sessions, job_id, lease, now, code, *, temporary=False, apply=None):
         row.lease, row.lease_expires_at = None, None
         if apply:
             apply(db, row)
+        touch_import_job(db, row, now)
         return True
+
+
+def lock_admin_job(db, job_id, *, role=None):
+    """Use actor→job→file ordering, shared with HTTP import writes and progress."""
+    owner = db.execute(select(Job.owner_kind, Job.owner_id).where(Job.id == job_id)).first()
+    if owner and owner.owner_kind == "admin" and role in {None, "admin"}:
+        admin = db.get(Administrator, owner.owner_id)
+        if admin:
+            actor_lock(db, admin, "admin")
+
+
+def touch_import_job(db, job, now):
+    """Persist the deletion version with each referenced task transition."""
+    if job.owner_kind != "admin" or job.kind not in {"import.parse", "import.save", "media.decode"}:
+        return
+    from .content_models import Media
+    from .import_models import ImportBatch, ImportFile, ImportItem
+    from .import_service import touch_batch
+
+    ids = set(
+        db.scalars(
+            select(ImportFile.batch_id).where(
+                or_(
+                    ImportFile.job_id == job.id,
+                    ImportFile.media_id.in_(select(Media.id).where(Media.job_id == job.id)),
+                )
+            )
+        )
+    )
+    ids.update(db.scalars(select(ImportItem.batch_id).where(ImportItem.job_id == job.id)))
+    for batch_id in sorted(ids):
+        batch = db.get(ImportBatch, batch_id)
+        if batch and batch.deleted_at is None:
+            touch_batch(batch, now, db=db)

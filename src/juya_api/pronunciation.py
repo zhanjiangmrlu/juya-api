@@ -51,7 +51,9 @@ def reference(db, settings, role, card_id, word_id, version_id=None, revision=No
 def import_reference(db, settings, admin_id, batch_id, item_id, word_id, revision):
     """Resolve only an administrator's saved review revision without creating a Card."""
     owned_batch(db, batch_id, admin_id)
-    item = db.get(ImportItem, item_id)
+    item = db.scalar(
+        select(ImportItem).where(ImportItem.id == item_id).execution_options(populate_existing=True)
+    )
     if not item or item.batch_id != batch_id or not item.readable:
         raise DomainError(404, "word_missing", "未找到这条核对词汇")
     if item.revision != revision:

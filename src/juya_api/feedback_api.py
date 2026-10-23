@@ -53,6 +53,8 @@ from .transactions import operate, previous_result
 
 
 def safety(request, method, actor, role, key, action, *content):
+    if not request.app.state.settings.feedback_safety_enabled:
+        return
     correlation = lookup(
         request.app.state.settings,
         "feedback-safety",

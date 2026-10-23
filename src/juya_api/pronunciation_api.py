@@ -141,6 +141,23 @@ def routes(role):
             word, reading, config, cache_key = import_reference(
                 db, settings, actor.id, batch_id, item_id, word_id, body.revision
             )
+
+            def execute():
+                current_word, current_reading, current_config, current_key = import_reference(
+                    db, settings, actor.id, batch_id, item_id, word_id, body.revision
+                )
+                return request_speech(
+                    db,
+                    settings,
+                    actor,
+                    "admin",
+                    current_word,
+                    current_reading,
+                    current_config,
+                    current_key,
+                    now,
+                )
+
             value = operate(
                 db,
                 actor,
@@ -149,9 +166,7 @@ def routes(role):
                 "import.word:" + item_id + ":" + word_id,
                 body.model_dump(),
                 now,
-                lambda: request_speech(
-                    db, settings, actor, "admin", word, reading, config, cache_key, now
-                ),
+                execute,
             )
             return with_grant(
                 value,

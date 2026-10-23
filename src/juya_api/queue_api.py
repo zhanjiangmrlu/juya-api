@@ -77,13 +77,19 @@ def source_ids(db, user_id, body):
     elif body.source == "records":
         query = (
             select(Completion.card_id)
-            .where(Completion.user_id == user_id)
+            .join(Card, Completion.card_id == Card.id)
+            .where(Completion.user_id == user_id, Card.deleted_at.is_(None))
             .order_by(Completion.last_completed_at.desc(), Completion.card_id)
         )
     else:
         query = (
             select(DailyLearning.card_id)
-            .where(DailyLearning.user_id == user_id, DailyLearning.date == body.day)
+            .join(Card, DailyLearning.card_id == Card.id)
+            .where(
+                DailyLearning.user_id == user_id,
+                DailyLearning.date == body.day,
+                Card.deleted_at.is_(None),
+            )
             .order_by(DailyLearning.accepted_at.desc(), DailyLearning.card_id)
         )
     ids = list(db.scalars(query))

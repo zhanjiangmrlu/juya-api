@@ -37,6 +37,8 @@ class UnavailableContent:
 
 @pytest.fixture
 def feedback(mini, admin):
+    mini.app.state.settings.feedback_safety_enabled = True
+    admin.app.state.settings.feedback_safety_enabled = True
     mini.app.state.feedback_safety = SafeContent()
     admin.app.state.feedback_safety = SafeContent()
     return mini, admin

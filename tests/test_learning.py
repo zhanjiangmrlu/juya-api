@@ -116,10 +116,9 @@ def test_deleted_cards_keep_history_but_never_expose_old_full_content(admin, min
         == 200
     )
     assert mini.get("/api/mini/v1/me/statistics").json()["completed_cards"] == 1
-    record = mini.get("/api/mini/v1/me/learning-records").json()["items"][0]
-    assert record["name"] == "在咖啡店点单"
-    assert record["available"] is False
-    assert "dialogue" not in str(record)
+    records = mini.get("/api/mini/v1/me/learning-records").json()
+    assert records["items"] == []
+    assert records["total"] == 0
     assert complete(mini, card, version).status_code == 410
 
 

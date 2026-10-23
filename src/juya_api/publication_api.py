@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .content_models import Card, CardDraft, CardVersion, Media, SettingCounter
-from .content_service import require_card, reviewed_candidate
+from .content_service import advance_catalog, catalog_lock, require_card, reviewed_candidate
 from .database import timestamp
 from .dependencies import administrator, database, operation_key
 from .errors import DomainError
@@ -167,6 +167,7 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         def execute():
+            catalog_lock(db)
             current = catalog(db)
             if current["version"] != body.version:
                 raise DomainError(
@@ -177,6 +178,7 @@ def routes():
                 raise DomainError(422, "catalog_incomplete", "请调整全部已发布卡片的完整顺序")
             for position, card_id in enumerate(body.card_ids):
                 require_card(db, card_id).sort_order = position + 1
+            advance_catalog(db)
             db.flush()
             return catalog(db)
 

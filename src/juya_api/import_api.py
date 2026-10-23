@@ -43,6 +43,16 @@ class CreateImport(BaseModel):
     single_card: bool = False
 
 
+class DeleteImport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_updated_at: str = Field(min_length=1, max_length=40)
+
+
+class DeletedImport(BaseModel):
+    id: str
+    deleted: Literal[True]
+
+
 class ImportProgress(BaseModel):
     phase: Literal["reading", "parsing", "parsed"]
     processed: int
@@ -189,7 +199,11 @@ def routes():
         """Recovery is the complete owned set; the default recent-history query stays compatible."""
         query = (
             select(ImportBatch)
-            .where(ImportBatch.admin_id == admin.id, ImportBatch.mode != "single")
+            .where(
+                ImportBatch.admin_id == admin.id,
+                ImportBatch.mode != "single",
+                ImportBatch.deleted_at.is_(None),
+            )
             .order_by(ImportBatch.created_at.desc(), ImportBatch.id.desc())
         )
         rows = db.scalars(query if resumable_only else query.limit(5)).all()
@@ -220,6 +234,8 @@ def routes():
     ):
         if require_resumable:
             batch = db.get(ImportBatch, batch_id)
+            if batch and batch.admin_id == admin.id and batch.deleted_at is not None:
+                raise DomainError(404, "import_missing", "未找到本次导入")
             if not batch or batch.admin_id != admin.id:
                 raise DomainError(
                     409, "import_not_resumable", "该批次已失效或无权访问，请刷新待处理批次"
@@ -233,6 +249,53 @@ def routes():
                 )
             return value
         return batch_view(db, owned_batch(db, batch_id, admin.id), request.app.state.settings)
+
+    @router.delete("/imports/{batch_id}", response_model=DeletedImport)
+    def delete_batch(
+        batch_id: str,
+        body: DeleteImport,
+        request: Request,
+        admin=Depends(administrator),
+        key: str = Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        def execute():
+            batch = owned_batch(db, batch_id, admin.id)
+            busy = db.scalar(
+                select(Job.id)
+                .join(ImportItem, ImportItem.job_id == Job.id)
+                .where(
+                    ImportItem.batch_id == batch_id,
+                    Job.kind == "import.save",
+                    Job.state.in_(["queued", "running", "retry"]),
+                )
+                .limit(1)
+            )
+            if busy:
+                raise DomainError(409, "import_saving", "批次正在保存卡片，请等待保存完成后再删除")
+            current = batch_view(db, batch, request.app.state.settings)
+            if current["updated_at"] != body.expected_updated_at:
+                raise DomainError(409, "import_changed", "批次资料已变化，请刷新后重新确认删除")
+            now = request.app.state.clock()
+            batch.deleted_at = now
+            db.add(
+                Audit(
+                    admin_id=admin.id, action="import.delete", object_id=batch_id, occurred_at=now
+                )
+            )
+            db.flush()
+            return {"id": batch_id, "deleted": True}
+
+        return operate(
+            db,
+            admin,
+            "admin",
+            key,
+            "import.delete:" + batch_id,
+            body.model_dump(),
+            request.app.state.clock,
+            execute,
+        )
 
     @router.post("/imports/{batch_id}/files", status_code=201, response_model=ImportFileView)
     def upload(
@@ -273,7 +336,7 @@ def routes():
 
         def execute():
             # Preflight loaded this batch before the actor lock; retain newer accepted edits.
-            db.refresh(batch, attribute_names=["updated_at"])
+            batch = owned_batch(db, batch_id, admin.id)
             previous = db.scalar(
                 select(ImportFile).where(
                     ImportFile.batch_id == batch_id,

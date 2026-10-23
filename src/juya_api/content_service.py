@@ -11,6 +11,7 @@ from .database import timestamp
 from .errors import DomainError
 from .job_models import Job
 from .models import Audit
+from .persistence import insert_once
 from .security import fingerprint
 
 
@@ -188,6 +189,17 @@ def card_view(db, card: Card) -> dict:
     }
 
 
+def catalog_lock(db):
+    """Serialize all administrators' publication, lifecycle and ordering commits."""
+    insert_once(db, SettingCounter, {"name": "catalog_revision", "value": 0}, ["name"])
+    return db.scalar(
+        select(SettingCounter)
+        .where(SettingCounter.name == "catalog_revision")
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+
+
 def advance_catalog(db):
     """Fence a temporary order even when an offline card is republished unchanged."""
     counter = db.get(SettingCounter, "catalog_revision")
@@ -199,8 +211,14 @@ def advance_catalog(db):
 
 def lifecycle_action(db, card_id, revision, action, admin_id, now):
     """Share soft deletion/offlining across single actions and lease-protected batch commits."""
+    catalog_lock(db)
     card = require_card(db, card_id)
-    draft = revision_matches(db.get(CardDraft, card.id), revision)
+    db.refresh(card)
+    require_card(db, card_id)
+    draft = db.get(CardDraft, card.id)
+    if draft is not None:
+        db.refresh(draft)
+    draft = revision_matches(draft, revision)
     was_published = card.status == "published"
     if action == "offline":
         if card.status != "published":
@@ -243,10 +261,17 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
 
 def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: str, now):
     """Activate exactly the candidate that was previewed; keep old publications immutable."""
+    catalog_lock(db)
+    db.refresh(card)
+    require_card(db, card.id)
+    draft_row = db.get(CardDraft, card.id)
+    if draft_row is not None:
+        db.refresh(draft_row)
     draft, content_hash = reviewed_candidate(db, card, admin_id, revision, preview_id, now)
     was_published = card.status == "published"
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
-    if current and current.content_hash == content_hash:
+    changed = not current or current.content_hash != content_hash
+    if not changed:
         card.status = "published"
     else:
         number = (
@@ -263,7 +288,13 @@ def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: st
         db.add(version)
         db.flush()
         card.current_version_id, card.status = version.id, "published"
-    if not was_published:
+    if not was_published or changed:
+        first = db.scalar(
+            select(func.min(Card.sort_order)).where(
+                Card.status == "published", Card.deleted_at.is_(None), Card.id != card.id
+            )
+        )
+        card.sort_order = (first if first is not None else 1) - 1
         advance_catalog(db)
     db.add(Audit(admin_id=admin_id, action="card.publish", object_id=card.id, occurred_at=now))
     db.flush()

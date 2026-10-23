@@ -174,7 +174,7 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
 
             def apply(db, row):
                 from .admin_action_api import ActionSelection, validate_snapshot
-                from .content_service import lifecycle_action
+                from .content_service import catalog_lock, lifecycle_action
                 from .models import Administrator
                 from .transactions import actor_lock
 
@@ -185,6 +185,7 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
                 selection = ActionSelection.model_validate(
                     {k: v for k, v in payload.items() if k != "action"}
                 )
+                catalog_lock(db)
                 validate_snapshot(db, selection)
                 lifecycle_action(
                     db,

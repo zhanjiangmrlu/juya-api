@@ -2,6 +2,7 @@
 
 import copy
 import hashlib
+from datetime import timedelta
 from pathlib import PurePosixPath
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
@@ -22,7 +23,7 @@ from .errors import DomainError
 from .import_models import ImportBatch, ImportFile, ImportIdentity, ImportItem
 from .import_parser import checked_archive, member_bytes, parse_docx_items
 from .job_models import Job
-from .jobs import enqueue
+from .jobs import enqueue, lock_admin_job
 from .models import Administrator
 from .security import fingerprint
 from .storage import ObjectStorage
@@ -47,7 +48,8 @@ INVALID_SOURCE_ERRORS = {
 
 def touch_batch(batch, now, *, db=None, job_ids=()):
     """Keep accepted activity, including tasks whose references this mutation replaces."""
-    moments = [batch.created_at, batch.updated_at, now() if callable(now) else now]
+    accepted_at = naive_utc(now() if callable(now) else now)
+    moments = [batch.created_at, batch.updated_at]
     if db is not None:
         # Plain reads preserve the existing actor/job/file write-lock order. Do not
         # flush an item deletion or job-pointer change merely to collect its time.
@@ -77,13 +79,20 @@ def touch_batch(batch, now, *, db=None, job_ids=()):
                     )
                 )
             )
-    batch.updated_at = max(naive_utc(value) for value in moments if value)
+    previous = max(naive_utc(value) for value in moments if value)
+    # updated_at is also the deletion version: distinguish changes sharing a
+    # clock tick, and order a delayed request after its newer recorded activity.
+    batch.updated_at = max(accepted_at, previous + timedelta(microseconds=1))
 
 
 def owned_batch(db, batch_id, admin_id):
     """Every restore/edit/result query stays inside the signed-in administrator's batch."""
-    batch = db.get(ImportBatch, batch_id)
-    if not batch or batch.admin_id != admin_id:
+    batch = db.scalar(
+        select(ImportBatch)
+        .where(ImportBatch.id == batch_id)
+        .execution_options(populate_existing=True)
+    )
+    if not batch or batch.admin_id != admin_id or batch.deleted_at is not None:
         raise DomainError(404, "import_missing", "未找到本次导入")
     return batch
 
@@ -469,6 +478,7 @@ def asset_kind(name):
 def parse_progress(sessions, job, now, phase, processed, total):
     """Persist counters only for the current live lease; stale workers cannot overwrite progress."""
     with sessions.begin() as db:
+        lock_admin_job(db, job["id"])
         current = db.scalar(select(Job).where(Job.id == job["id"]).with_for_update())
         if (
             not current
@@ -480,9 +490,10 @@ def parse_progress(sessions, job, now, phase, processed, total):
         source = db.get(ImportFile, job["payload"]["file_id"])
         if not source or source.job_id != current.id:
             raise DomainError(409, "import_changed", "导入文件状态已变化")
+        batch = owned_batch(db, source.batch_id, current.owner_id)
         source.progress = {"phase": phase, "processed": processed, "total": total}
-        # Keep the existing job→file lock path; a batch write here would invert removal's order.
         current.updated_at = now
+        touch_batch(batch, now, db=db)
 
 
 def prepare_parse(settings, sessions, job, *, clock):
@@ -491,7 +502,7 @@ def prepare_parse(settings, sessions, job, *, clock):
         original = db.get(ImportFile, job["payload"]["file_id"])
         if not original or original.job_id != job["id"]:
             raise DomainError(409, "import_changed", "导入文件状态已变化")
-        batch = db.get(ImportBatch, original.batch_id)
+        batch = owned_batch(db, original.batch_id, job["owner_id"])
         source = dict(
             id=original.id,
             batch_id=original.batch_id,
@@ -691,6 +702,7 @@ def prepare_parse(settings, sessions, job, *, clock):
         current = db.get(ImportFile, source["id"])
         if not current or current.job_id != row.id:
             raise DomainError(409, "import_changed", "导入文件状态已变化")
+        batch = owned_batch(db, source["batch_id"], source["admin_id"])
         existing = (
             db.scalar(
                 select(func.count())
@@ -756,7 +768,7 @@ def prepare_parse(settings, sessions, job, *, clock):
             "processed": len(prepared_items),
             "total": len(prepared_items),
         }
-        touch_batch(db.get(ImportBatch, source["batch_id"]), row.updated_at)
+        touch_batch(batch, row.updated_at)
 
     return {
         "file_id": source["id"],
@@ -775,6 +787,7 @@ def prepare_save(settings, sessions, job, now):
         item = db.get(ImportItem, payload["item_id"])
         if not item or item.job_id != row.id or item.revision != payload["revision"]:
             raise DomainError(409, "import_changed", "核对资料已变化，请重新确认保存范围")
+        batch = owned_batch(db, item.batch_id, job["owner_id"])
         content = SceneContent.model_validate(payload["content"])
         hashed = content_hash(db, payload["content"])
         identity_key = object_key(db, item)
@@ -802,7 +815,7 @@ def prepare_save(settings, sessions, job, now):
         item.saved_card_id = card.id
         item.saved_draft_revision = draft.revision
         item.last_saved_hash = hashed
-        touch_batch(db.get(ImportBatch, item.batch_id), now)
+        touch_batch(batch, now)
         db.merge(
             ImportIdentity(
                 object_key=identity_key,

@@ -45,7 +45,7 @@ def test_old_image_insert_after_upgrade_has_real_time_fallback_and_accepts_new_w
         with sessions.begin() as db:
             admin = create_administrator(db, "admin", "correct-test-password")
             admin_id = admin.id
-        command.upgrade(config, "0016")
+        command.upgrade(config, "head")
         with sessions.begin() as db:
             # The previous image's mapped INSERT omits the new column after expansion.
             db.execute(
@@ -101,7 +101,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
         assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
-            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0016"
+            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0017"
             assert db.scalar(text("SELECT count(*) FROM import_batches")) == 0
             db.execute(
                 text(

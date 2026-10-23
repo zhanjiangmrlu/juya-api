@@ -40,7 +40,7 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
     # 后续附加迁移仍可供当前代码使用，不允许跳过当前所需表
     with sessions.begin() as db:
         db.execute(text("UPDATE alembic_version SET version_num='0016'"))
-    assert client.get("/health/ready").status_code == 200
+    assert client.get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 200
     with sessions.begin() as db:
         db.execute(text("UPDATE alembic_version SET version_num='0017'"))
@@ -110,7 +110,7 @@ def test_runtime_preflight_rejects_cross_environment_dependencies(system):
         ("admin", "0010", 1),
         ("admin", "0012", 1),
         ("admin", "0015", 1),
-        ("admin", "0016", 0),
+        ("admin", "0016", 1),
         ("admin", "0017", 0),
         ("mini", "0009", 1),
         ("mini", "0010", 0),
@@ -160,9 +160,9 @@ def test_worker_probe_checks_the_selected_roles_schema(
 
 @pytest.mark.parametrize(
     "role,revision,expected",
-    [("admin", "0015", 1), ("admin", "0016", 0), ("mini", "0010", 0)],
+    [("admin", "0015", 1), ("admin", "0016", 1), ("admin", "0017", 0), ("mini", "0010", 0)],
 )
-def test_runtime_preflight_rejects_admin_schema_before_import_timestamp(
+def test_runtime_preflight_rejects_admin_schema_before_import_deletion(
     system, monkeypatch, role, revision, expected
 ):
     import importlib.util
@@ -200,7 +200,7 @@ def test_runtime_preflight_rejects_admin_schema_before_import_timestamp(
     assert module.main() == expected
 
 
-@pytest.mark.parametrize("revision,expected", [("0015", 1), ("0016", 0)])
+@pytest.mark.parametrize("revision,expected", [("0015", 1), ("0016", 1), ("0017", 0)])
 def test_admin_bootstrap_requires_current_admin_schema(system, monkeypatch, revision, expected):
     import importlib.util
     from io import StringIO

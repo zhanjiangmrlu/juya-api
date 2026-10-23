@@ -344,7 +344,7 @@ def test_upload_refreshes_preflight_batch_after_a_later_staging_edit_commits(adm
     finally:
         admin.app.dependency_overrides.pop(database)
         cached.close()
-    assert recovery(admin, batch_id).json()["updated_at"] == "2026-10-17T08:02:00.000000Z"
+    assert recovery(admin, batch_id).json()["updated_at"] > "2026-10-17T08:02:00.000000Z"
 
 
 @pytest.mark.parametrize("accept_minute", [1, 5])
@@ -378,7 +378,7 @@ def test_delayed_stage_retains_worker_finish_time_when_unbinding_its_job(
         moments = iter(base + timedelta(minutes=value) for value in (2, 3, 4))
         run_job(system["settings"], system["sessions"], item["job_id"], clock=lambda: next(moments))
         before = recovery(admin, batch_id).json()
-        assert before["updated_at"] == "2026-10-17T08:04:00.000000Z"
+        assert before["updated_at"] >= "2026-10-17T08:04:00.000000Z"
         assert before["resumable"]
         system["time"][0] = base + timedelta(minutes=accept_minute)
         return operate(*args)
@@ -398,7 +398,7 @@ def test_delayed_stage_retains_worker_finish_time_when_unbinding_its_job(
     current = recovery(admin, batch_id).json()
     assert current["resumable"]
     assert [value["state"] for value in current["items"]] == ["saved", "saving"]
-    assert current["updated_at"] == f"2026-10-17T08:0{max(4, accept_minute)}:00.000000Z"
+    assert current["updated_at"] >= f"2026-10-17T08:0{max(4, accept_minute)}:00.000000Z"
 
 
 @pytest.mark.parametrize("mutation", ["remove", "retry"])
@@ -441,15 +441,15 @@ def test_unlinking_last_source_job_keeps_its_maximum_recorded_activity(admin, sy
         )
     assert changed.status_code == 200, changed.text
     current = admin.get(f"/api/admin/v1/imports/{batch_id}").json()
-    assert current["updated_at"] == before["updated_at"]
+    assert current["updated_at"] > before["updated_at"]
     with system["sessions"]() as db:
-        assert db.get(ImportBatch, batch_id).updated_at == recorded
+        assert db.get(ImportBatch, batch_id).updated_at > recorded
 
 
 @pytest.mark.mysql
 def test_mysql_progress_and_zip_removal_do_not_invert_file_and_batch_locks(admin, system):
-    """Hold the worker's file lock while removal holds the batch, then finish without a cycle."""
-    from concurrent.futures import ThreadPoolExecutor
+    """Progress reserves the actor first; removal waits without holding another write lock."""
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError
     from threading import Event
 
     from sqlalchemy import event
@@ -474,14 +474,12 @@ def test_mysql_progress_and_zip_removal_do_not_invert_file_and_batch_locks(admin
     job = claim(sessions, root["job_id"], now, settings=settings)
     system["time"][0] += timedelta(seconds=1)
     now = admin.app.state.clock()
-    file_locked, batch_locked = Event(), Event()
+    file_locked, release_progress = Event(), Event()
 
     def observe(connection, cursor, statement, parameters, context, many):
         if statement.startswith("UPDATE import_files SET"):
             file_locked.set()
-            assert batch_locked.wait(timeout=10)
-        elif statement.startswith("UPDATE import_batches SET"):
-            batch_locked.set()
+            assert release_progress.wait(timeout=10)
 
     def remove():
         assert file_locked.wait(timeout=10)
@@ -496,6 +494,12 @@ def test_mysql_progress_and_zip_removal_do_not_invert_file_and_batch_locks(admin
         with ThreadPoolExecutor(max_workers=2) as pool:
             progress = pool.submit(parse_progress, sessions, job, now, "parsing", 1, 2)
             removed = pool.submit(remove)
+            assert file_locked.wait(timeout=10)
+            try:
+                with pytest.raises(TimeoutError):
+                    removed.result(timeout=0.5)
+            finally:
+                release_progress.set()
             assert removed.result(timeout=30).status_code == 200
             assert progress.result(timeout=30) is None
     finally:

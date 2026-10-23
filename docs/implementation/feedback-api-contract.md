@@ -53,13 +53,15 @@ text／status至少一个；status仅允许processing／needs_info／resolved；
 
 ## 私有截图
 
-只接受实际可解码静态PNG／JPEG／WebP，沿用上传字节限制和20MP解码上限；去EXIF等元数据，最大2048边长压缩后私有保存。安全检查未完成不视为上传成功。附件不进入公开卡片／分享。
+只接受实际可解码静态PNG／JPEG／WebP，沿用上传字节限制和20MP解码上限；去EXIF等元数据，最大2048边长压缩后私有保存。开启审核时，安全检查未完成不视为上传成功。附件不进入公开卡片／分享。
 
 url为`/api/{role}/v1/feedback/images/{opaquegrant}`，5分钟会话／角色／用途绑定，每次下载复查当前会话、图片和所属反馈权限。原生image／previewImage可用grant不附Authorization；若带Authorization则必须匹配。后台必须同session cookie。私有响应no-store与nosniff。
 
 GET `/api/{role}/v1/feedback/images/{image_id}/url` → FeedbackImage（新grant）；用户可续签本人成功未绑定图片，管理员只可续签已绑定可访问反馈的图片。GET detail也返回新grant。图片过期或读取失败只续签／重试，不重复上传成功项。
 
 ## 幂等、安全与配置
+
+2026-10-24 验收修订：`Settings.feedback_safety_enabled`／`JUYA_FEEDBACK_SAFETY_ENABLED` 默认 `false`，统一跳过用户创建、追加、截图和管理员回复的外部审核调用；其余校验和安全边界保留。设置 `true` 才启用下述严格网关规则。无需修改请求契约，配置细节及新批次删除契约见 `v15-acceptance-api-contract.md`。
 
 未知响应先GET现有`/api/{role}/v1/operations/{key}` → `{status:'succeeded',result:<本操作FeedbackDetail|FeedbackImage|FeedbackReadReceipt>}`。详情型旧回执为当时快照；恢复成功后GET detail刷新时间线与图片grant。已成功结果先恢复，后续安全网关失败不妨碍恢复；真正写入仍由operate重新校验指纹及归属并原子提交。反馈行锁分配事件序号并决定最终状态，独立已读游标不越过提交水位。
 

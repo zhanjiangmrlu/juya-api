@@ -153,7 +153,11 @@ def complete_learning(db, user, card_id: str, version_id: str, now):
 
 
 def learning_records(db, user_id: str, page: int, limit: int):
-    query = select(Completion).where(Completion.user_id == user_id)
+    query = (
+        select(Completion)
+        .join(Card, Completion.card_id == Card.id)
+        .where(Completion.user_id == user_id, Card.deleted_at.is_(None))
+    )
     total = db.scalar(select(func.count()).select_from(query.subquery()))
     rows = db.scalars(
         query.order_by(Completion.last_completed_at.desc(), Completion.card_id)
@@ -188,7 +192,12 @@ def checkin_records(db, user_id: str, page: int, limit: int):
                 "card_count": db.scalar(
                     select(func.count())
                     .select_from(DailyLearning)
-                    .where(DailyLearning.user_id == user_id, DailyLearning.date == row.date)
+                    .join(Card, DailyLearning.card_id == Card.id)
+                    .where(
+                        DailyLearning.user_id == user_id,
+                        DailyLearning.date == row.date,
+                        Card.deleted_at.is_(None),
+                    )
                 ),
             }
             for row in rows
@@ -202,7 +211,10 @@ def checkin_records(db, user_id: str, page: int, limit: int):
 def day_records(db, user_id: str, day: date):
     rows = db.scalars(
         select(DailyLearning)
-        .where(DailyLearning.user_id == user_id, DailyLearning.date == day)
+        .join(Card, DailyLearning.card_id == Card.id)
+        .where(
+            DailyLearning.user_id == user_id, DailyLearning.date == day, Card.deleted_at.is_(None)
+        )
         .order_by(DailyLearning.accepted_at.desc(), DailyLearning.card_id)
     ).all()
     return {
