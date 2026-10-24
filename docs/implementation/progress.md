@@ -258,3 +258,9 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 ## 2026-10-24 V1.5验收修复后端交付
 
 按已批准计划完成问题1/2/3/6/8后端范围：整批导入软删除及原始updated_at版本/持久幂等/进行中保存保护/迟到解析、上传与发音拦截；新发布、新版本和重新上架置顶、跨管理员目录锁及冻结操作快照内校验；学习记录/日期明细/新records和day队列排除已删卡且成绩及打卡事实保留；反馈审核默认关闭的集中开关，开启恢复原严格规则。新增兼容迁移0017，管理员API和Worker相关门禁同步；权威管理OpenAPI已更新，小程序快照无差异。关键回归及迁移经历失败后修复；最终完整SQLite369通过/24外部条件跳过，专用真实MySQL8.4.13加Redis/Celery390通过/3 SQLite专属跳过；Ruff、184文件格式、mypy62源码、diff及两角色工厂契约比对通过。仅本仓本地实现和提交，未推送部署、迁移现有业务环境或清理真实数据。第3条隔离完整发布链路通过，云端当前仍下线的根因未凭此宣称解决；最终三端HTTP/Chrome联调由主协调收敛。详见docs/implementation/v15-acceptance-api-contract.md与docs/verification/v15-acceptance-api.md。
+
+## 2026-10-24 release 部署与 RDS 迁移准备
+
+按用户要求，juya-cli 生产分支门禁增加精确 release，保留 main、测试仅 test、干净工作区及实际分支/提交清单校验；CLI 58 项 Node、259 项引擎测试通过，10 项外部能力场景跳过。发现后端部署预检固定数据库主机 mysql，新增 JUYA_EXPECTED_DATABASE_HOST 显式配置，默认 mysql 兼容现有部署；保留环境库名、应用账号、Redis、OSS 和角色门禁。新增 16 项真实配置校验先出现 4 项预期失败，最小修改后全部通过；后端完整 385 通过、24 项外部条件跳过，Ruff 检查、185 文件格式检查、mypy 62 源文件通过。API CI 增加 release 触发，产物仍为两个角色的不可变镜像，不自动部署。
+
+只读核查发现源生产库 29 表、版本 0010，业务表为空，仅迁移与系统初始化记录；生产 API/Worker/dispatcher 尚未启动，测试和共享 MySQL 正在运行。ECS 到 RDS 内网 DNS/TCP 通过，尚无账号登录、导入或切换验收。源端字段加密/查找密钥一致，迁移保留原值。完整控制台步骤、单库备份恢复、逐表核验、升级到 0017、切换及回退边界见 docs/operations/rds-production-migration.md。用户选择自行操作阿里云控制台；本轮未创建云账号、修改白名单、修改生产运行文件、迁移数据或切换流量。CLI SSH 密钥授权仍需部署前单独解决；本次已有密码诊断不能作为 CLI 发布登录已通过的证据。

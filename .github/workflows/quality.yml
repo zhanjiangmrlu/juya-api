@@ -1,7 +1,7 @@
 name: Verify and package independent APIs
 on:
   push:
-    branches: [main, test, rebuild-v15]
+    branches: [main, test, release, rebuild-v15]
   pull_request:
   workflow_dispatch:
 permissions:

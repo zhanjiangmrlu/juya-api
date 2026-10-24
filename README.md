@@ -24,3 +24,5 @@ uv run pytest -q
 V1.5验收修复契约见 `docs/implementation/v15-acceptance-api-contract.md`。管理员服务及Worker要求迁移至0017（导入批次软删除）；迁移保持旧列集INSERT兼容，但删除入口启用前应停止或排空旧管理员写进程。反馈外部审核默认关闭（`JUYA_FEEDBACK_SAFETY_ENABLED=false`）；设为true后须配置HTTPS安全网关及令牌，只有明确最终allow通过，其他业务和权限校验始终保留。
 
 [部署与验证记录](docs/verification/deployment.md)说明镜像、空库初始化、显式迁移和逐服务发布。[实施进度](docs/implementation/progress.md)记录已完成证据及仍需验收的外部条件。
+
+生产迁往 RDS 的控制台设置、数据备份、导入校验、连接切换与回退边界见 [RDS 迁移手册](docs/operations/rds-production-migration.md)。RDS 运行文件须显式设置 `JUYA_EXPECTED_DATABASE_HOST`，默认值 `mysql` 保持现有容器数据库部署兼容。

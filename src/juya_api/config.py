@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     environment: Literal["local", "test", "production"] = "local"
     database_url: str = Field(repr=False)
+    expected_database_host: str = "mysql"
     field_encryption_key: str = Field(repr=False)
     lookup_key: str = Field(repr=False)
     wechat_app_id: str = ""

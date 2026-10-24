@@ -25,7 +25,7 @@ def check_target(settings, environment, role, expected_bucket):
         database.drivername != "mysql+pymysql"
         or database.database != prefix
         or database.username != prefix + "_app"
-        or database.host != "mysql"
+        or database.host != settings.expected_database_host
         or not database.password
         or redis.hostname != "redis-" + environment
         or not redis.password
