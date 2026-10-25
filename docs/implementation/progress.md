@@ -279,3 +279,7 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 ## 2026-10-25 生产数据库 RDS 迁移与连接切换
 
 按用户明确授权从本机账号文件读取凭证，将源生产0010的29张表导入空RDS生产库；导入后的结构、逐表行数和内容摘要一致。使用release 4ba194f对应的CI管理镜像执行显式升级0018，目标42表结构与已验证0018一致，原有记录保留、新增表为空。仅修改生产admin/mini/migration运行文件的数据库URL和预期主机，三份实际配置连接验证及管理角色运行预检通过，其余配置和密钥保留。11个既有容器、7份测试配置、测试库结构/行数/内容摘要完全不变，两测试API公网ready。源0010库、原配置及两端逻辑备份保留，本机备份摘要复核通过。生产服务原本未启动，本轮未启动API/Worker/dispatcher、未初始化管理员或发布前端/小程序；后续正式应用发布另行执行。详见[实际执行记录](../verification/rds-production-migration-20261025.md)。
+
+## 2026-10-25 生产服务首次发布与管理员初始化
+
+按用户授权发布 release 后端双角色及后台网页，生产六个 API/Worker/dispatcher 容器均 healthy、零重启和 OOM，全部连接 RDS 生产库 `0018`。新增首位管理员 `admin`，密码只在本地私密账号文件，生产 API 实际登录、会话 Cookie 与 CSRF 校验通过。后台网页和两 API 公网就绪及角色隔离通过。初次管理 API 公网检查因生产 HTTPS 配置未安装而失败；使用现有证书安装正式 vhost 后复验通过，首次无上一版本的自动回退异常需另行修正。测试原有 11 容器、7 配置和数据库结构、行数、内容摘要与部署前一致。未发布微信正式版，也未启用学习授权开关。版本和证据详见[生产发布记录](../verification/production-service-deployment-20261025.md)。
