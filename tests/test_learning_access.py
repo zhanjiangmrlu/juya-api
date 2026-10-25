@@ -94,7 +94,13 @@ def test_outdated_free_preview_is_rejected(admin, mini):
 
 @pytest.mark.parametrize(
     ("day", "expected"),
-    [("2027-01-31", "2027-02-28"), ("2028-01-31", "2028-02-29"), ("2026-10-25", "2026-11-25")],
+    [
+        ("2027-01-31", "2027-02-28"),
+        ("2028-01-31", "2028-02-29"),
+        ("2026-10-25", "2026-11-25"),
+        ("2026-12-31", "2027-01-31"),
+        ("2028-02-29", "2028-03-29"),
+    ],
 )
 def test_natural_month_and_expiry_boundary(admin, mini, system, day, expected):
     from sqlalchemy import update

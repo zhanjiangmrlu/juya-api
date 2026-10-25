@@ -104,3 +104,49 @@ def test_locked_published_thumbnail_never_authorizes_original_or_reading_positio
 
 def test_non_administrator_cannot_enable_or_grant(mini):
     assert mini.put(POLICY, headers=key(), json={"preview_token": "forged"}).status_code == 404
+
+
+def test_free_membership_crosses_admin_ten_row_pages_without_using_page_order(admin, mini):
+    """A page-local free calculation would hide a globally free scene on page two."""
+    cards(admin, 12)
+    ordered = mini.get("/api/mini/v1/cards?limit=50").json()["items"]
+    expected = [row["id"] for row in ordered[:11]]
+    configure(admin, 11)
+    preview = admin.post(POLICY + "/preview?page=2&limit=10", json={"free_count": 11}).json()
+    assert preview["total"] == 11
+    assert [row["id"] for row in preview["items"]] == [expected[10]]
+    for page in (1, 2):
+        response = admin.get(f"/api/admin/v1/cards?page={page}&limit=10")
+        assert response.status_code == 200
+        for row in response.json()["items"]:
+            assert row["is_free"] == (row["id"] in expected)
+    listing = mini.get("/api/mini/v1/cards?limit=50").json()["items"]
+    assert [row["id"] for row in listing if row["access"]["is_free"]] == expected
+    assert listing[-1]["access"]["can_learn"] is False
+
+
+def test_reorder_rejects_old_free_confirmation_and_moves_access_without_erasing_scores(admin, mini):
+    """A catalog change must invalidate an old confirmation and re-evaluate the global set."""
+    cards(admin, 3)
+    rows = mini.get("/api/mini/v1/cards").json()["items"]
+    configure(admin, 1)
+    completed = mini.post(
+        f"/api/mini/v1/cards/{rows[0]['id']}/complete",
+        headers=key(),
+        json={"version_id": rows[0]["version_id"]},
+    )
+    assert completed.status_code == 200
+    preview = admin.post(POLICY + "/preview", json={"free_count": 2}).json()
+    order = admin.get("/api/admin/v1/catalog-order").json()
+    response = admin.put(
+        "/api/admin/v1/catalog-order",
+        headers=key(),
+        json={"version": order["version"], "card_ids": [row["id"] for row in reversed(rows)]},
+    )
+    assert response.status_code == 200
+    stale = admin.put(POLICY, headers=key(), json={"preview_token": preview["preview_token"]})
+    assert stale.status_code == 409
+    assert admin.get(POLICY).json()["free_count"] == 1
+    assert mini.get(f"/api/mini/v1/cards/{rows[0]['id']}").status_code == 403
+    assert mini.get(f"/api/mini/v1/cards/{rows[-1]['id']}").status_code == 200
+    assert mini.get("/api/mini/v1/me/statistics").json()["completed_cards"] == 1
