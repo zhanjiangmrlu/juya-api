@@ -264,3 +264,7 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 按用户要求，juya-cli 生产分支门禁增加精确 release，保留 main、测试仅 test、干净工作区及实际分支/提交清单校验；CLI 58 项 Node、259 项引擎测试通过，10 项外部能力场景跳过。发现后端部署预检固定数据库主机 mysql，新增 JUYA_EXPECTED_DATABASE_HOST 显式配置，默认 mysql 兼容现有部署；保留环境库名、应用账号、Redis、OSS 和角色门禁。新增 16 项真实配置校验先出现 4 项预期失败，最小修改后全部通过；后端完整 385 通过、24 项外部条件跳过，Ruff 检查、185 文件格式检查、mypy 62 源文件通过。API CI 增加 release 触发，产物仍为两个角色的不可变镜像，不自动部署。
 
 只读核查发现源生产库 29 表、版本 0010，业务表为空，仅迁移与系统初始化记录；生产 API/Worker/dispatcher 尚未启动，测试和共享 MySQL 正在运行。ECS 到 RDS 内网 DNS/TCP 通过，尚无账号登录、导入或切换验收。源端字段加密/查找密钥一致，迁移保留原值。完整控制台步骤、单库备份恢复、逐表核验、升级到 0017、切换及回退边界见 docs/operations/rds-production-migration.md。用户选择自行操作阿里云控制台；本轮未创建云账号、修改白名单、修改生产运行文件、迁移数据或切换流量。CLI SSH 密钥授权仍需部署前单独解决；本次已有密码诊断不能作为 CLI 发布登录已通过的证据。
+
+## 2026-10-25 修订16学习授权本地交付
+
+按用户批准计划合并整合04并实现统一学习授权、免费全局前N张、A02配置核对、A05筛选、A06四类操作与审计、小程序受限摘要及缓存回收，迁移0018默认未启用且不赠送旧用户授权。业务规则优先，保留最近验收修复；源码仍统一在juya-api，CLI逻辑目标不改名。最终SQLite395通过/26环境条件跳过，专用真实MySQL＋Redis418通过/3 SQLite专属跳过，后台169项、小程序322项通过；三端静态检查、后台/H5/微信测试构建、包体及契约一致性通过。独立审查5项Important均经失败回归修复，无延期项；本地合成数据真实HTTP/Chrome验收及七张截图完成。四仓均为test，三个业务仓库为未提交修改；未推送、部署、上传体验版，未修改现有业务数据。真机、云端、265态逐像素与生产资源拓扑另行验收；详见[完整交付与发布门禁](../verification/revision16-learning-access.md)、[验收追踪](revision16-acceptance.md)、[设计映射](revision16-design-map.md)。

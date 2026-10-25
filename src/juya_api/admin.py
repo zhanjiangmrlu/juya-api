@@ -1,5 +1,6 @@
 """Only this entrypoint is deployed on admin-api.juyayingyu.com."""
 
+from .access_api import admin_routes as access_routes
 from .admin_action_api import routes as action_routes
 from .application import application
 from .auth import admin_routes
@@ -26,6 +27,7 @@ def create_app(
         feedback_safety if feedback_safety is not None else FeedbackSafetyGateway(settings)
     )
     app.state.list_thumbnails = ListThumbnails()
+    app.include_router(access_routes())
     app.include_router(admin_routes())
     app.include_router(content_routes())
     app.include_router(action_routes())

@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from .access_service import require_access
 from .content_models import Card
 from .content_service import published_card
 from .dependencies import database, learner, operation_key
@@ -82,6 +83,7 @@ def routes():
         now = request.app.state.clock()
 
         def execute():
+            require_access(db, user.id, card_id, request.app.state.clock(), lock=True)
             db.scalar(
                 select(Card)
                 .where(Card.id == card_id)
@@ -134,7 +136,7 @@ def routes():
         return {
             "items": [
                 {
-                    **card_summary(db, row.card_id),
+                    **card_summary(db, row.card_id, user.id),
                     "state": card_state(db, user.id, row.card_id, request.app.state.clock()),
                 }
                 for row in rows
@@ -166,7 +168,7 @@ def routes():
         if not db.get(Favorite, (user.id, card_id)) and not db.get(Completion, (user.id, card_id)):
             raise DomainError(404, "card_missing", "未找到本人记录中的场景卡")
         return {
-            **card_summary(db, card_id),
+            **card_summary(db, card_id, user.id),
             "state": card_state(db, user.id, card_id, request.app.state.clock()),
         }
 

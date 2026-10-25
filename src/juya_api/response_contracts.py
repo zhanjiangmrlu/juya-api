@@ -4,11 +4,22 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .access_contracts import AuthorizationView, CurrentAccess, PolicyView
 from .content_contracts import SceneContent
 
 
 class PublicModel(BaseModel):
     model_config = ConfigDict(extra="ignore")
+
+
+class LearningPermission(PublicModel):
+    can_learn: bool
+    can_lookup: bool
+    is_free: bool
+    reason: str | None
+    version: str
+    server_now: str
+    expires_at: str | None
 
 
 class Page[T](PublicModel):
@@ -63,6 +74,7 @@ class FieldIssue(PublicModel):
 
 
 class CardView(PublicModel):
+    is_free: bool = False
     id: str
     display_name: str
     display_title_en: str = ""
@@ -79,6 +91,7 @@ class CardView(PublicModel):
 
 
 class AdminCardPage(Page[CardView]):
+    learning_policy: PolicyView | None = None
     total_pages: int
 
 
@@ -98,6 +111,7 @@ class CardState(PublicModel):
 
 
 class CardBrief(PublicModel):
+    access: LearningPermission | None = None
     id: str
     name: str
     title_en: str = ""
@@ -110,6 +124,8 @@ class CardBrief(PublicModel):
 
 
 class LearningCardPage(Page[CardBrief]):
+    learning_access: CurrentAccess | None = None
+    free_uncompleted_total: int = 0
     published_total: int
 
 
@@ -120,6 +136,7 @@ class ReadingPosition(PublicModel):
 
 
 class PublishedDetail(PublicModel):
+    access: LearningPermission | None = None
     audio_duration: float | None
     thumbnail_id: str | None = None
     card_id: str
@@ -195,6 +212,7 @@ class FavoriteResponse(PublicModel):
 
 
 class CardSummary(PublicModel):
+    access: LearningPermission | None = None
     id: str
     name: str
     title_en: str = ""
@@ -229,6 +247,7 @@ class DailyRecords(PublicModel):
 
 
 class AdminUser(UserProfile):
+    authorization: AuthorizationView | None = None
     statistics: Statistics
 
 

@@ -1,5 +1,6 @@
 """Only this entrypoint is deployed on api.juyayingyu.com."""
 
+from .access_api import mini_routes as access_routes
 from .application import application
 from .auth import WechatGateway, mini_routes
 from .config import Settings
@@ -41,6 +42,7 @@ def create_app(
     app.state.share_images = ShareImages(
         max_source_bytes=min(settings.image_limit_mb, 20) * 1024 * 1024
     )
+    app.include_router(access_routes())
     app.include_router(mini_routes())
     app.include_router(content_routes())
     app.include_router(media_routes())

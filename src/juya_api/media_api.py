@@ -19,6 +19,7 @@ from fastapi.responses import Response, StreamingResponse
 from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy.orm import Session
 
+from .access_service import require_access
 from .content_models import Media, MediaTicket
 from .content_service import published_card
 from .database import timestamp
@@ -527,6 +528,7 @@ def mini_routes():
         else:
             if not version_id:
                 raise DomainError(422, "version_required", "请刷新后重新获取资源")
+            require_access(db, user.id, card_id, request.app.state.clock())
             _, version = published_card(db, card_id, version_id)
             image = db.get(Media, version.payload["image_id"])
             allowed = {
@@ -574,6 +576,7 @@ def mini_routes():
                 db, ticket.user_id, ticket.card_id, ticket.media_id, ticket.version_id
             )
         elif ticket.purpose == "content":
+            require_access(db, ticket.user_id, ticket.card_id, now)
             published_card(db, ticket.card_id, ticket.version_id)
         else:
             raise DomainError(404, "media_missing", "素材不可用")

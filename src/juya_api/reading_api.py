@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import ConfigDict
 from sqlalchemy.orm import Session
 
+from .access_service import require_access
 from .content_service import published_card
 from .dependencies import database, learner, operation_key
 from .discovery_models import ReadingStart
@@ -35,6 +36,7 @@ def routes():
 
         def execute():
             """在有效版本校验后写入本人锚点，重放请求不重复覆盖新位置"""
+            require_access(db, user.id, card_id, request.app.state.clock(), lock=True)
             _, version = published_card(db, card_id, body.version_id)
             if body.anchor != "top":
                 group, _, item_id = body.anchor.partition(":")

@@ -5,6 +5,259 @@
     "version": "1.5.0"
   },
   "paths": {
+    "/api/mini/v1/learning-access": {
+      "get": {
+        "tags": [
+          "learning access"
+        ],
+        "summary": "Current",
+        "operationId": "current_api_mini_v1_learning_access_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentAccess"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mini/v1/cards/{card_id}/access": {
+      "get": {
+        "tags": [
+          "learning access"
+        ],
+        "summary": "Card Access",
+        "operationId": "card_access_api_mini_v1_cards__card_id__access_get",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAccessView"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/mini/v1/auth/wechat": {
       "post": {
         "tags": [
@@ -6583,6 +6836,65 @@
   },
   "components": {
     "schemas": {
+      "AuthorizationView": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "active",
+              "expired"
+            ],
+            "title": "Status"
+          },
+          "starts_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts On"
+          },
+          "expires_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires On"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "starts_on",
+          "expires_on",
+          "expires_at",
+          "revision"
+        ],
+        "title": "AuthorizationView"
+      },
       "AvatarURL": {
         "properties": {
           "url": {
@@ -6660,8 +6972,34 @@
         ],
         "title": "Body_upload_avatar_api_mini_v1_me_avatar_post"
       },
+      "CardAccessView": {
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/PersonalSummary"
+          },
+          "access": {
+            "$ref": "#/components/schemas/LearningPermission"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "access"
+        ],
+        "title": "CardAccessView"
+      },
       "CardBrief": {
         "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LearningPermission"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -7001,6 +7339,45 @@
         ],
         "title": "CreateLearningQueue"
       },
+      "CurrentAccess": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "free_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Count"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "authorization": {
+            "$ref": "#/components/schemas/AuthorizationView"
+          },
+          "server_now": {
+            "type": "string",
+            "title": "Server Now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "free_count",
+          "revision",
+          "authorization",
+          "server_now"
+        ],
+        "title": "CurrentAccess"
+      },
       "CurrentVersion": {
         "properties": {
           "version_id": {
@@ -7019,6 +7396,16 @@
       },
       "DailyRecord": {
         "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LearningPermission"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -7676,6 +8063,21 @@
             "type": "integer",
             "title": "Limit"
           },
+          "learning_access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CurrentAccess"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "free_uncompleted_total": {
+            "type": "integer",
+            "title": "Free Uncompleted Total",
+            "default": 0
+          },
           "published_total": {
             "type": "integer",
             "title": "Published Total"
@@ -7691,8 +8093,75 @@
         ],
         "title": "LearningCardPage"
       },
+      "LearningPermission": {
+        "properties": {
+          "can_learn": {
+            "type": "boolean",
+            "title": "Can Learn"
+          },
+          "can_lookup": {
+            "type": "boolean",
+            "title": "Can Lookup"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "Is Free"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "server_now": {
+            "type": "string",
+            "title": "Server Now"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_learn",
+          "can_lookup",
+          "is_free",
+          "reason",
+          "version",
+          "server_now",
+          "expires_at"
+        ],
+        "title": "LearningPermission"
+      },
       "LearningRecord": {
         "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LearningPermission"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -8051,6 +8520,16 @@
       },
       "PersonalSummary": {
         "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LearningPermission"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -8231,6 +8710,16 @@
       },
       "PublishedDetail": {
         "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LearningPermission"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "audio_duration": {
             "anyOf": [
               {
@@ -8351,6 +8840,15 @@
       },
       "QueuePage": {
         "properties": {
+          "end_reason": {
+            "type": "string",
+            "enum": [
+              "round_complete",
+              "free_complete"
+            ],
+            "title": "End Reason",
+            "default": "round_complete"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/QueueItemView"

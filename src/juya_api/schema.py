@@ -8,7 +8,7 @@ from .content_models import SettingCounter
 from .errors import DomainError
 
 MINIMUM_REVISION = 10
-CODE_CONTRACT = 1
+CODE_CONTRACT = 2
 
 
 def require_compatible_schema(db, *, minimum_revision=MINIMUM_REVISION):

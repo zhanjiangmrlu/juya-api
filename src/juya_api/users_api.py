@@ -4,9 +4,11 @@ from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request
-from sqlalchemy import exists, func, or_, select
+from sqlalchemy import and_, exists, func, or_, select
 from sqlalchemy.orm import Session
 
+from .access_models import LearningAuthorization
+from .access_service import authorization
 from .auth import user_view
 from .content_models import Card
 from .database import timestamp
@@ -78,6 +80,7 @@ def routes():
     def listing(
         request: Request,
         search: str = Query("", max_length=200),
+        authorization_status: Literal["all", "none", "active", "expired"] = "all",
         registered: Literal["all", "today"] = "all",
         checkin: Literal["all", "checked", "unchecked"] = "all",
         page: int = Query(1, ge=1),
@@ -87,7 +90,26 @@ def routes():
     ):
         now, settings = request.app.state.clock(), request.app.state.settings
         today = business_date(now)
-        query = select(User)
+        query = select(User).outerjoin(
+            LearningAuthorization, LearningAuthorization.user_id == User.id
+        )
+        active_grant = and_(
+            LearningAuthorization.revoked_at.is_(None), LearningAuthorization.expires_on >= today
+        )
+        expired_grant = and_(
+            LearningAuthorization.revoked_at.is_(None), LearningAuthorization.expires_on < today
+        )
+        if authorization_status == "active":
+            query = query.where(active_grant)
+        elif authorization_status == "expired":
+            query = query.where(expired_grant)
+        elif authorization_status == "none":
+            query = query.where(
+                or_(
+                    LearningAuthorization.user_id.is_(None),
+                    LearningAuthorization.revoked_at.is_not(None),
+                )
+            )
         if search.strip():
             value = search.strip()
             query = query.where(
@@ -109,6 +131,7 @@ def routes():
         elif checkin == "unchecked":
             query = query.where(~checked)
         total = db.scalar(select(func.count()).select_from(query.subquery()))
+        page = min(page, max(1, ((total or 0) + limit - 1) // limit))
         rows = db.scalars(
             query.order_by(User.registered_at.desc(), User.id)
             .offset((page - 1) * limit)
@@ -117,7 +140,11 @@ def routes():
         db.add(Audit(admin_id=admin.id, action="users.list", occurred_at=now))
         return {
             "items": [
-                {**user_view(user, settings), "statistics": statistics(db, user.id, now)}
+                {
+                    **user_view(user, settings),
+                    "authorization": authorization(db, user.id, now),
+                    "statistics": statistics(db, user.id, now),
+                }
                 for user in rows
             ],
             "total": total,
@@ -140,6 +167,7 @@ def routes():
         db.add(Audit(admin_id=admin.id, action="users.view", object_id=user.id, occurred_at=now))
         return {
             **user_view(user, request.app.state.settings),
+            "authorization": authorization(db, user.id, now),
             "statistics": statistics(db, user.id, now),
         }
 
