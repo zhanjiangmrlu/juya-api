@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     tts_codec: Literal["mp3", "wav"] = "mp3"
     tts_daily_budget: int = 2000
     dictionary_path: Path | None = None
+    learning_access_activation_ready: bool = False
     feedback_safety_enabled: bool = False
     feedback_safety_url: str = ""
     feedback_safety_token: str = Field(default="", repr=False)

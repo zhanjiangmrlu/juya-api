@@ -4,6 +4,14 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
+from .access_service import (
+    access_context,
+    free_ids,
+    free_uncompleted,
+    learning_access,
+    policy,
+    require_access,
+)
 from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
 from .content_models import Card, CardDraft, CardVersion, Media
 from .content_service import (
@@ -105,7 +113,17 @@ def admin_routes():
             query.order_by(listed_at.desc(), Card.id.desc()).offset((page - 1) * limit).limit(limit)
         ).all()
         return {
-            "items": [card_view(db, card) for card in rows],
+            "learning_policy": {
+                **policy(db),
+                "actual_free_count": len(free_ids(db, policy(db)["free_count"])),
+            },
+            "items": [
+                {
+                    **card_view(db, card),
+                    "is_free": card.id in free_ids(db, policy(db)["free_count"]),
+                }
+                for card in rows
+            ],
             "total": total,
             "page": page,
             "limit": limit,
@@ -358,6 +376,7 @@ def mini_routes():
             items.append(
                 {
                     "id": card.id,
+                    "access": learning_access(db, user.id, card.id, request.app.state.clock()),
                     "name": version.payload["name"],
                     "title_en": version.payload.get("title_en", ""),
                     "version_id": version.id,
@@ -379,6 +398,8 @@ def mini_routes():
             "page": page,
             "limit": limit,
             "published_total": published_total,
+            "learning_access": access_context(db, user.id, request.app.state.clock()),
+            "free_uncompleted_total": free_uncompleted(db, user.id),
         }
 
     @router.get(
@@ -395,6 +416,7 @@ def mini_routes():
         db: Session = Depends(database, scope="function"),
     ):
         """读取卡片当前版本并仅为当前用户记录首次有效打开，不计成绩"""
+        access = require_access(db, user.id, card_id, request.app.state.clock())
         card, version = published_card(db, card_id, version_id)
         # 列表缩略图缺失时仅补读素材元信息，不能当作用户已打开场景
         if mark_started:
@@ -408,6 +430,7 @@ def mini_routes():
         image = db.get(Media, version.payload["image_id"])
         reading = db.get(ReadingStart, (user.id, card.id))
         return {
+            "access": access,
             "audio_duration": audio.duration if audio else None,
             "thumbnail_id": image.thumbnail_id if image else None,
             "card_id": card.id,

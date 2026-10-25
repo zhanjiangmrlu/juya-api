@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
+from .access_service import require_access
 from .content_models import Media
 from .dependencies import ADMIN_COOKIE, administrator, database, learner, operation_key
 from .errors import DomainError
@@ -86,6 +87,8 @@ def routes(role):
         db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
+        if role == "mini":
+            require_access(db, actor.id, card_id, request.app.state.clock())
         word, reading, config, cache_key = reference(
             db, settings, role, card_id, word_id, body.version_id, body.revision
         )
@@ -114,6 +117,8 @@ def routes(role):
         db: Session = Depends(database, scope="function"),
     ):
         ref = SpeechReference(version_id=version_id, revision=revision)
+        if role == "mini":
+            require_access(db, actor.id, card_id, request.app.state.clock())
         _, _, _, cache_key = reference(
             db, request.app.state.settings, role, card_id, word_id, version_id, revision
         )
@@ -232,6 +237,8 @@ def routes(role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
         if role == "admin" and payload["session"] != session_digest(request, role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
+        if role == "mini":
+            require_access(db, actor_id, payload.get("card_id"), now)
         context = payload.get("import_context")
         if context:
             if role != "admin":

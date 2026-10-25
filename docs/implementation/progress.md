@@ -258,3 +258,8 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 ## 2026-10-24 V1.5验收修复后端交付
 
 按已批准计划完成问题1/2/3/6/8后端范围：整批导入软删除及原始updated_at版本/持久幂等/进行中保存保护/迟到解析、上传与发音拦截；新发布、新版本和重新上架置顶、跨管理员目录锁及冻结操作快照内校验；学习记录/日期明细/新records和day队列排除已删卡且成绩及打卡事实保留；反馈审核默认关闭的集中开关，开启恢复原严格规则。新增兼容迁移0017，管理员API和Worker相关门禁同步；权威管理OpenAPI已更新，小程序快照无差异。关键回归及迁移经历失败后修复；最终完整SQLite369通过/24外部条件跳过，专用真实MySQL8.4.13加Redis/Celery390通过/3 SQLite专属跳过；Ruff、184文件格式、mypy62源码、diff及两角色工厂契约比对通过。仅本仓本地实现和提交，未推送部署、迁移现有业务环境或清理真实数据。第3条隔离完整发布链路通过，云端当前仍下线的根因未凭此宣称解决；最终三端HTTP/Chrome联调由主协调收敛。详见docs/implementation/v15-acceptance-api-contract.md与docs/verification/v15-acceptance-api.md。
+
+
+## 2026-10-25 修订16学习授权本地交付
+
+按用户批准计划合并整合04并实现统一学习授权、免费全局前N张、A02配置核对、A05筛选、A06四类操作与审计、小程序受限摘要及缓存回收，迁移0018默认未启用且不赠送旧用户授权。业务规则优先，保留最近验收修复；源码仍统一在juya-api，CLI逻辑目标不改名。最终SQLite395通过/26环境条件跳过，专用真实MySQL＋Redis418通过/3 SQLite专属跳过，后台169项、小程序322项通过；三端静态检查、后台/H5/微信测试构建、包体及契约一致性通过。独立审查5项Important均经失败回归修复，无延期项；本地合成数据真实HTTP/Chrome验收及七张截图完成。四仓均为test，三个业务仓库为未提交修改；未推送、部署、上传体验版，未修改现有业务数据。真机、云端、265态逐像素与生产资源拓扑另行验收；详见[完整交付与发布门禁](../verification/revision16-learning-access.md)、[验收追踪](revision16-acceptance.md)、[设计映射](revision16-design-map.md)。

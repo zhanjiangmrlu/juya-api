@@ -21,6 +21,8 @@ def database(request: Request):
     """Commit all business records together, or roll back the entire failed request."""
     with request.app.state.sessions.begin() as session:
         session.info["settings"] = request.app.state.settings
+        session.info["now"] = request.app.state.clock()
+        session.info["clock"] = request.app.state.clock
         if session.get_bind().dialect.name == "sqlite":
             # Ordinary reads share the database with a reserved writer; writes
             # must acquire that reservation before reading authorization state.

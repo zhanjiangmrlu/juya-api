@@ -101,7 +101,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
         assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
-            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0017"
+            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0018"
             assert db.scalar(text("SELECT count(*) FROM import_batches")) == 0
             db.execute(
                 text(
@@ -302,7 +302,9 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
             for table in metadata_after.sorted_tables
             if table.name not in {"alembic_version", "import_batches"}
         }
-        assert after == before
+        assert {name: rows for name, rows in after.items() if name in before} == before
+        for name in ("learning_access_history", "learning_authorizations", "learning_free_policy"):
+            assert after[name] == []
         rows = {
             row["id"]: row
             for row in connection.execute(

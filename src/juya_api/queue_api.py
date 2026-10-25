@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from .access_service import access_context, free_uncompleted, learning_access, require_access
 from .content_models import Card
 from .content_service import published_card
 from .dependencies import database, learner, operation_key
@@ -48,6 +49,7 @@ class QueueItemView(BaseModel):
 
 
 class QueuePage(BaseModel):
+    end_reason: Literal["round_complete", "free_complete"] = "round_complete"
     items: list[QueueItemView]
     total: int
     offset: int
@@ -103,6 +105,8 @@ def queue_eligible(db, queue, card_id, state):
     card = db.get(Card, card_id)
     if not card or card.deleted_at or card.status != "published" or not card.current_version_id:
         return False
+    if not learning_access(db, queue.user_id, card_id, db.info["now"])["can_learn"]:
+        return False
     if queue.source == "learning":
         return not state["completed"]
     if queue.source == "favorites":
@@ -129,6 +133,7 @@ def routes():
 
         def execute():
             """在同一事务写入队列及从点击卡向后的所有稳定ID"""
+            require_access(db, user.id, body.card_id, request.app.state.clock(), lock=True)
             published_card(db, body.card_id)
             ids = source_ids(db, user.id, body)
             queue = LearningQueue(
@@ -201,7 +206,27 @@ def routes():
                     "available": queue_eligible(db, queue, row.card_id, state),
                 }
             )
+        context = access_context(db, user.id, now)
+        free_complete = (
+            context["enabled"]
+            and context["authorization"]["status"] != "active"
+            and free_uncompleted(db, user.id) == 0
+            and bool(
+                db.scalar(
+                    select(Card.id)
+                    .where(
+                        Card.status == "published",
+                        Card.deleted_at.is_(None),
+                        Card.id.not_in(
+                            select(Completion.card_id).where(Completion.user_id == user.id)
+                        ),
+                    )
+                    .limit(1)
+                )
+            )
+        )
         return {
+            "end_reason": "free_complete" if free_complete else "round_complete",
             "items": items,
             "total": total,
             "offset": offset,

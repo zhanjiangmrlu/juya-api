@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from .access_service import require_access
 from .content_models import Media
 from .dependencies import database, learner, operation_key
 from .dictionary import DictionaryReference, DictionaryResult, controlled_target, lookup
@@ -52,6 +53,7 @@ def routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
+        require_access(db, user.id, card_id, request.app.state.clock(), lookup=True)
         target = controlled_target(db, request.app.state.settings, card_id, ref)
         return lookup(target, request.app.state.dictionary)
 
@@ -65,6 +67,7 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
+        require_access(db, user.id, card_id, now, lookup=True)
         target = controlled_target(db, settings, card_id, body)
         if not target.reading:
             raise DomainError(422, "pronunciation_unconfirmed", "当前单词发音暂不可用")
@@ -98,6 +101,7 @@ def routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
+        require_access(db, user.id, card_id, request.app.state.clock(), lookup=True)
         target = controlled_target(db, request.app.state.settings, card_id, ref)
         if not target.reading:
             raise DomainError(422, "pronunciation_unconfirmed", "当前单词发音暂不可用")
@@ -135,6 +139,7 @@ def routes():
             )
         ):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
+        require_access(db, session.user_id, card_id, now, lookup=True)
         target = controlled_target(db, settings, card_id, ref)
         if not target.reading or target.cache_key != payload.get("cache_key"):
             raise DomainError(409, "pronunciation_changed", "单词读音已变化，请重新试听")

@@ -33,20 +33,18 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
         db.execute(text("UPDATE alembic_version SET version_num='0014'"))
     assert client.get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 503
+    for revision in ("0015", "0016", "0017"):
+        with sessions.begin() as db:
+            db.execute(text("UPDATE alembic_version SET version_num=:r"), {"r": revision})
+        assert client.get("/health/ready").status_code == 503
+        assert system["mini"].get("/health/ready").status_code == 503
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0015'"))
-    assert client.get("/health/ready").status_code == 503
-    assert system["mini"].get("/health/ready").status_code == 200
-    # 后续附加迁移仍可供当前代码使用，不允许跳过当前所需表
-    with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0016'"))
-    assert client.get("/health/ready").status_code == 503
-    assert system["mini"].get("/health/ready").status_code == 200
-    with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0017'"))
-    assert client.get("/health/ready").status_code == 200
-    with sessions.begin() as db:
+        db.execute(text("UPDATE alembic_version SET version_num='0018'"))
         db.get(SettingCounter, "schema_contract").value = 2
+    assert client.get("/health/ready").status_code == 200
+    assert system["mini"].get("/health/ready").status_code == 200
+    with sessions.begin() as db:
+        db.get(SettingCounter, "schema_contract").value = 3
     assert client.get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 503
 
@@ -160,7 +158,7 @@ def test_worker_probe_checks_the_selected_roles_schema(
 
 @pytest.mark.parametrize(
     "role,revision,expected",
-    [("admin", "0015", 1), ("admin", "0016", 1), ("admin", "0017", 0), ("mini", "0010", 0)],
+    [("admin", "0017", 1), ("mini", "0017", 1), ("admin", "0018", 0), ("mini", "0018", 0)],
 )
 def test_runtime_preflight_rejects_admin_schema_before_import_deletion(
     system, monkeypatch, role, revision, expected

@@ -68,8 +68,10 @@ def statistics(db, user_id: str, now: datetime) -> dict:
     }
 
 
-def card_summary(db, card_id: str) -> dict:
+def card_summary(db, card_id: str, user_id=None) -> dict:
     """Expose only identification metadata when the current card is no longer available."""
+    from .access_service import learning_access
+
     card = db.get(Card, card_id)
     version = (
         db.get(CardVersion, card.current_version_id) if card and card.current_version_id else None
@@ -77,6 +79,7 @@ def card_summary(db, card_id: str) -> dict:
     image = db.get(Media, version.payload["image_id"]) if version else None
     available = bool(card and card.status == "published" and not card.deleted_at and version)
     return {
+        **({"access": learning_access(db, user_id, card_id, db.info["now"])} if user_id else {}),
         "id": card_id,
         "name": version.payload["name"] if version else "场景卡暂不可用",
         "title_en": version.payload.get("title_en", "") if version else "",
@@ -102,6 +105,10 @@ def card_state(db, user_id: str, card_id: str, now) -> dict:
 
 def complete_learning(db, user, card_id: str, version_id: str, now):
     """Persist completion, daily source and checkin atomically under the actor lock."""
+    from .access_service import require_access
+
+    require_access(db, user.id, card_id, db.info.get("now", now), lock=True)
+    now = db.info.get("clock", lambda: now)()
     # Shared record lock orders completion against administrator offline/publish.
     # It permits concurrent learners but prevents admission after offline commits.
     db.scalar(
@@ -167,7 +174,7 @@ def learning_records(db, user_id: str, page: int, limit: int):
     return {
         "items": [
             {
-                **card_summary(db, row.card_id),
+                **card_summary(db, row.card_id, user_id),
                 "first_completed_at": timestamp(row.first_completed_at),
                 "last_completed_at": timestamp(row.last_completed_at),
             }
@@ -221,7 +228,7 @@ def day_records(db, user_id: str, day: date):
         "date": day.isoformat(),
         "total": len(rows),
         "items": [
-            {**card_summary(db, row.card_id), "completed_at": timestamp(row.accepted_at)}
+            {**card_summary(db, row.card_id, user_id), "completed_at": timestamp(row.accepted_at)}
             for row in rows
         ],
     }

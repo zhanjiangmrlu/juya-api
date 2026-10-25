@@ -9,7 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from . import job_models  # noqa: F401
+from . import (
+    access_models,  # noqa: F401
+    job_models,  # noqa: F401
+)
 from .config import Settings
 from .database import make_database, naive_utc
 from .errors import install_errors
@@ -95,7 +98,7 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
             if db.get_bind().dialect.name == "sqlite":
                 db.connection(execution_options={"sqlite_write_intent": False})
             db.execute(text("SELECT 1"))
-            require_compatible_schema(db, minimum_revision=17 if role == "admin" else 15)
+            require_compatible_schema(db, minimum_revision=18)
         return {"status": "ready", "service": role, "environment": settings.environment}
 
     return app
