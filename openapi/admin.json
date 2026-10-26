@@ -9868,6 +9868,10 @@
             "type": "string",
             "title": "Last Login At"
           },
+          "user_code": {
+            "type": "string",
+            "title": "User Code"
+          },
           "authorization": {
             "anyOf": [
               {
@@ -9895,6 +9899,7 @@
           "contact_version",
           "registered_at",
           "last_login_at",
+          "user_code",
           "statistics"
         ],
         "title": "AdminUser"
@@ -10694,6 +10699,10 @@
             "type": "string",
             "title": "User Id"
           },
+          "user_code": {
+            "type": "string",
+            "title": "User Code"
+          },
           "category": {
             "type": "string",
             "enum": [
@@ -10810,6 +10819,7 @@
         "required": [
           "id",
           "user_id",
+          "user_code",
           "category",
           "status",
           "summary",

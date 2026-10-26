@@ -101,7 +101,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
         assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
-            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0018"
+            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0019"
             assert db.scalar(text("SELECT count(*) FROM import_batches")) == 0
             db.execute(
                 text(
@@ -128,7 +128,7 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
     from juya_api.import_models import ImportFile, ImportItem
     from juya_api.job_models import Job
     from juya_api.learning_models import Completion
-    from juya_api.models import Administrator, User
+    from juya_api.models import Administrator
 
     url = "sqlite+pysqlite:///" + str(tmp_path / "existing-import.db")
     config = migration_config(monkeypatch, url)
@@ -149,11 +149,16 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
     metadata.reflect(engine)
     with Session(engine) as db, db.begin():
         db.add(Administrator(id="admin", username="fixture-admin", password_hash="fixture-only"))
-        db.add(
-            User(
+        db.execute(
+            metadata.tables["users"]
+            .insert()
+            .values(
                 id="user",
                 app_id="fixture",
                 openid_digest="user",
+                nickname="学习者",
+                profile_version=1,
+                contact_version=1,
                 registered_at=created,
                 last_login_at=created,
             )
@@ -302,7 +307,19 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
             for table in metadata_after.sorted_tables
             if table.name not in {"alembic_version", "import_batches"}
         }
-        assert {name: rows for name, rows in after.items() if name in before} == before
+        assert {
+            name: [
+                {
+                    column: value
+                    for column, value in row.items()
+                    if column in metadata.tables[name].c
+                }
+                for row in rows
+                if name != "setting_counters" or row["name"] != "user_number"
+            ]
+            for name, rows in after.items()
+            if name in before
+        } == before
         for name in ("learning_access_history", "learning_authorizations", "learning_free_policy"):
             assert after[name] == []
         rows = {

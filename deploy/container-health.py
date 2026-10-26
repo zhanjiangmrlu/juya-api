@@ -32,9 +32,7 @@ def main():
             engine, sessions = make_database(settings)
             try:
                 with sessions() as db:
-                    require_compatible_schema(
-                        db, minimum_revision=17 if settings.worker_role == "admin" else 10
-                    )
+                    require_compatible_schema(db, minimum_revision=19)
             finally:
                 engine.dispose()
         else:

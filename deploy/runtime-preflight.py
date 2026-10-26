@@ -25,7 +25,7 @@ def check_target(settings, environment, role, expected_bucket):
         database.drivername != "mysql+pymysql"
         or database.database != prefix
         or database.username != prefix + "_app"
-        or database.host != "mysql"
+        or database.host != settings.expected_database_host
         or not database.password
         or redis.hostname != "redis-" + environment
         or not redis.password
@@ -62,7 +62,7 @@ def main():
             with sessions.begin() as db:
                 db.execute(text("SELECT 1"))
                 if len(sys.argv) == 3:
-                    require_compatible_schema(db, minimum_revision=18)
+                    require_compatible_schema(db, minimum_revision=19)
         finally:
             engine.dispose()
         redis = Redis.from_url(settings.redis_url, socket_timeout=5, socket_connect_timeout=5)

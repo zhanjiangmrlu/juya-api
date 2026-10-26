@@ -89,6 +89,7 @@ class FeedbackEvent(BaseModel):
 class FeedbackDetail(BaseModel):
     id: str
     user_id: str
+    user_code: str
     category: FeedbackCategory
     status: FeedbackStatus
     summary: str

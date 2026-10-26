@@ -39,6 +39,7 @@ from .feedback_service import (
     audit,
     authorized_image,
     check_images,
+    feedback_receipt,
     feedback_view,
     image_view,
     normalized_image,
@@ -50,6 +51,7 @@ from .pronunciation_api import session_digest
 from .security import decrypt, encrypt, lookup
 from .storage import ObjectStorage
 from .transactions import operate, previous_result
+from .user_numbers import user_code
 
 
 def safety(request, method, actor, role, key, action, *content):
@@ -87,7 +89,7 @@ def routes(role: Literal["mini", "admin"]):
         actor=Depends(authorize),
         db: Session = Depends(database, scope="function"),
     ):
-        query = select(Feedback)
+        query = select(Feedback, User.user_number).join(User, User.id == Feedback.user_id)
         if role == "mini":
             query = query.where(Feedback.user_id == actor.id)
         if status is not None:
@@ -96,10 +98,11 @@ def routes(role: Literal["mini", "admin"]):
         needle = search.strip().casefold() if role == "admin" else ""
         if needle:
             rows, total = [], 0
-            for row in db.scalars(query.execution_options(yield_per=100)):
+            for row, number in db.execute(query.execution_options(yield_per=100)):
                 values = [
                     row.id,
                     row.user_id,
+                    user_code(number),
                     row.source_title or "",
                     row.source_title_en,
                     decrypt(request.app.state.settings, row.summary_cipher) or "",
@@ -107,17 +110,20 @@ def routes(role: Literal["mini", "admin"]):
                 if not any(needle in value.casefold() for value in values):
                     continue
                 if (page - 1) * limit <= total < page * limit:
-                    rows.append(row)
+                    rows.append((row, number))
                 total += 1
         else:
             total = (
                 db.scalar(select(func.count()).select_from(query.order_by(None).subquery())) or 0
             )
-            rows = list(db.scalars(query.offset((page - 1) * limit).limit(limit)))
+            rows = list(db.execute(query.offset((page - 1) * limit).limit(limit)))
         if role == "admin":
             audit(db, actor, "feedback.list", None, request.app.state.clock())
         return {
-            "items": [feedback_view(db, row, request, actor, role) for row in rows],
+            "items": [
+                feedback_view(db, row, request, actor, role, user_number=number)
+                for row, number in rows
+            ],
             "total": total,
             "page": page,
             "limit": limit,
@@ -144,7 +150,7 @@ def routes(role: Literal["mini", "admin"]):
             action, payload = "feedback.create", body.model_dump()
             previous = previous_result(db, actor, role, key, action, payload)
             if previous is not None:
-                return previous
+                return feedback_receipt(db, previous)
             check_images(db, actor.id, body.images)
             if body.source == "scene":
                 assert body.card_id is not None
@@ -182,7 +188,9 @@ def routes(role: Literal["mini", "admin"]):
                 append_event(db, settings, row, actor, role, body.text, "pending", body.images, now)
                 return feedback_view(db, row, request, actor, role, detail=True)
 
-            return operate(db, actor, role, key, action, payload, request.app.state.clock, execute)
+            return feedback_receipt(
+                db, operate(db, actor, role, key, action, payload, request.app.state.clock, execute)
+            )
 
         @router.post("/images", status_code=201, response_model=FeedbackImage)
         def upload(
@@ -356,7 +364,7 @@ def routes(role: Literal["mini", "admin"]):
             action, payload = f"feedback.{feedback_id}.message", body.model_dump()
             previous = previous_result(db, actor, role, key, action, payload)
             if previous is not None:
-                return previous
+                return feedback_receipt(db, previous)
             owned_feedback(db, feedback_id, actor, role)
             check_images(db, actor.id, body.images)
             safety(request, "check_text", actor, role, key, action, body.text)
@@ -377,7 +385,9 @@ def routes(role: Literal["mini", "admin"]):
                 )
                 return feedback_view(db, row, request, actor, role, detail=True)
 
-            return operate(db, actor, role, key, action, payload, request.app.state.clock, execute)
+            return feedback_receipt(
+                db, operate(db, actor, role, key, action, payload, request.app.state.clock, execute)
+            )
     else:
 
         @router.post("/{feedback_id}/messages", response_model=FeedbackDetail)
@@ -392,7 +402,7 @@ def routes(role: Literal["mini", "admin"]):
             action, payload = f"feedback.{feedback_id}.admin-message", body.model_dump()
             previous = previous_result(db, actor, role, key, action, payload)
             if previous is not None:
-                return previous
+                return feedback_receipt(db, previous)
             owned_feedback(db, feedback_id, actor, role)
             if body.text:
                 safety(request, "check_text", actor, role, key, action, body.text)
@@ -419,6 +429,8 @@ def routes(role: Literal["mini", "admin"]):
                 audit(db, actor, "feedback.reply", row.id, now)
                 return feedback_view(db, row, request, actor, role, detail=True)
 
-            return operate(db, actor, role, key, action, payload, request.app.state.clock, execute)
+            return feedback_receipt(
+                db, operate(db, actor, role, key, action, payload, request.app.state.clock, execute)
+            )
 
     return router

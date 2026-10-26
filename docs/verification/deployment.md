@@ -17,7 +17,7 @@
 3. 服务端根目录权限0700，凭证清单0600。绑定到非root容器的Redis配置/密码文件可读，但所在主机目录为0700。不得复制这些文件到Git或发布归档。
 4. 按 `.env.example` 分别创建test/production的admin.env、mini.env；同一环境共享必要字段加密/查找密钥，不同环境必须不同。使用不同数据库账号、Redis实例、OSS Bucket和会话密钥；小程序AppID保留。migration.env只将数据库连接换为本环境migration账号。运行文件归root所有、权限0600。
 5. 从 `compose-test.env.example`、`compose-production.env.example`创建每角色的Compose选择文件，填写本角色runtime路径、API端口、资源限制、环境网络和经验证的 `JUYA_EXPECTED_OSS_BUCKET`。mini无需migration文件；admin明确指定独立migration.env。
-6. 创建 `/opt/juya/rebuild/<环境>/<交付目标>` 独立发布根目录。CLI配置模板位于juya-cli仓库，测试使用test分支、生产使用main分支，禁止脏工作区发布。SSH必须匹配已核验的主机指纹；本机默认SSH密钥目前未被ECS授权，现有私密验证助手使用账号文件中的密码连接。
+6. 创建 `/opt/juya/rebuild/<环境>/<交付目标>` 独立发布根目录。CLI配置模板位于juya-cli仓库，测试使用test分支、生产使用main或精确命名的release分支，禁止脏工作区发布。SSH必须匹配已核验的主机指纹；本机默认SSH密钥目前未被ECS授权，现有私密验证助手使用账号文件中的密码连接。
 7. 先用juya-cli的显式migrate操作执行空库迁移，再通过admin镜像的 `deploy/bootstrap-admin.py` 从标准输入创建新管理员。只创建必要系统配置和管理员，不灌入旧内容。密码不通过命令行参数传递。
 8. 用CLI分别发布两个API。runtime-preflight校验角色、数据库/Redis/OSS环境、实际SQL与Redis连通性及兼容结构。就绪检查要求最低0010及schema_contract=1；允许更新的兼容增量，不允许超出代码能力的结构契约。
 9. 两API健康后发布新后台静态站点、安装已验证的HTTPS配置，退出旧H5用户界面。实际微信登录与小程序上传、真机验收单独执行。

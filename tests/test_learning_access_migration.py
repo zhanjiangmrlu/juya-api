@@ -27,9 +27,11 @@ def test_0018_expands_without_granting_existing_users_and_can_be_reapplied(tmp_p
         assert (
             db.scalar(text("SELECT value FROM setting_counters WHERE name='schema_contract'")) == 1
         )
+    command.upgrade(config, "head")
     command.check(config)
     command.downgrade(config, "0017")
     assert "learning_authorizations" not in inspect(engine).get_table_names()
     command.upgrade(config, "0018")
+    command.upgrade(config, "head")
     command.check(config)
     engine.dispose()
