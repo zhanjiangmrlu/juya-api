@@ -4,7 +4,7 @@ from datetime import datetime
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import MetaData, Table, create_engine, inspect, text
 from sqlalchemy.orm import Session
 
 
@@ -16,16 +16,20 @@ def test_feedback_upgrade_and_downgrade_preserve_existing_learning(tmp_path, mon
     command.upgrade(config, "0014")
     from juya_api.content_models import Card, CardVersion
     from juya_api.learning_models import Checkin, Completion, DailyLearning
-    from juya_api.models import User
 
     engine = create_engine(url)
     moment = datetime(2026, 10, 17, 8)
     with Session(engine) as db, db.begin():
-        db.add(
-            User(
+        db.execute(
+            Table("users", MetaData(), autoload_with=engine)
+            .insert()
+            .values(
                 id="existing-user",
                 app_id="fixture-app",
                 openid_digest="existing-openid",
+                nickname="学习者",
+                profile_version=1,
+                contact_version=1,
                 registered_at=moment,
                 last_login_at=moment,
             )

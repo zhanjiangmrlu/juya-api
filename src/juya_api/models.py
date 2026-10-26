@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base, UTCDateTime, utc_now
@@ -16,8 +16,13 @@ def identifier() -> str:
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = (UniqueConstraint("app_id", "openid_digest", name="uq_user_wechat"),)
+    __table_args__ = (
+        UniqueConstraint("app_id", "openid_digest", name="uq_user_wechat"),
+        UniqueConstraint("user_number", name="uq_user_number"),
+        CheckConstraint("user_number > 0", name="ck_user_number_positive"),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=identifier)
+    user_number: Mapped[int] = mapped_column(Integer)
     app_id: Mapped[str] = mapped_column(String(64))
     openid_digest: Mapped[str] = mapped_column(String(64))
     nickname: Mapped[str] = mapped_column(String(80), default="学习者")

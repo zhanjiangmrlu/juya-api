@@ -23,6 +23,8 @@ uv run pytest -q
 
 后台管理员登录会话默认固定有效30天，服务端会话和浏览器Cookie使用同一到期时长，不随访问自动续期。`JUYA_ADMIN_SESSION_HOURS`以小时为单位，默认720；调整后重新登录才会获得新的有效期，既有会话保留签发时的到期时间。主动退出立即撤销会话。
 
+固定用户编号要求迁移至0019：已有用户按注册时间、UUID升序补号，新注册事务分配后续编号，后台显示Juya001且保留UUID关联。新版本双API及Worker就绪检查均要求0019；该迁移要求停止旧注册写进程后执行，具体顺序见[用户编号迁移说明](docs/operations/user-number-migration.md)。
+
 V1.5验收修复契约见 `docs/implementation/v15-acceptance-api-contract.md`。管理员服务及Worker要求迁移至0017（导入批次软删除）；迁移保持旧列集INSERT兼容，但删除入口启用前应停止或排空旧管理员写进程。反馈外部审核默认关闭（`JUYA_FEEDBACK_SAFETY_ENABLED=false`）；设为true后须配置HTTPS安全网关及令牌，只有明确最终allow通过，其他业务和权限校验始终保留。
 
 [部署与验证记录](docs/verification/deployment.md)说明镜像、空库初始化、显式迁移和逐服务发布。[实施进度](docs/implementation/progress.md)记录已完成证据及仍需验收的外部条件。

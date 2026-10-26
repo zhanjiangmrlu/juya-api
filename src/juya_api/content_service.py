@@ -51,7 +51,7 @@ def normalize(content: SceneContent) -> dict:
 
 
 def validate_publication(db, content: dict) -> list[dict]:
-    """Reject incomplete media, ambiguous sources and overlapping highlights at publication."""
+    """Reject incomplete media and invalid sources while preserving overlapping highlights."""
     issues = []
 
     def issue(field, code, message):
@@ -96,7 +96,6 @@ def validate_publication(db, content: dict) -> list[dict]:
             issue(f"dialogue.{i}", "required", "请补充人物、中英文对话")
     if not content["vocabulary"]:
         issue("vocabulary", "required", "请至少填写一条完整词汇")
-    ranges: dict[str, list[tuple[int, int]]] = {}
     word_ids: set[str] = set()
     for i, word in enumerate(content["vocabulary"]):
         if word["id"] in word_ids:
@@ -122,11 +121,6 @@ def validate_publication(db, content: dict) -> list[dict]:
                 valid = False
         if not valid:
             issue(f"vocabulary.{i}.source", "source_required", "请重新确认对应原句与高亮位置")
-        elif source:
-            occupied = ranges.setdefault(source["line_id"], [])
-            if any(source["start"] < end and source["end"] > start for start, end in occupied):
-                issue(f"vocabulary.{i}.source", "source_overlap", "高亮范围重叠，请重新核对")
-            occupied.append((source["start"], source["end"]))
     for i, chunk in enumerate(content["chunks"]):
         if not chunk["english"].strip() or not chunk["chinese"].strip():
             issue(f"chunks.{i}", "required", "请补全语块中英文或删除该条")

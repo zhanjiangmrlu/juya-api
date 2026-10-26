@@ -247,6 +247,7 @@ class DailyRecords(PublicModel):
 
 
 class AdminUser(UserProfile):
+    user_code: str
     authorization: AuthorizationView | None = None
     statistics: Statistics
 

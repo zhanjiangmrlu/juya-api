@@ -12,9 +12,10 @@ from .content_models import Card, CardVersion
 from .database import timestamp
 from .errors import DomainError
 from .feedback_models import Feedback, FeedbackEvent, FeedbackImage, FeedbackRead
-from .models import Audit
+from .models import Audit, User
 from .pronunciation_api import session_digest
 from .security import decrypt, encrypt
+from .user_numbers import user_code
 
 
 def owned_feedback(db, feedback_id, actor, role, *, lock=False):
@@ -93,7 +94,21 @@ def image_view(image, request, actor, role):
     }
 
 
-def feedback_view(db, row, request, actor, role, *, detail=False):
+def feedback_receipt(db, result):
+    """Add a stable code to old operation responses without changing the saved outcome."""
+    if "user_code" in result:
+        return result
+    owner = db.get(User, result["user_id"])
+    assert owner is not None
+    return {**result, "user_code": user_code(owner.user_number)}
+
+
+def feedback_view(db, row, request, actor, role, *, detail=False, user_number=None):
+    """Expose a thread with its owner's stable code, reusing joined list data when available."""
+    if user_number is None:
+        owner = db.get(User, row.user_id)
+        assert owner is not None
+        user_number = owner.user_number
     # READ COMMITTED may observe a later append in each following SELECT. Keep
     # the timeline and private attachments at the header's captured watermark.
     latest_event_id = row.latest_event_id
@@ -145,6 +160,7 @@ def feedback_view(db, row, request, actor, role, *, detail=False):
     return {
         "id": row.id,
         "user_id": row.user_id,
+        "user_code": user_code(user_number),
         "category": row.category,
         "status": row.status,
         "summary": decrypt(settings, row.summary_cipher),

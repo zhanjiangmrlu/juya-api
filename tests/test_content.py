@@ -1,4 +1,52 @@
+import pytest
+
 from .content_helpers import content, draft, key, publish
+
+
+@pytest.mark.parametrize(
+    "sources",
+    [
+        [(3, 10, "tea and"), (7, 17, "and coffee")],
+        [(3, 17, "tea and coffee"), (7, 10, "and")],
+        [(3, 10, "tea and"), (3, 10, "tea and")],
+    ],
+)
+def test_overlapping_highlights_publish_without_losing_independent_sources(admin, mini, sources):
+    payload = content(admin)
+    payload["dialogue"][0]["english"] = "😀 tea and coffee."
+    payload["vocabulary"] = [
+        {
+            "id": f"word-{index}",
+            "english": quote,
+            "source": {"line_id": "line-1", "start": start, "end": end, "quote": quote},
+        }
+        for index, (start, end, quote) in enumerate(sources)
+    ]
+    saved = draft(admin, payload)
+    assert saved["issues"] == []
+    publish(admin, saved)
+    displayed = mini.get(f"/api/mini/v1/cards/{saved['id']}").json()["content"]
+    assert displayed["dialogue"][0]["english"] == "😀 tea and coffee."
+    assert [word["source"] for word in displayed["vocabulary"]] == [
+        word["source"] for word in payload["vocabulary"]
+    ]
+
+
+def test_overlapping_range_with_stale_quote_still_blocks_publication(admin):
+    payload = content(admin)
+    payload["vocabulary"].append(
+        {
+            "id": "stale-word",
+            "english": "coffee",
+            "source": {"line_id": "line-1", "start": 11, "end": 17, "quote": "wrong"},
+        }
+    )
+    saved = draft(admin, payload)
+    assert any(issue["code"] == "source_required" for issue in saved["issues"])
+    response = admin.post(
+        f"/api/admin/v1/cards/{saved['id']}/preview", headers=key(), json={"revision": 1}
+    )
+    assert response.status_code == 422
 
 
 def test_incomplete_draft_is_saved_but_cannot_be_published(admin, mini):

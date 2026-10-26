@@ -34,6 +34,7 @@ from .response_contracts import (
     Page,
 )
 from .security import lookup
+from .user_numbers import searched_user_number, user_code
 
 
 def require_user(db, user_id):
@@ -115,6 +116,7 @@ def routes():
             query = query.where(
                 or_(
                     User.id.contains(value, autoescape=True),
+                    User.user_number == searched_user_number(value),
                     User.nickname.contains(value, autoescape=True),
                     User.phone_digest == lookup(settings, "contact:phone", value),
                     User.wechat_digest == lookup(settings, "contact:wechat", value),
@@ -142,6 +144,7 @@ def routes():
             "items": [
                 {
                     **user_view(user, settings),
+                    "user_code": user_code(user.user_number),
                     "authorization": authorization(db, user.id, now),
                     "statistics": statistics(db, user.id, now),
                 }
@@ -167,6 +170,7 @@ def routes():
         db.add(Audit(admin_id=admin.id, action="users.view", object_id=user.id, occurred_at=now))
         return {
             **user_view(user, request.app.state.settings),
+            "user_code": user_code(user.user_number),
             "authorization": authorization(db, user.id, now),
             "statistics": statistics(db, user.id, now),
         }

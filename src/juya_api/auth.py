@@ -25,7 +25,6 @@ from .models import (
     LoginThrottle,
     MiniSession,
     User,
-    identifier,
 )
 from .persistence import insert_once
 from .response_contracts import (
@@ -36,6 +35,7 @@ from .response_contracts import (
     WechatLoginResponse,
 )
 from .security import decrypt, digest, encrypt, fingerprint, lookup, token
+from .user_numbers import registered_user
 
 passwords = PasswordHasher()
 
@@ -240,24 +240,7 @@ def mini_routes() -> APIRouter:
             return json.loads(decrypt(settings, operation.result_cipher) or "{}")
         openid = request.app.state.wechat.exchange(body.code)
         identity = lookup(settings, "openid:" + settings.wechat_app_id, openid)
-        insert_once(
-            db,
-            User,
-            {
-                "id": identifier(),
-                "app_id": settings.wechat_app_id,
-                "openid_digest": identity,
-                "registered_at": now,
-                "last_login_at": now,
-            },
-            ["app_id", "openid_digest"],
-        )
-        user = db.scalar(
-            select(User)
-            .where(User.app_id == settings.wechat_app_id, User.openid_digest == identity)
-            .with_for_update()
-        )
-        assert user is not None
+        user = registered_user(db, settings.wechat_app_id, identity, now)
         user.last_login_at = now
         credential = token("mini_")
         db.add(
