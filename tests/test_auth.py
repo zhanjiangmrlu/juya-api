@@ -1,3 +1,7 @@
+from datetime import timedelta
+from http.cookies import SimpleCookie
+
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -100,3 +104,40 @@ def test_admin_reload_recovers_csrf_for_the_existing_cookie(admin):
     response = admin.get("/api/admin/v1/auth/session")
     assert response.status_code == 200
     assert response.json()["csrf_token"] == admin.headers["X-CSRF-Token"]
+
+
+def test_admin_login_keeps_browser_cookie_and_server_session_for_thirty_days(system):
+    """Keep browser persistence and server authorization valid for the same thirty days."""
+    from juya_api.dependencies import ADMIN_COOKIE
+    from juya_api.models import AdminSession
+    from juya_api.security import digest
+
+    response = system["admin"].post(
+        "/api/admin/v1/auth/login", json={"username": "admin", "password": "correct-test-password"}
+    )
+    assert response.status_code == 200
+    cookies = SimpleCookie()
+    cookies.load(response.headers["set-cookie"])
+    cookie = cookies[ADMIN_COOKIE]
+    assert cookie["max-age"] == "2592000"
+    assert cookie["httponly"]
+    assert cookie["secure"]
+    with system["sessions"]() as db:
+        session = db.get(AdminSession, digest(cookie.value))
+        assert session is not None
+        assert session.expires_at == (system["time"][0] + timedelta(days=30)).replace(tzinfo=None)
+
+
+@pytest.mark.parametrize(
+    "elapsed,expected_status",
+    [
+        (timedelta(hours=13), 200),
+        (timedelta(days=29, hours=23, minutes=59, seconds=59), 200),
+        (timedelta(days=30), 401),
+    ],
+)
+def test_admin_session_expires_thirty_days_after_login(system, admin, elapsed, expected_status):
+    """Allow the existing session before its fixed deadline and reject it at expiry."""
+    system["time"][0] += elapsed
+    response = admin.get("/api/admin/v1/auth/session")
+    assert response.status_code == expected_status

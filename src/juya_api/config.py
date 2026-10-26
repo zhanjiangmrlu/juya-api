@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = []
     cookie_secure: bool = True
     session_days: int = 7
-    admin_session_hours: int = 12
+    admin_session_hours: int = 720
     media_root: Path = Path("var/media")
     storage_backend: Literal["local", "oss"] = "local"
     oss_endpoint: str = ""

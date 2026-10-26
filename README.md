@@ -21,6 +21,8 @@ uv run pytest -q
 
 独立接口契约位于 `openapi/admin.json`、`openapi/mini.json`，通过 `uv run python scripts/export-openapi.py` 生成。两个前端各自生成TypeScript类型。
 
+后台管理员登录会话默认固定有效30天，服务端会话和浏览器Cookie使用同一到期时长，不随访问自动续期。`JUYA_ADMIN_SESSION_HOURS`以小时为单位，默认720；调整后重新登录才会获得新的有效期，既有会话保留签发时的到期时间。主动退出立即撤销会话。
+
 V1.5验收修复契约见 `docs/implementation/v15-acceptance-api-contract.md`。管理员服务及Worker要求迁移至0017（导入批次软删除）；迁移保持旧列集INSERT兼容，但删除入口启用前应停止或排空旧管理员写进程。反馈外部审核默认关闭（`JUYA_FEEDBACK_SAFETY_ENABLED=false`）；设为true后须配置HTTPS安全网关及令牌，只有明确最终allow通过，其他业务和权限校验始终保留。
 
 [部署与验证记录](docs/verification/deployment.md)说明镜像、空库初始化、显式迁移和逐服务发布。[实施进度](docs/implementation/progress.md)记录已完成证据及仍需验收的外部条件。
