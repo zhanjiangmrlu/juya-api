@@ -1,0 +1,3714 @@
+[
+  {
+    "id": "T01",
+    "line": 1863,
+    "requirement": "| T01 | 首次进入无有效会话 | U00默认未同意，等待主动操作，不建业务账号、不返回个人学习数据 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T02",
+    "line": 1864,
+    "requirement": "| T02 | 未同意点主按钮／仅看隐私 | 仅提示或打开说明，无登录调用，无建档，关闭回原位置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T03",
+    "line": 1865,
+    "requirement": "| T03 | 联系方式均为空的新用户主动登录 | 身份校验建档成功，无恢复目标进入U14首页，A05/A06可查并计A07，不要求补资料 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T04",
+    "line": 1866,
+    "requirement": "| T04 | 已同意点击同意并登录 | wx.login凭证交服务端校验，可信身份映射稳定用户，界面无手机号授权及微信号备用表单 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T05",
+    "line": 1867,
+    "requirement": "| T05 | 首次成功建档 | 默认头像与学习者，可选联系为空，注册时间固定；后台0学习合法 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T06",
+    "line": 1868,
+    "requirement": "| T06 | 凭证／服务端失败或超时 | 留页重试或查结果，不假成功，不建游客学习，不因结果丢失重复创建 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T07",
+    "line": 1869,
+    "requirement": "| T07 | 重复点击／并发登录／重试 | 同一AppID微信身份只生成一个账号，用户统计只计一次 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T08",
+    "line": 1870,
+    "requirement": "| T08 | 老用户重新登录或同微信换设备 | 恢复原资料、注册时间、成绩和收藏，联系缺失不阻止 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T09",
+    "line": 1871,
+    "requirement": "| T09 | 有效会话再次打开 | 校验复用，不重新创建账号或强制补资料 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T10",
+    "line": 1872,
+    "requirement": "| T10 | U03失效后主动登录 | 回原卡重查收藏完成状态，不自动重播或重提旧操作；已下线转U05 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T11",
+    "line": 1873,
+    "requirement": "| T11 | U09选填／修改手机号或微信号 | 基础格式校验，成功按字段记手填来源；无联系可返回，失败留输入和旧资料，已有值不能清空删除 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T12",
+    "line": 1874,
+    "requirement": "| T12 | 不同微信身份填相同联系值 | 不合并、不互看数据，联系不是密码，退出不删服务器成绩 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T13",
+    "line": 1880,
+    "requirement": "| T13 | 学习页初次成功加载 | 显示场景已学、共用打卡及今日状态；U01二级页无底部Tab，三Tab在首页／记录／账号 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T14",
+    "line": 1881,
+    "requirement": "| T14 | 没有已发布卡但已有历史 | 列表空，原学习成绩仍保留，不强行归0 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T15",
+    "line": 1882,
+    "requirement": "| T15 | 从学习、收藏、已学记录进入详情 | 使用同一详情并返回正确来源位置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T16",
+    "line": 1883,
+    "requirement": "| T16 | 进入场景详情 | 默认英文及收起的完整译文，不逐句插中文 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T17",
+    "line": 1884,
+    "requirement": "| T17 | 显示译文 | 完整中文位于全部英文下方、词汇上方，人物与顺序正确 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T18",
+    "line": 1885,
+    "requirement": "| T18 | 收起译文 | 无占位，不隐藏词汇／语块中文，不改变音频或成绩 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T19",
+    "line": 1886,
+    "requirement": "| T19 | 播放中切译文、收藏、打开大图 | 相关状态互不干扰，返回原位置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T20",
+    "line": 1887,
+    "requirement": "| T20 | 退出详情再进入 | 译文恢复收起，真实完成／收藏保持 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T21",
+    "line": 1888,
+    "requirement": "| T21 | 大图缩放或加载失败 | 原图完整，覆盖层内重试或关闭，不阻断文字 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T22",
+    "line": 1889,
+    "requirement": "| T22 | 无语块、无音标 | 整块或对应行隐藏，无图片空位／演示数据 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T23",
+    "line": 1890,
+    "requirement": "| T23 | 长词、长对话、较大字体 | 自然换行，无裁切、重叠或横向溢出 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T24",
+    "line": 1891,
+    "requirement": "| T24 | 正文高亮或普通英文单词点击 | 均中央查词，本篇优先／词典标注；无单句播放或词汇收藏，细验收见T160—T168 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T25",
+    "line": 1897,
+    "requirement": "| T25 | 上传词卡音频 | 只有完整对话音频上传，词汇／语块无文件上传控件 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T26",
+    "line": 1898,
+    "requirement": "| T26 | 整篇播放暂停继续拖动重播 | 只用完整文件，无切片和时间点依赖 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T27",
+    "line": 1899,
+    "requirement": "| T27 | 整篇中点击词汇 | 暂停整篇保留位置，词汇独立接口发音 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T28",
+    "line": 1900,
+    "requirement": "| T28 | 词汇结束再手动继续整篇 | 不自动续播，继续位置正确 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T29",
+    "line": 1901,
+    "requirement": "| T29 | 切换词汇或重复同词 | 停旧目标，同词从头，无叠播 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T30",
+    "line": 1902,
+    "requirement": "| T30 | 首次、再次与并发发音 | 腾讯云服务端缓存，同键合并，不重复计费合成成功任务 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T31",
+    "line": 1903,
+    "requirement": "| T31 | 发音／完整音频失败 | 原位有限重试，仍可看译文、收藏与完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T32",
+    "line": 1904,
+    "requirement": "| T32 | 离开详情／关闭后台预览 | 停止播放，后台不写真实学习记录 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T33",
+    "line": 1910,
+    "requirement": "| T33 | 首次点击已完成学习 | 本卡首次完成、已学＋1、当日学习与打卡一致成功 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T34",
+    "line": 1911,
+    "requirement": "| T34 | 同日完成多张不同新卡 | 已学各加1，当天打卡只计一次 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T35",
+    "line": 1912,
+    "requirement": "| T35 | 同日重复完成同卡 | 不重复增加卡数、当日不同卡数或天数 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T36",
+    "line": 1913,
+    "requirement": "| T36 | 多设备并发完成同卡 | 服务端唯一键与事务防止重复 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T37",
+    "line": 1914,
+    "requirement": "| T37 | 同卡隔日点击完成本次复习 | 已学总数不变，当日可打卡并更新最近学习 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T38",
+    "line": 1915,
+    "requirement": "| T38 | 今天已完成卡片再进入 | 今日完成不重复提交，仍可按来源队列下一张；分享单卡可前往学习页 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T39",
+    "line": 1916,
+    "requirement": "| T39 | 之前已完成、今天未完成 | 可完成本次复习，不把历史已学误当今日完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T40",
+    "line": 1917,
+    "requirement": "| T40 | 第一次有有效学习日 | 累计打卡1，连续1，前后台口径一致 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T41",
+    "line": 1918,
+    "requirement": "| T41 | 今天未打卡、昨天已打卡 | 显示昨天连续天数并标今日待打卡，未提前清零 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T42",
+    "line": 1919,
+    "requirement": "| T42 | 连续日期今天完成 | 连续增加，累计有效日期增加一次 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T43",
+    "line": 1920,
+    "requirement": "| T43 | 漏过完整一天后再完成 | 当前连续从1开始，累计与历史最长保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T44",
+    "line": 1921,
+    "requirement": "| T44 | 只打开、播放、收藏或看译文 | 不自动计完成或打卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T45",
+    "line": 1922,
+    "requirement": "| T45 | 未听完、不看译文直接主动完成 | 可成功，无隐藏学习时长前置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T46",
+    "line": 1923,
+    "requirement": "| T46 | 完成请求失败 | 不先增加任何成绩，保留重试 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T47",
+    "line": 1924,
+    "requirement": "| T47 | 完成超时后查结果／重试 | 恢复唯一真实结果，三类记录不分裂 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T48",
+    "line": 1925,
+    "requirement": "| T48 | 午夜前成功、午夜后重试同一操作 | 返回原日期结果，不额外补新一天 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T49",
+    "line": 1926,
+    "requirement": "| T49 | 新一天刷新后重新复习 | 主动新操作计新日期，客户端不能回填历史天 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T50",
+    "line": 1927,
+    "requirement": "| T50 | 客户端改时区／时间或离线后提交 | 用服务端北京时间接受日期，不补签 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T51",
+    "line": 1928,
+    "requirement": "| T51 | 内容更新、取消收藏 | 完成不重置，不减少已学或打卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T52",
+    "line": 1929,
+    "requirement": "| T52 | 卡片下线／删除 | 保留完成档案、总已学及有效日期，不能再新增停用卡完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T53",
+    "line": 1935,
+    "requirement": "| T53 | 收藏整卡 | 左图右名称进入收藏列表，只有一条有效关联 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T54",
+    "line": 1936,
+    "requirement": "| T54 | 重复收藏与取消失败 | 幂等且状态真实，不显示假成功 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T55",
+    "line": 1937,
+    "requirement": "| T55 | 从收藏取消后返回 | 行移除，最后一张变空；学习成绩不变 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T56",
+    "line": 1938,
+    "requirement": "| T56 | 收藏后发布新版 | 同卡打开最新版，不重计完成，不保存词义快照 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T57",
+    "line": 1939,
+    "requirement": "| T57 | 收藏卡下线／删除 | 安全摘要与U05，可取消但不能新收藏或完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T58",
+    "line": 1940,
+    "requirement": "| T58 | U06已学列表 | 每卡一行，首次／最近学习真实，按最近学习倒序 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T59",
+    "line": 1941,
+    "requirement": "| T59 | U06打卡日期展开 | 当日不同卡片与总数一致，不按点击次数计 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T60",
+    "line": 1942,
+    "requirement": "| T60 | U06进入详情再返回 | 恢复标签、日期展开与位置；不可用来源不开放旧全文 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T61",
+    "line": 1948,
+    "requirement": "| T61 | 管理员登录进入后台 | 默认A02，有卡片管理、导入、用户管理、数据统计及问题反馈，无旧权益大屏 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T62",
+    "line": 1949,
+    "requirement": "| T62 | 四组录入并保存不完整草稿 | 资料顺序明确，可保存；发布前定位必填问题 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T63",
+    "line": 1950,
+    "requirement": "| T63 | 词汇唯一／多处／变形词定位 | 正确高亮，不填内部偏移；改来源后重新核对 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T64",
+    "line": 1951,
+    "requirement": "| T64 | 预览及已发布查看效果 | 译文可切换，收藏／完成禁用；只读模式没有确认发布；分享／反馈／队列禁用，查词仅禁用示例，保留受控管理员试听 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T65",
+    "line": 1952,
+    "requirement": "| T65 | 编辑已发布卡保存候选 | 用户仍用原发布；重发整体切版，完成保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T66",
+    "line": 1953,
+    "requirement": "| T66 | 单卡下线与重新发布 | 状态和入口正确，收藏／历史可恢复但成绩不变 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T67",
+    "line": 1954,
+    "requirement": "| T67 | 删除草稿／已下线卡 | 确认后主列表移除，旧窗口不能继续发布 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T68",
+    "line": 1955,
+    "requirement": "| T68 | 直接删除已发布卡 | 一次操作停止可学并标删除，无须先下线两次操作 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T69",
+    "line": 1956,
+    "requirement": "| T69 | 删除卡片与用户已有成绩 | 保留用户卡数、日期及打卡，不级联删除 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T70",
+    "line": 1957,
+    "requirement": "| T70 | 删除失败／并发版本变化／排序未保存 | 真实状态保留，重新核对；排序保存／取消与离页提示明确 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T71",
+    "line": 1963,
+    "requirement": "| T71 | 无联系用户首次微信身份登录成功 | A05立即可查稳定用户及0学习，不等补资料或完成第一张卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T72",
+    "line": 1964,
+    "requirement": "| T72 | 搜索编号／昵称／已填联系 | 真实匹配，无联系仍可通过编号或昵称找到，空态可清条件 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T73",
+    "line": 1965,
+    "requirement": "| T73 | 今日注册和今日打卡分别／组合筛选 | 两组独立，前者用首次注册日期，后者用真实打卡日，不用登录时间替代 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T74",
+    "line": 1966,
+    "requirement": "| T74 | A05→A06→返回 | 搜索、两组筛选、分页与位置恢复；由统计进入可再返回A07 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T75",
+    "line": 1967,
+    "requirement": "| T75 | A06联系为空／手填／历史来源 | 空值正常，手填标未验证，未改历史来源保留；只有认证管理员可看完整联系 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T76",
+    "line": 1968,
+    "requirement": "| T76 | A06学习概况对比前端 | 卡数、连续、累计、最长与今日状态同源同口径 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T77",
+    "line": 1969,
+    "requirement": "| T77 | 后台已学／打卡预览 | 只读，不替用户新增收藏、完成或打卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T78",
+    "line": 1970,
+    "requirement": "| T78 | 资料／统计失败或用户无效 | 暂未获取与重试，不假0、不泄露他人资料和明文日志 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T79",
+    "line": 1976,
+    "requirement": "| T79 | 一文件夹一卡片ZIP | 图文整篇音频准确对应，只存草稿 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T80",
+    "line": 1977,
+    "requirement": "| T80 | ZIP内混入多卡DOCX | 问题文件夹标错，要求拆分或换DOCX入口，不误共享素材 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T81",
+    "line": 1978,
+    "requirement": "| T81 | 多篇DOCX和独立资料 | 标题分卡，明确同名候选核对，多候选手动选择 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T82",
+    "line": 1979,
+    "requirement": "| T82 | 缺图／音频／高亮；无释义／音标／语块 | 缺必需素材或高亮可留草稿不可发布；释义、音标选填，空语块正常；不要求词汇音频 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T83",
+    "line": 1980,
+    "requirement": "| T83 | 上传包出现词汇音频文件 | 列未使用，不绑定，不生成词汇上传入口 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T84",
+    "line": 1981,
+    "requirement": "| T84 | 重复已确认资料／同名不同资料 | 前者跳过，后者确认新增或更新，不静默合并 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T85",
+    "line": 1982,
+    "requirement": "| T85 | 导入更新已有卡片 | 前后差异明确，仅存候选，发布前不改前端或完成状态 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T86",
+    "line": 1983,
+    "requirement": "| T86 | 核对切卡／返回补文件／离页恢复 | 成功暂存可恢复，保存失败提示，不假称已存 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T87",
+    "line": 1984,
+    "requirement": "| T87 | 保存与发布部分失败重试 | 只处理失败项，成功不重复，不混导入与上线 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T88",
+    "line": 1985,
+    "requirement": "| T88 | 已删除目标收到陈旧导入更新 | 拒绝复活旧卡，要求重新核对为新对象或排除 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T89",
+    "line": 1986,
+    "requirement": "| T89 | ZIP非法路径／类型／超限 | 拒绝问题资料，不越界解包或执行 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T90",
+    "line": 1987,
+    "requirement": "| T90 | 旧账号和可靠完成迁移 | 主动登录映射稳定身份、保留原注册时间；无联系可学习，不凭收藏／浏览编打卡，不自动公开旧受限内容 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T91",
+    "line": 1993,
+    "requirement": "| T91 | U07无联系／单手机／单微信／双联系 | 只读布局正确，无联系提示未填写及补充入口，缺单项不留空行，手机脱敏 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T92",
+    "line": 1994,
+    "requirement": "| T92 | U08主动选头像、填昵称并保存 | U07/U01/A05/A06同步，原账号、注册时间、成绩和收藏不变 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T93",
+    "line": 1995,
+    "requirement": "| T93 | U08取消、失败、上传未完成及未保存离开 | 旧有效资料保留，三种离开处理正确，失败不离开；不自动读微信头像昵称 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T94",
+    "line": 1996,
+    "requirement": "| T94 | U09原本两项为空且直接返回 | 可正常返回U07学习；无变化无空提交，不强制留联系方式 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T95",
+    "line": 1997,
+    "requirement": "| T95 | 联系新增／修改及已有值清空 | 变更字段标用户填写／未验证；未改历史来源保留；清空已有值就近拦截，无单独移除 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T96",
+    "line": 1998,
+    "requirement": "| T96 | U09保存失败、超时、并发变化或未保存离开 | 原值与输入保留，先确认真实结果／重查核对；保存后离开仅在成功后执行，放弃不提交 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T97",
+    "line": 2004,
+    "requirement": "| T97 | 首次进入A07／手动刷新 | 显示北京时间统计日期、更新时间及三指标，加载不用假0 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T98",
+    "line": 2005,
+    "requirement": "| T98 | 首次注册且无联系、0学习 | 用户总数和今日新增各计一次，管理员不计入 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T99",
+    "line": 2006,
+    "requirement": "| T99 | 重复登录、响应丢失后恢复、换设备、补联系或改昵称 | 不增加用户数，不改首次注册时间 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T100",
+    "line": 2007,
+    "requirement": "| T100 | 点击用户总数 | A05清旧搜索和筛选，全部注册＋全部打卡；总数同口径，可返回A07 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T101",
+    "line": 2008,
+    "requirement": "| T101 | 点击今日新增 | A05今日注册＋全部打卡，清旧搜索；不筛今日登录或今日打卡，可返回统计 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T102",
+    "line": 2009,
+    "requirement": "| T102 | 点击已发布场景卡数 | A02清旧无关条件、仅已发布，列表同口径，可返回A07 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T103",
+    "line": 2010,
+    "requirement": "| T103 | 保存草稿／导入草稿／保存已发布候选 | 不增加已发布数，前端继续当前发布版 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T104",
+    "line": 2011,
+    "requirement": "| T104 | 发布、同卡再发布、下线、重发、删除 | 首次加1，同卡新版不重复加；下线减、重发恢复、删除已发布减，无旧窗口复活 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T105",
+    "line": 2012,
+    "requirement": "| T105 | A07真实0／初次失败／旧值刷新失败 | 真实0可点击对应空态；失败暂未获取或旧快照暂未更新，有重试，不假0 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T106",
+    "line": 2013,
+    "requirement": "| T106 | 北京时间00:00前后注册／跨日回前台 | 今日新增按服务端新日期重算，不沿用昨日数字；原账号再登录不计新增 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T107",
+    "line": 2014,
+    "requirement": "| T107 | 指标与列表查询间新增用户或卡片状态变化 | 列表取最新，返回统计刷新，允许时间差并展示更新时间，不凑数 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T108",
+    "line": 2015,
+    "requirement": "| T108 | 无联系方式用户收藏、完成及隔日复习 | 功能均可用，成绩与前后台一致，联系空值不是鉴权失败 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T109",
+    "line": 2016,
+    "requirement": "| T109 | 从U00/U07开隐私说明再关闭 | 回真实来源及原位置，输入／勾选状态不被代改 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T110",
+    "line": 2017,
+    "requirement": "| T110 | 退出再同身份登录 | 清客户端会话，恢复服务端学习收藏，无联系也可登录 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T111",
+    "line": 2018,
+    "requirement": "| T111 | 客户端伪造OpenID或访问他人引用 | 服务端用微信凭证校验和本人会话拒绝越权，联系值不能取代身份 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T112",
+    "line": 2019,
+    "requirement": "| T112 | 历史账号缺联系或仅未核实联系 | 登录学习不拦截，注册时间保留，联系来源不自动升级，不按相同号码合并 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T113",
+    "line": 2020,
+    "requirement": "| T113 | 全文及后续原型同步核对 | 旧手机号必需／联系必填执行规则无残留，待同步项明确，未把文档当原型或真实接入完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T114",
+    "line": 2026,
+    "requirement": "| T114 | 字号与超长内容 | 单词、音标与语块英文20px；释义、原句、语块中文16px，完整换行无省略和遮挡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T115",
+    "line": 2027,
+    "requirement": "| T115 | 分别缺释义／音标或两项皆缺 | 始终保留英文词汇和发音，缺项及间距隐藏，不隐藏整条 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T116",
+    "line": 2028,
+    "requirement": "| T116 | 后台音标手工／批量保存并预览发布 | 同字段保存、预览与发布；释义／音标缺失不阻止其他资料合格卡片发布 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T117",
+    "line": 2029,
+    "requirement": "| T117 | 五档倍速及词汇暂停后继续 | 1／1.25／1.5／1.75／2倍立即生效，不重置位置；暂停／词汇／译文／大图保持会话倍速，词汇发音不跟随 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T118",
+    "line": 2030,
+    "requirement": "| T118 | U07紧凑与U06统计对齐 | 指定旧说明不显示；分组约18px、列表至少48px、退出间隔约28px；零／多位数字及切标签居中 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T119",
+    "line": 2036,
+    "requirement": "| T119 | 已发布、草稿、已下线混选后批量下线 | 仅已发布进入确认集合，其他列原因；没有可下线项时不可提交 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T120",
+    "line": 2037,
+    "requirement": "| T120 | 混选批量删除及取消确认 | 可删除集合清楚；取消无写入，确认后软删除且保留历史学习／打卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T121",
+    "line": 2038,
+    "requirement": "| T121 | 批量操作部分失败、重复点击或超时 | 成功／失败／跳过明确，只重试失败；超时先查结果，不重复处理成功项 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T122",
+    "line": 2039,
+    "requirement": "| T122 | 当前页全选后翻页、搜索或改筛选 | 只选择本页，改变条件或页码后清选择并提示 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T123",
+    "line": 2040,
+    "requirement": "| T123 | 点击缩略图、缩放拖动长图后关闭 | 原图等比、完整可看，不进编辑、不改勾选，关闭回原页位置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T124",
+    "line": 2041,
+    "requirement": "| T124 | 缩略图无图、原图加载失败及重试 | 缺图提示正确，失败可重试，不影响列表 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T125",
+    "line": 2042,
+    "requirement": "| T125 | 文件上传中、传输100%后继续解析 | 字节进度真实，100%后仍提示处理中，不提前显示导入成功 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T126",
+    "line": 2043,
+    "requirement": "| T126 | 上传失败重试且已有其他成功资料 | 原因可见，只处理失败文件／阶段，成功资料保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T127",
+    "line": 2044,
+    "requirement": "| T127 | 列表分别有0条、10条、11条 | 空态、单页、两页及总条数／按钮正确，服务端每页最多10条 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T128",
+    "line": 2045,
+    "requirement": "| T128 | 删除末页最后一条或按已发布筛选下线末条 | 页码越界回退最近有效页，不出现错误空白页；全部筛选下已下线卡仍保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T129",
+    "line": 2046,
+    "requirement": "| T129 | 编辑／预览返回，搜索筛选变化及读取失败 | 返回恢复原条件和页码，改条件回第1页，失败不显示假0或假空态 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T130",
+    "line": 2047,
+    "requirement": "| T130 | 音频未上传、上传中、校验中及可试听 | 状态与真实文件一致，未就绪不可提前播放，成功显示文件名和实际时长 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T131",
+    "line": 2048,
+    "requirement": "| T131 | 音频时长读取中、读取失败与重试 | 不用0:00/0:00当成功，保留已上传事实，重试后显示真实时长 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T132",
+    "line": 2049,
+    "requirement": "| T132 | 更换音频失败、草稿与发布预览及关闭离页 | 保留原有效音频，版本不混用，关闭／切卡／离页停播 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T133",
+    "line": 2055,
+    "requirement": "| T133 | 手工录入中英文标题后保存并重新打开 | 两项原样保留，草稿与原发布版分离 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T134",
+    "line": 2056,
+    "requirement": "| T134 | 新模板DOCX导入 | 唯一中文一级标题及英文元信息对应一张卡，不多分卡、不误取对话英文 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T135",
+    "line": 2057,
+    "requirement": "| T135 | 旧DOCX仅中文、英文元信息空或冲突 | 可恢复内容保留，缺失／冲突明确，允许草稿，补齐并确认后才发布 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T136",
+    "line": 2058,
+    "requirement": "| T136 | 后台列表与搜索 | 同时显示中文及英文，任一语言可查到，英文大小写不影响搜索，长标题不裁切 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T137",
+    "line": 2059,
+    "requirement": "| T137 | 发布后小程序学习／详情／收藏／记录 | 对应列表和详情接口均含双标题，页面均显示，同一发布版本，刷新不因旧缓存丢英文 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T138",
+    "line": 2060,
+    "requirement": "| T138 | 历史已发布卡无英文及补录发布 | 旧中文内容继续可用，不虚构翻译；后台标待补，原卡补录重发后双标题生效，不重复建卡或重置成绩 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T139",
+    "line": 2061,
+    "requirement": "| T139 | 一次上传3个ZIP、拖拽、继续添加、单ZIP | 全部文件进入队列并处理，旧单包方式仍可用 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T140",
+    "line": 2062,
+    "requirement": "| T140 | 单包含多张卡、多个包含多张卡 | 遍历所有卡片，核对列表统一，包数／卡数及来源正确 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T141",
+    "line": 2063,
+    "requirement": "| T141 | 不同ZIP内同名目录和文件 | 不混配、不覆盖、不仅因同名合并；更新已有卡须明确确认 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T142",
+    "line": 2064,
+    "requirement": "| T142 | 部分包失败／取消、缺资料、失败重试或超时 | 其他合格卡继续，仅失败项重试，成功不重复新建，结果未知先查；导入只存草稿 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T143",
+    "line": 2065,
+    "requirement": "| T143 | MP3、M4A、WAV、AAC各通过单卡、ZIP、DOCX配套上传 | 四种输入在所有入口都被接收并实际校验，不只认MP3，不要求人工改后缀 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T144",
+    "line": 2066,
+    "requirement": "| T144 | 大写后缀、损坏、空文件、伪装后缀或不支持格式 | 合法大小写可识别，无效文件原因明确，不假成功；其他卡不被整批阻塞 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T145",
+    "line": 2067,
+    "requirement": "| T145 | 四种合法音频输入处理后的后台试听与小程序真机播放 | 资源真实可播，iOS／Android均验证完整播放、暂停继续、时长和拖动；原图对话不截断 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T146",
+    "line": 2068,
+    "requirement": "| T146 | 音频转换失败／重试／替换失败及草稿发布版本 | 旧有效音频和原文件保留，失败不切线上，不就绪不发布，只重试受影响阶段 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T147",
+    "line": 2069,
+    "requirement": "| T147 | 双标题与音频更换后重新发布 | 同一卡片整版本更新，列表及详情刷新一致，收藏、已学、打卡不重置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T148",
+    "line": 2075,
+    "requirement": "| T148 | 学习列表包含未开始、学习中和已完成数据 | 仅前两类展示；已完成仅在学习记录、收藏等适用来源出现 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T149",
+    "line": 2076,
+    "requirement": "| T149 | 新卡完成成功、失败或超时未知 | 成功才移出U01并进入U06；失败不移除，未知查幂等结果 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T150",
+    "line": 2077,
+    "requirement": "| T150 | 学到一半退出、换设备返回或卡片发布新版 | 学习中保留；历史已完成不因新版回到未学；打开不打卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T151",
+    "line": 2078,
+    "requirement": "| T151 | 点击独立学习记录行及三个统计数字 | 整行图标文字箭头可达U06，数字原标签去向保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T152",
+    "line": 2079,
+    "requirement": "| T152 | 从列表中段进入，下一张位于后续分页且前段仍未学 | 从所选卡向后不回绕，按原顺序跨分页；结束仅称本次完成，前段未学仍在U01 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T153",
+    "line": 2080,
+    "requirement": "| T153 | 复习更新时间导致记录排序变化，再次进入 | 本次顺序冻结且每卡至多一次；重新进入开启新队列，历史不删 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T154",
+    "line": 2081,
+    "requirement": "| T154 | 收藏混有未学及已学卡片 | 按当前收藏时间顺序继续，逐卡真实显示学习／复习状态 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T155",
+    "line": 2082,
+    "requirement": "| T155 | 本日已完成卡片进入复习队列 | 显示已完成状态仍可下一张，不重复增加完成或打卡 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T156",
+    "line": 2083,
+    "requirement": "| T156 | 新学、复习或收藏队列最后一张完成 | 按当前范围提示；返回学习页或留当前详情，不夸称全账号完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T157",
+    "line": 2084,
+    "requirement": "| T157 | 后续卡下线、删除、取消收藏或已在其他设备完成 | 按来源资格跳过失效后续，仍有卡继续；当前失效进入U05 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T158",
+    "line": 2085,
+    "requirement": "| T158 | 完成失败或下一页请求失败 | 留当前卡可重试，不先推进；分页失败不误报队列结束 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T159",
+    "line": 2086,
+    "requirement": "| T159 | 分享单卡完成及无来源返回 | 留详情显示前往学习页，无虚构下一张；返回U01 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T160",
+    "line": 2087,
+    "requirement": "| T160 | 点击高亮与未高亮的正文英文词 | 均打开中央查词弹窗，无单句播放，无单独收藏 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T161",
+    "line": 2088,
+    "requirement": "| T161 | 本篇有明确词义、多处同拼写或本句释义缺省 | 非空确认释义按位置优先；缺省回退标注词典，不猜配或显示空本篇解释 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T162",
+    "line": 2089,
+    "requirement": "| T162 | 点击未在重点词汇中的普通单词 | 显示标注的词典释义，不覆盖后台本篇内容 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T163",
+    "line": 2090,
+    "requirement": "| T163 | went、复数、缩写及原形识别失败但原词有释义 | 原词保留，适用原形单独显示；还原失败不隐藏已有释义或冒称查无结果 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T164",
+    "line": 2091,
+    "requirement": "| T164 | 词典未找到词条 | 显示未找到释义，不AI编造，不阻断场景学习 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T165",
+    "line": 2092,
+    "requirement": "| T165 | 查询失败、重试及快速切换单词 | 原位重试，旧请求迟到不覆盖最新目标，不伪造释义 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T166",
+    "line": 2093,
+    "requirement": "| T166 | 整篇播放时打开弹窗，再点喇叭 | 点词不自动发音；点喇叭暂停整篇并保留位置倍速；手动续播 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T167",
+    "line": 2094,
+    "requirement": "| T167 | 长释义、关弹窗或切换词条 | 弹窗内滚动，关闭回原阅读译文状态，弹窗发音停止 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T168",
+    "line": 2095,
+    "requirement": "| T168 | 伪造正文位置或未登录请求任意文字TTS | 服务端拒绝非受控目标；复用缓存，凭证不下发，原词与原形音频不冒充 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T169",
+    "line": 2096,
+    "requirement": "| T169 | 用户首次及补充500／501字、0／3／4张截图 | 1—500字与0—3图可提交；超限就近提示，纯空白拒绝 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T170",
+    "line": 2097,
+    "requirement": "| T170 | 反馈分类与两种入口 | 四类必选；U07通用反馈和U03关联反馈使用同一列表 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T171",
+    "line": 2098,
+    "requirement": "| T171 | 场景反馈提交成功后返回 | U12含正确安全来源，返回链可恢复U03／U10原位置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T172",
+    "line": 2099,
+    "requirement": "| T172 | 同条反馈连续补充超过两轮 | 记录仍可追加且完整有序，不套旧两轮限制 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T173",
+    "line": 2100,
+    "requirement": "| T173 | 管理员要求补充、标记已处理，用户再次追加 | 按四态规则变化；已处理追加后待处理，失败不先改状态 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T174",
+    "line": 2101,
+    "requirement": "| T174 | 两条未读反馈，只打开其中一条且并发收到新回复 | 仅已显示事件读标记清除，其他记录及更晚回复仍红点 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T175",
+    "line": 2102,
+    "requirement": "| T175 | 用户猜他人反馈ID、管理员会话失效 | 本人权限和独立管理员鉴权有效，不泄露他人文字／截图 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T176",
+    "line": 2103,
+    "requirement": "| T176 | 来源卡片下线或删除后查看反馈 | 历史沟通保留，只显示安全摘要与不可用状态，不开放旧全文 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T177",
+    "line": 2104,
+    "requirement": "| T177 | 上传部分截图失败、提交／回复响应丢失后重试 | 保留成功项与输入，查原操作结果，不重复建反馈或回复 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T178",
+    "line": 2105,
+    "requirement": "| T178 | 管理员回复与用户追加并发、查看或标记已读 | 两事件保留，状态按服务端顺序；只读不改变处理状态 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T179",
+    "line": 2106,
+    "requirement": "| T179 | 学习、详情及个人页面分享入口 | 仅U01／U03可分享到好友、群、朋友圈，个人数据页不开放 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T180",
+    "line": 2107,
+    "requirement": "| T180 | 公共与场景分享内容 | 公共固定标题图；场景复用当前发布双标题与图，不加逐卡配置 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T181",
+    "line": 2108,
+    "requirement": "| T181 | 历史缺英文或草稿修改尚未发布 | 分享仅已有发布中文，草稿及假值不泄露 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T182",
+    "line": 2109,
+    "requirement": "| T182 | 分享未登录、登录失败再重试、已有有效会话 | 未登录主动登录后原目标；失败目标保留；有效会话复用，身份幂等 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T183",
+    "line": 2110,
+    "requirement": "| T183 | 从朋友圈单页打开分享 | 只安全摘要和完整小程序引导；打开后登录恢复目标，不在单页伪造登录或学习 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T184",
+    "line": 2111,
+    "requirement": "| T184 | 目标已下线、删除或参数无效 | U05／明确错误与回学习入口，不用旧缓存开放全文 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T185",
+    "line": 2112,
+    "requirement": "| T185 | 检查分享字段、图片及完成后的行为 | 仅实际支持字段，好友5:4／朋友圈1:1；无发送者个人状态、无海报或独立描述承诺 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T186",
+    "line": 2113,
+    "requirement": "| T186 | 整页、分页、收藏及发音同时加载 | 轻量图标与文字分区显示，局部请求不反复全屏遮挡，不冒充完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T187",
+    "line": 2114,
+    "requirement": "| T187 | 无发布、全已学、无收藏、无记录与请求失败 | 分别展示匹配状态；失败不伪装空，选填空语块仍整区隐藏 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T188",
+    "line": 2115,
+    "requirement": "| T188 | 刷新、追加、分页结束、失败重试 | 保留可信列表和位置，去重追加，只有确认无后续显示已全部加载 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T189",
+    "line": 2116,
+    "requirement": "| T189 | 缩略图、详情图及原图慢加载、失败、重试 | 尺寸占位不跳动，缩略图／原图正确，失败不阻断文字，无假百分比 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T190",
+    "line": 2117,
+    "requirement": "| T190 | U00/U07隐私链接点击与返回 | 颜色和反馈可辨，关闭恢复来源／勾选／位置，不代替同意 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T191",
+    "line": 2118,
+    "requirement": "| T191 | 检查U00文案及无联系方式账号学习 | 指定说明文字删除，U09联系选填及学习权限保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T192",
+    "line": 2119,
+    "requirement": "| T192 | 后台不存在服务端可恢复导入批次 | 继续处理及其他最近导入不展示，不删除已生成卡片草稿 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T193",
+    "line": 2120,
+    "requirement": "| T193 | 存在一个可恢复批次 | 可选择该批恢复原阶段及核对输入，服务端状态为准 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T194",
+    "line": 2121,
+    "requirement": "| T194 | 存在多个可恢复批次 | 展开文件名、时间、阶段列表，管理员选择，不静默切到最近批 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T195",
+    "line": 2122,
+    "requirement": "| T195 | 当前导入完成后查看结果 | 保留查看本次卡片，其他最近导入展示删除，两功能不混淆 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T196",
+    "line": 2123,
+    "requirement": "| T196 | 恢复含成功和失败项的暂存并重试 | 成功资料保留，只重试适用失败阶段，不重复创建草稿 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ]
+  },
+  {
+    "id": "T197",
+    "line": 2124,
+    "requirement": "| T197 | 待处理列表读取失败或选中批次过期／无权限 | 显示失败或不可恢复并刷新，不冒充零批次或打开他人批次 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T198",
+    "line": 2125,
+    "requirement": "| T198 | 所有发布卡已学完且含下线历史 | U01全学完空态与真实历史统计保留，可进记录或收藏 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "原有场景/登录/反馈/分享回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T199",
+    "line": 2133,
+    "requirement": "| T199 | 首次启用未填N；输入空值／负数／小数／非数字 | 不启用／不保存；原位说明，输入可修改，不默认免费5张或10张 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T200",
+    "line": 2134,
+    "requirement": "| T200 | N=0；N大于发布总量；集合含草稿／下线／删除卡 | 0时无免费卡；超量时有效发布卡全部免费；不计入无效内容，授权也不开放这些内容 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T201",
+    "line": 2135,
+    "requirement": "| T201 | 全局顺序C01、C02、C03，N=2，用户已学C01；以及免费集合跨后台第10条分页 | 免费仍是C01／C02；U01中C02可学、C03锁定，不补C03；按全量而非当前页计算 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T202",
+    "line": 2136,
+    "requirement": "| T202 | A02更改N、查看名单、取消、保存失败重试；确认前排序或发布变化 | 预览实际名单与影响，失败保留输入，取消不生效；名单变化需重新确认；不改变原列表状态 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T203",
+    "line": 2137,
+    "requirement": "| T203 | 保存新排序、发布、下线、删除后重新查询 | 按最新集合计算免费标识；移出免费范围即按现权限拦截，历史记录与成绩保留 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T204",
+    "line": 2138,
+    "requirement": "| T204 | 未授权用户进入免费卡，依次读图、听完整音频、看译文／词汇发音／语块、收藏、完成与打卡 | 上述功能可用，统计沿用原幂等规则；正文高亮词和普通词的点词均提示需授权且不请求词典 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T205",
+    "line": 2139,
+    "requirement": "| T205 | 从学习、分享、收藏、学习记录或旧详情／资源链接进入受限卡 | 统一只展示允许的安全摘要／锁定提示，不获取正文或受限资源；已有收藏可取消；返回恢复来源 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T206",
+    "line": 2140,
+    "requirement": "| T206 | 给未授权用户开通；U07、A05及全部场景／点词刷新 | 一次授权同时解锁两项，状态及到期日一致；不要求填手机号或微信号 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T207",
+    "line": 2141,
+    "requirement": "| T207 | 有效到2026-11-24，2026-10-25续期；已过期后2026-10-25开通 | 分别到2026-12-24和2026-11-25，不从操作当天覆盖有效期余额 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T208",
+    "line": 2142,
+    "requirement": "| T208 | 2027-01-31／2028-01-31开通一月；自定义当天／过去／空或非法日期 | 分别到2027-02-28／2028-02-29；当天有效，过去及非法值不保存 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T209",
+    "line": 2143,
+    "requirement": "| T209 | 指定到期日结束前与次日00:00；撤销确认 | 到期日当日有效，边界后与撤销成功后回免费权限；撤销后用户端未授权，保留后台操作记录 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T210",
+    "line": 2144,
+    "requirement": "| T210 | 授权保存失败、重复点击、超时重试或结果待确认；A06返回A05 | 旧状态不先变，保留输入；同次续期只生效一次；筛选、分页与位置按真实新结果恢复 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T211",
+    "line": 2145,
+    "requirement": "| T211 | 正在查词／播放完整音频时到期，当前卡分别仍免费／已受限 | 免费卡保留场景及完整音频，仅停止查词及其发音；受限卡停止受限播放／大图并显示锁定摘要 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T212",
+    "line": 2146,
+    "requirement": "| T212 | 权限请求失败、队列分页失败；队列中夹有受限卡，免费卡均完成 | 不默认授权、不显示假空或假0、不越权提交；原位可重试；仅跳过受限项，未读完分页不报结束；区分本轮／免费完成与全部完成 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T213",
+    "line": 2147,
+    "requirement": "| T213 | 启用前已有账号、授权到期／撤销、N减少或免费名单变化 | 不自动赠送授权，不清除收藏／已学／打卡；当前仍免费卡可继续合法学习 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T214",
+    "line": 2148,
+    "requirement": "| T214 | 查看反馈、账号资料；管理员只读预览；匿名或普通用户调用管理能力 | 原反馈／资料及认证管理员预览规则保留；普通用户无法配置N或授权，预览不替用户写成绩 |",
+    "status": "原有范围已纳入回归；未逐条业务验收；既有平台失败保留",
+    "module": "统一授权与免费N回归",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ]
+  },
+  {
+    "id": "T215",
+    "line": 2149,
+    "requirement": "| T215 | 主动登录无恢复目标；切换底部入口 | 默认到首页；三个Tab为首页／学习记录／账号，不出现原学习／听读／收藏方案 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T216",
+    "line": 2150,
+    "requirement": "| T216 | 首页点击两模块，返回并重新进入 | 分别到场景列表／听读首页，各自保留可恢复位置，不混排内容或重置对方状态 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T217",
+    "line": 2151,
+    "requirement": "| T217 | 场景、听读从列表／收藏／记录进入详情再返回 | 恢复实际来源标签及位置；场景来源队列及分享仍回场景列表 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T218",
+    "line": 2152,
+    "requirement": "| T218 | 账号进入收藏，切换场景／听读，重复收藏／取消或失败 | 两类独立排序与分页，无重复或串ID；失败不提前改变原状态，返回可恢复 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T219",
+    "line": 2153,
+    "requirement": "| T219 | 学习记录三个标签及一天内两类学习展开 | 分别显示已学场景／已学听读／打卡记录，两类数量有类型说明，不混称场景卡 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T220",
+    "line": 2154,
+    "requirement": "| T220 | 账号一级页及资料、授权、反馈、隐私、退出 | 原功能与选填规则保留；子页回账号，退出停播且保留服务端历史 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T221",
+    "line": 2155,
+    "requirement": "| T221 | 分类、主题、篇目排序与主题进度 | 层级正确；主题内顺序独立；进度按当前有效已发布篇目计算，历史累计另保留 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T222",
+    "line": 2156,
+    "requirement": "| T222 | 最近未完成／已完成／受限文章；无历史或读取失败 | 继续学习选最近合法未完成目标；完成后衔接同主题后续；无目标隐藏，失败显示重试 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T223",
+    "line": 2157,
+    "requirement": "| T223 | 从主题中段、收藏或记录完成并点下一篇，含分页失败／末篇 | 仅沿同主题向后，不回绕、不跨主题；跳过失效／受限项，分页未查完不误报结束 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T224",
+    "line": 2158,
+    "requirement": "| T224 | 阅读英文自然段、双标题、标签、词数、5组表达和译文切换 | 顺序与资料完整，中文默认收起；统一自动词数，切换不丢位置或改播放状态 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T225",
+    "line": 2159,
+    "requirement": "| T225 | 全文播放暂停、拖动、五档倍速、离开文章 | 不自动播放，位置／状态正确，离开停止；无逐句切片或倍速文件 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T226",
+    "line": 2160,
+    "requirement": "| T226 | 正文普通词／高亮词、原形、音标、已确认本篇义或词典补充 | 任意词可点；授权有效时中央弹窗，匹配本篇义优先、词典来源明确，不猜配 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T227",
+    "line": 2161,
+    "requirement": "| T227 | 全文播放中查词、点发音、关闭或查询／发音失败 | 查看义不暂停；发音才暂停全文，无叠播；关闭需手动续播，失败原位重试 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T228",
+    "line": 2162,
+    "requirement": "| T228 | 有图／无图／图失败，打开大图缩放拖动关闭 | 无图详情入口隐藏、列表固定占位；大图等比可操作，关闭恢复阅读、译文和音频；失败不阻断正文 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T229",
+    "line": 2163,
+    "requirement": "| T229 | 离开后同版本再次进入；进度保存失败及后台预览 | 恢复已成功保存的阅读／译文／音频／倍速但不自动播放；失败可重试，预览不写用户记录 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地HTTP验证.json",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T230",
+    "line": 2164,
+    "requirement": "| T230 | 重新发布新版本；仅修改M、授权或顺序 | 新版本重置旧阅读及音频状态，收藏和完成保留；非正文版本变化不重置进度 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T231",
+    "line": 2165,
+    "requirement": "| T231 | 同一用户已有有效授权；续期／到期／撤销 | 同一授权及剩余期限覆盖两类内容，无第二套到期日，不自动加月；原期限规则保留 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T232",
+    "line": 2166,
+    "requirement": "| T232 | 未授权进入免费篇并点词，或经收藏／记录进入受限篇 | 免费篇完整学习可用，正文点词需授权且不调用词典；受限篇只安全摘要，可取消已有收藏 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T233",
+    "line": 2167,
+    "requirement": "| T233 | N与M不同；全局前M中已有已完成篇；跨分类或分页 | 分别计算；先取听读全局前M再展示本人状态，不补下一篇，不按后台当前页计算 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T234",
+    "line": 2168,
+    "requirement": "| T234 | M未填写、0、超量、空／负数／小数／非数字 | 未确认不开放听读且不影响场景；0无免费、超量全免费；非法值不保存，无默认M |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T235",
+    "line": 2169,
+    "requirement": "| T235 | 配置预览与保存、取消、失败、发布集合并发变化 | 展示完整名单及影响；过期重确认，取消不生效，失败留输入；成功不更改N或用户成绩 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T236",
+    "line": 2170,
+    "requirement": "| T236 | 修改主题顺序／独立全局顺序，发布／下线／删除篇目 | 主题顺序与免费顺序互不改写；按最新有效全局集合计算免费，完成本身不补篇 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T237",
+    "line": 2171,
+    "requirement": "| T237 | 正在播放／查词／大图时到期或撤销，当前篇仍免费／也受限 | 免费篇保留阅读及全文音频，仅关闭查词发音；受限篇停止受限播放／大图并显示锁定 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T238",
+    "line": 2172,
+    "requirement": "| T238 | 权限读取失败，旧详情、直接资源、恢复进度或普通用户调用管理能力 | 可重试，不假授权或假空，不越权取全文／资源或写成绩，普通用户不能配置管理 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T239",
+    "line": 2173,
+    "requirement": "| T239 | 首次完成听读；同日重复提交／复习；跨日复习；同日也完成场景 | 听读首次只加篇数，重复不刷数，跨日可打卡；场景张数不增加，共用打卡每天最多一次 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地HTTP验证.json",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T240",
+    "line": 2174,
+    "requirement": "| T240 | 完成失败／超时未知、并发设备与跨午夜重试；前后台查询 | 查询真实结果再重试，两类成绩与打卡一致；同次跨日重试不多计，前后台同源 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地HTTP验证.json",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T241",
+    "line": 2175,
+    "requirement": "| T241 | 草稿、缺双标题／正文／译文／不足或超过5组／缺音频或未就绪／无原图 | 草稿可保存预览但用户不可见；缺必填或音频未就绪不可发布；原图可缺省发布 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T242",
+    "line": 2176,
+    "requirement": "| T242 | 发布后改稿、音频替换失败、下线／删除／旧编辑页并发 | 原有效发布版保留；明确确认及失败重试；删除不复活，收藏／成绩／打卡及安全摘要保留 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "双模块听读与统一学习数据",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T243",
+    "line": 2177,
+    "requirement": "| T243 | 分类10项与长名称、首末选中 | 单行横滑；固定64px分类按钮不遮挡；不缩字号，首末选中可见 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T244",
+    "line": 2178,
+    "requirement": "| T244 | 全部分类面板选择及仅关闭 | 顶部全部主题＋三列；当前选中；名称换行、至少44px、最高65%、内部滚动及安全区；关闭不改选择 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T245",
+    "line": 2179,
+    "requirement": "| T245 | 切换分类、进入主题再返回 | 切换列表回顶部；返回恢复原分类位置；继续学习目标不随分类改变 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T246",
+    "line": 2180,
+    "requirement": "| T246 | 没有有效发布内容的分类 | 不显示该分类；沿用后台名称／顺序／归属，不新增搜索或新层级 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T247",
+    "line": 2181,
+    "requirement": "| T247 | 主题篇目及两类收藏／已学记录缩略图 | 左图右双标题及时间状态；相同内容同版本图一致；原场景图保留 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md",
+      "docs/handoff/revision17/source/开发方案/修订17-缩略图真实验证.json"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T248",
+    "line": 2182,
+    "requirement": "| T248 | 无原图、加载失败及受限缩略图 | 原图选填；列表固定占位／重试，详情不出现空大图入口；不泄露受限原图 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md",
+      "docs/handoff/revision17/source/开发方案/修订17-缩略图真实验证.json"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T249",
+    "line": 2183,
+    "requirement": "| T249 | 学习详情缩略图到大图再关闭 | 等比缩放／拖动，回原位置、译文及音频状态，无自动播放或叠播 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md",
+      "docs/handoff/revision17/source/开发方案/修订17-缩略图真实验证.json"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T250",
+    "line": 2184,
+    "requirement": "| T250 | 听读倍速展开、选择及收起 | 播放器内部横排1／1.25／1.5／1.75／2，当前项唯一选中，不再底部弹层 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T251",
+    "line": 2185,
+    "requirement": "| T251 | 倍速切换时播放／暂停及重入 | 不重置进度、不改变播放／暂停；同版本恢复倍速且手动播放，按钮至少44×44 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "分类缩略图倍速",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T252",
+    "line": 2186,
+    "requirement": "| T252 | 听读单ZIP多篇、多ZIP及DOCX配套 | 独立听读批次，同页三步；包实例／路径隔离，自动带入双标题／英文／译文／5组语块 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告",
+    "supplement": "第38.3/38.6补齐：明确目标及revision、差异核对、确认后更新原草稿；原发布版与历史不变；同资料/媒体不同ID语义跳过。专项50/4与本地MySQL10+1及浏览器1项见审查修复报告，数字含重叠范围不得相加。"
+  },
+  {
+    "id": "T253",
+    "line": 2187,
+    "requirement": "| T253 | 缺字段／多素材候选／单篇新建 | 不猜标题、不自动翻译／补例句；人工确认归属与素材；DOCX带入前确认，不完整可存草稿 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告",
+    "supplement": "第38.3/38.6补齐：明确目标及revision、差异核对、确认后更新原草稿；原发布版与历史不变；同资料/媒体不同ID语义跳过。专项50/4与本地MySQL10+1及浏览器1项见审查修复报告，数字含重叠范围不得相加。"
+  },
+  {
+    "id": "T254",
+    "line": 2188,
+    "requirement": "| T254 | 同包／跨包／已入库重复与同名不同内容 | 确认重复自动跳过，不新增／不覆盖、计入独立跳过数；同名不同资料人工核对 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告",
+    "supplement": "第38.3/38.6补齐：明确目标及revision、差异核对、确认后更新原草稿；原发布版与历史不变；同资料/媒体不同ID语义跳过。专项50/4与本地MySQL10+1及浏览器1项见审查修复报告，数字含重叠范围不得相加。"
+  },
+  {
+    "id": "T255",
+    "line": 2189,
+    "requirement": "| T255 | 导入候选批量删除、取消和恢复 | 只移除本批未保存候选；确认对象与数量，取消留选择位置；返回／恢复仍移除，不删ZIP或已入库文章 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告",
+    "supplement": "第38.3/38.6补齐：明确目标及revision、差异核对、确认后更新原草稿；原发布版与历史不变；同资料/媒体不同ID语义跳过。专项50/4与本地MySQL10+1及浏览器1项见审查修复报告，数字含重叠范围不得相加。"
+  },
+  {
+    "id": "T256",
+    "line": 2190,
+    "requirement": "| T256 | 无法读取候选同时勾选保存及移除 | 可删除不可保存；勾选数与可保存数分开；只选无法读取时保存禁用而删除可用 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告",
+    "supplement": "第38.3/38.6补齐：明确目标及revision、差异核对、确认后更新原草稿；原发布版与历史不变；同资料/媒体不同ID语义跳过。专项50/4与本地MySQL10+1及浏览器1项见审查修复报告，数字含重叠范围不得相加。"
+  },
+  {
+    "id": "T257",
+    "line": 2191,
+    "requirement": "| T257 | 移除全部可保存候选及旧确认 | 下一步禁用，允许继续添加；重算数量，旧保存确认失效；不重复创建成功草稿 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md",
+      "docs/handoff/revision17/source/开发方案/修订17-修复复审.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告",
+    "supplement": "第38.3/38.6补齐：明确目标及revision、差异核对、确认后更新原草稿；原发布版与历史不变；同资料/媒体不同ID语义跳过。专项50/4与本地MySQL10+1及浏览器1项见审查修复报告，数字含重叠范围不得相加。"
+  },
+  {
+    "id": "T258",
+    "line": 2192,
+    "requirement": "| T258 | 文章单篇与当前页勾选批量删除 | 单行只删该篇；表头全／半选限当前页；混合状态明确确认，取消保留位置，发布篇直接删除停止访问 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T259",
+    "line": 2193,
+    "requirement": "| T259 | 删除部分失败、并发变化及超时未知 | 成功保留、失败保留真实状态；显示原因，只重试原失败项；版本变化先刷新再确认，未知先查结果 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T260",
+    "line": 2194,
+    "requirement": "| T260 | 删除后的历史、分页及资源 | 保留累计、完成、打卡与安全摘要；刷新实际列表／主题进度和统计；补位／有效页回退，旧资源不能访问 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "导入去重删除恢复",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T261",
+    "line": 2850,
+    "requirement": "| T261 | 播放时逐字向前着色；当前字明显，后方只留短尾迹，旧句及更早文字恢复原色，全文不累积高亮 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T262",
+    "line": 2851,
+    "requirement": "| T262 | 任意字中途暂停后，音频进度、高亮位置与尾迹强度均保持；等待不自行淡出 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T263",
+    "line": 2852,
+    "requirement": "| T263 | 继续播放从暂停位置推进；倍速、暂停与连续操作不产生独立动画漂移 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T264",
+    "line": 2853,
+    "requirement": "| T264 | 前后拖动立即重定位，旧位置清除；五档倍速按实际媒体时间跟随 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T265",
+    "line": 2854,
+    "requirement": "| T265 | 离页停止，同版本恢复后不自动播放且定位一致；正文／音频版本变更不能复用错版时间轴 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T266",
+    "line": 2855,
+    "requirement": "| T266 | 缓冲／音频失败／单词发音暂停时冻结；仅查看查词仍遵循原规则，最多一个音频源 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T267",
+    "line": 2856,
+    "requirement": "| T267 | 时间轴缺失、无效或版本不符时明确降级提示，正文与合法全文音频继续可用 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地HTTP验证.json",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T268",
+    "line": 2857,
+    "requirement": "| T268 | 单篇与批量自动校验时间轴的范围、版本、顺序及音频时长；管理员试听可选，预览不写学习成绩 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T269",
+    "line": 2858,
+    "requirement": "| T269 | 英文第一段和全部自然段、展开译文、后台只读预览均首行缩进两格；续行不缩进 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T270",
+    "line": 2859,
+    "requirement": "| T270 | 排版不改变原文及字符偏移，点词、词数、表达、免费授权、收藏、完成与打卡规则不受影响 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T271",
+    "line": 2865,
+    "requirement": "| T271 | 单篇及批量正文／音频就绪并成功持久化后自动生成时间轴；无需逐篇手动启动；同版本重复保存和导入恢复不重复创建任务 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T272",
+    "line": 2866,
+    "requirement": "| T272 | 自动生成并校验通过、管理员仍未试听时，合法文章可直接启用逐字高亮，不等待人工确认或必勾选项 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T273",
+    "line": 2867,
+    "requirement": "| T273 | 未试听或时间轴暂未就绪不阻塞已满足原必填条件的文章保存、预览及明确发布；缺完整可播音频等原错误仍正常拦截；任务完成不自动发布草稿 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地HTTP验证.json",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T274",
+    "line": 2868,
+    "requirement": "| T274 | 无效、匹配不足或生成失败显示真实状态并禁用错误高亮，普通听读仍可用；重试只处理失败对象，成功项保留，未知结果先查询 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T275",
+    "line": 2869,
+    "requirement": "| T275 | 正文或音频更新自动重建时间轴，旧任务结果不能覆盖新版本；候选移除／文章删除后不回写或复活内容 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  },
+  {
+    "id": "T276",
+    "line": 2870,
+    "requirement": "| T276 | 试听及标记已试听均可选；未试听不是错误；抽查记录不改变用户成绩、收藏、打卡、授权、发布或高亮资格 |",
+    "status": "增量已实现且列有模块级验证；审查修复已复审；未逐条业务验收",
+    "module": "逐字高亮自动时间轴与排版",
+    "evidence": [
+      "docs/handoff/revision17/source/开发方案/修订17-小程序实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后台实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-后端实施报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-审查修复报告.md",
+      "docs/handoff/revision17/source/开发方案/修订17-本地交付说明.md"
+    ],
+    "limitation": "真实ASR被AuthFailure.UnauthorizedOperation拒绝，算法和结构测试不能替代真实录音或真机同步验收",
+    "verification_scope": "仅以关联报告列出的实际模块/专项证据为准；未逐条业务验收，设备与外部条件见报告"
+  }
+]

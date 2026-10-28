@@ -20,6 +20,7 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
 ):
     # Register the complete metadata before clearing only the dedicated test schema.
     from juya_api import (  # noqa: F401
+        access_models,
         admin_action_models,
         content_models,
         discovery_models,
@@ -27,6 +28,7 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
         import_models,
         job_models,
         learning_models,
+        listening_models,
         models,
         pronunciation_models,
         publication_models,

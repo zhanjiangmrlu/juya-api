@@ -23,6 +23,7 @@ from .learning_service import (
     learning_records,
     statistics,
 )
+from .listening_models import ListeningArticle
 from .models import Audit, User
 from .response_contracts import (
     AdminUser,
@@ -70,6 +71,14 @@ def routes():
             )
         ).one()
         return {
+            "published_article_count": db.scalar(
+                select(func.count())
+                .select_from(ListeningArticle)
+                .where(
+                    ListeningArticle.status == "published", ListeningArticle.deleted_at.is_(None)
+                )
+            )
+            or 0,
             "user_count": row[0],
             "new_users_today": row[1],
             "published_card_count": row[2],

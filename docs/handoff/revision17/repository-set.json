@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-28",
+  "purpose": "Existing MacBook four-project incremental handoff; local database only.",
+  "repositories": {
+    "juya-admin": {
+      "branch": "test",
+      "commit": "e9e498d746e6d60cca588a50f22231f9846a0901"
+    },
+    "juya-miniapp": {
+      "branch": "test",
+      "commit": "1be8cd5c477cf5aabd7b19228b8ce2314c60f66d"
+    },
+    "juya-cli": {
+      "branch": "test",
+      "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca"
+    },
+    "juya-api": {
+      "branch": "test",
+      "commit_reference": "The test commit containing this manifest; git rev-parse HEAD after pull."
+    }
+  }
+}

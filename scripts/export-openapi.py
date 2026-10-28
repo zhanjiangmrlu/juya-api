@@ -19,6 +19,8 @@ for name, factory in [("admin", admin_app), ("mini", mini_app)]:
     target = root / "openapi" / f"{name}.json"
     target.parent.mkdir(exist_ok=True)
     target.write_text(
-        json.dumps(factory(settings=settings).openapi(), ensure_ascii=False, indent=2) + "\n"
+        json.dumps(factory(settings=settings).openapi(), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     print(target)

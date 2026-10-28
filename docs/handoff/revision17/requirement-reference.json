@@ -1,0 +1,10 @@
+{
+  "filename": "句芽英语-开发需求交接版-当前开发版.md",
+  "version": "V1.5整合04增补02",
+  "change": "CHG-0027",
+  "design_revision": "修订17增补02",
+  "acceptance": "T01—T276",
+  "sha256": "33be3d347960bb2b0cae62b8cdc55fff89b903991e010dfe62f2bfe61a6addeb",
+  "synchronization": "User will synchronize the full requirement to the existing MacBook workspace; no full copy in this Git handoff.",
+  "original_workspace_relative_path": "../../docs/需求文档/句芽英语-开发需求交接版-当前开发版.md"
+}

@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     archive_limit_mb: int = 100
     archive_expanded_limit_mb: int = 500
     import_card_limit: int = 50
+    asr_secret_id: str = Field(default="", repr=False)
+    asr_secret_key: str = Field(default="", repr=False)
+    asr_region: str = "ap-shanghai"
+    asr_engine: str = "16k_en"
+    listening_alignment_minimum_coverage: float = Field(default=1.0, ge=1, le=1)
+    listening_alignment_max_word_ms: int = Field(default=10000, ge=100, le=30000)
+    listening_asr_daily_budget: int = Field(default=500, ge=0)
 
     @model_validator(mode="after")
     def validate_secrets(self):

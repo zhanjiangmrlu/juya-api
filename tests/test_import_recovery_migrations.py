@@ -101,7 +101,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
         assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
-            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0019"
+            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0022"
             assert db.scalar(text("SELECT count(*) FROM import_batches")) == 0
             db.execute(
                 text(
@@ -357,7 +357,7 @@ def test_import_timestamp_migration_emits_mysql_microsecond_ddl_without_live_con
     config = migration_config(monkeypatch, "mysql+pymysql://fixture:fixture@invalid/fixture")
     output = StringIO()
     config.output_buffer = output
-    command.upgrade(config, "0015:head", sql=True)
+    command.upgrade(config, "0015:0016", sql=True)
     ddl = output.getvalue()
     assert "ADD COLUMN updated_at DATETIME(6)" in ddl
     assert "updated_at DATETIME(6) NOT NULL" not in ddl

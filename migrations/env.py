@@ -15,6 +15,7 @@ from juya_api import (  # noqa: F401
     import_models,
     job_models,
     learning_models,
+    listening_models,
     models,
     pronunciation_models,
     publication_models,

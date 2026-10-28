@@ -43,7 +43,40 @@ def statistics(db, user_id: str, now: datetime) -> dict:
         previous = day
     if dates and dates[-1] in {today, today - timedelta(days=1)}:
         current = run
+    from .listening_models import ListeningCompletion, ListeningDaily, ListeningFavorite
+
+    completion_times = [
+        db.scalar(
+            select(func.max(Completion.last_completed_at)).where(Completion.user_id == user_id)
+        ),
+        db.scalar(
+            select(func.max(ListeningCompletion.last_completed_at)).where(
+                ListeningCompletion.user_id == user_id
+            )
+        ),
+    ]
+    latest_completion = max(
+        (value for value in completion_times if value is not None), default=None
+    )
     return {
+        "completed_articles": db.scalar(
+            select(func.count())
+            .select_from(ListeningCompletion)
+            .where(ListeningCompletion.user_id == user_id)
+        )
+        or 0,
+        "today_completed_articles": db.scalar(
+            select(func.count())
+            .select_from(ListeningDaily)
+            .where(ListeningDaily.user_id == user_id, ListeningDaily.date == today)
+        )
+        or 0,
+        "listening_favorite_count": db.scalar(
+            select(func.count())
+            .select_from(ListeningFavorite)
+            .where(ListeningFavorite.user_id == user_id)
+        )
+        or 0,
         "date": today.isoformat(),
         "completed_cards": db.scalar(
             select(func.count()).select_from(Completion).where(Completion.user_id == user_id)
@@ -57,11 +90,7 @@ def statistics(db, user_id: str, now: datetime) -> dict:
             .select_from(DailyLearning)
             .where(DailyLearning.user_id == user_id, DailyLearning.date == today)
         ),
-        "last_studied_at": timestamp(
-            db.scalar(
-                select(func.max(Completion.last_completed_at)).where(Completion.user_id == user_id)
-            )
-        ),
+        "last_studied_at": timestamp(latest_completion),
         "favorite_count": db.scalar(
             select(func.count()).select_from(Favorite).where(Favorite.user_id == user_id)
         ),
@@ -192,10 +221,18 @@ def checkin_records(db, user_id: str, page: int, limit: int):
     rows = db.scalars(
         query.order_by(Checkin.date.desc()).offset((page - 1) * limit).limit(limit)
     ).all()
+    from .listening_models import ListeningDaily
+
     return {
         "items": [
             {
                 "date": row.date.isoformat(),
+                "article_count": db.scalar(
+                    select(func.count())
+                    .select_from(ListeningDaily)
+                    .where(ListeningDaily.user_id == user_id, ListeningDaily.date == row.date)
+                )
+                or 0,
                 "card_count": db.scalar(
                     select(func.count())
                     .select_from(DailyLearning)

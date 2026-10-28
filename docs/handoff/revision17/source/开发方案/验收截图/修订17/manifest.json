@@ -1,0 +1,74 @@
+[
+  {
+    "file": "mini-home.png",
+    "source": "project/juya-miniapp/node_modules/.cache/revision17/home.png",
+    "bytes": 330365,
+    "sha256": "a6b29d730d2ba2a3dda03cb83c6c7dc1d8ee23d286901b0518fbd686bf6ab3ed",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "mini-categories.png",
+    "source": "project/juya-miniapp/node_modules/.cache/revision17/categories.png",
+    "bytes": 20170,
+    "sha256": "7c7dee2d7090461127da57367a2eea04b872274273837e5d11b88c75c47b95b0",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "mini-article-restored.png",
+    "source": "project/juya-miniapp/node_modules/.cache/revision17/article-restored.png",
+    "bytes": 80906,
+    "sha256": "a842a8aa7254066858a5cffff2bde20b4f836c08b5044f38d6f1a32bb542c8aa",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "mini-records-listening.png",
+    "source": "project/juya-miniapp/node_modules/.cache/revision17/records-listening.png",
+    "bytes": 30172,
+    "sha256": "bda2d0fc37ad3dcfee8a372b8d941aed85360e4503d87c4f58b7c4f0a57f1e67",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "mini-topic-image.png",
+    "source": "project/juya-admin/test-results/revision17-review-fixes-li-258aa-kets-without-Bearer-headers-chromium/topic-image-390.png",
+    "bytes": 28445,
+    "sha256": "e94567f5ba62a1bb01ca5773fb6c8018f94cc9e3ad80bc7ace002f778f70f1ed",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "mini-article-image.png",
+    "source": "project/juya-admin/test-results/revision17-review-fixes-li-258aa-kets-without-Bearer-headers-chromium/article-image-390.png",
+    "bytes": 51400,
+    "sha256": "f31a8348fe5c4f29a65f3005c3e1d9b8aab3337ecef4c3d18e5676def6037351",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "admin-creation-recovered.png",
+    "source": "project/juya-admin/test-results/revision17-review-fixes-li-cb120-iginal-article-exactly-once-chromium/creation-recovered.png",
+    "bytes": 131024,
+    "sha256": "18f44a61991cf8da820532132452746d0337625187d6bbd3255a2fb4d5f6be82",
+    "fixture": "synthetic-local",
+    "scope": "captured viewport/state only; not full visual acceptance"
+  },
+  {
+    "file": "admin-update-confirmation.png",
+    "source": "project/juya-admin/node_modules/.cache/revision17-S1-display-browser-output/revision17-import-update-l-535b8-or-creating-another-article-chromium/update-confirmation-1440.png",
+    "bytes": 182696,
+    "sha256": "e1ef0531cc03237ee5eac7b549f50c837cb9afbad88f1fea62dda7e515f69a3f",
+    "fixture": "synthetic-local",
+    "scope": "S1 final readable diff and actual save; viewport/state only"
+  },
+  {
+    "file": "admin-update-result.png",
+    "source": "project/juya-admin/node_modules/.cache/revision17-S1-display-browser-output/revision17-import-update-l-535b8-or-creating-another-article-chromium/update-result-1440.png",
+    "bytes": 60819,
+    "sha256": "4c17ebf87349ee1273ae1de6c225327b172630c95f6c437e707dce6b909cef2c",
+    "fixture": "synthetic-local",
+    "scope": "S1 final readable diff and actual save; viewport/state only"
+  }
+]

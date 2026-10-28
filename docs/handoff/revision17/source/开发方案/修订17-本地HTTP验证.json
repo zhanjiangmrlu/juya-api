@@ -1,0 +1,20 @@
+{
+  "environment": "local",
+  "database": "juya_local",
+  "user_is_synthetic": true,
+  "checks": [
+    "realHTTP_complete",
+    "same-key-replay",
+    "favorite",
+    "version-progress-restoration",
+    "completed-article-count",
+    "shared-checkin-record",
+    "records",
+    "same-theme-next-end",
+    "anonymous401",
+    "cross-role404"
+  ],
+  "wechat_login_verified": false,
+  "cloud_asr_verified": false,
+  "user_id": "75624512-b652-4863-9db7-cbb180ecec07"
+}

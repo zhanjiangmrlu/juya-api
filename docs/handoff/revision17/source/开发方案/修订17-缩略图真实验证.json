@@ -1,0 +1,9 @@
+{
+  "environment": "local",
+  "synthetic_fixture": true,
+  "restricted_thumbnail_http": 200,
+  "thumbnail_bytes": 1820,
+  "restricted_original_http": 403,
+  "restricted_detail_http": 403,
+  "revoked_ticket_http": 401
+}

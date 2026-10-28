@@ -194,6 +194,9 @@ class Statistics(PublicModel):
     today_completed_cards: int
     last_studied_at: str | None
     favorite_count: int
+    completed_articles: int = 0
+    today_completed_articles: int = 0
+    listening_favorite_count: int = 0
 
 
 class CompletionResponse(PublicModel):
@@ -238,6 +241,7 @@ class DailyRecord(CardSummary):
 class CheckinRecord(PublicModel):
     date: str
     card_count: int
+    article_count: int = 0
 
 
 class DailyRecords(PublicModel):
@@ -260,6 +264,7 @@ class Overview(PublicModel):
     user_count: int
     new_users_today: int
     published_card_count: int
+    published_article_count: int = 0
     statistical_date: str
     updated_at: str
 
