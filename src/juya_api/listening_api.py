@@ -60,7 +60,11 @@ def row_view(row):
         "sort_order": row.sort_order,
         "revision": row.revision,
         **(
-            {"category_id": row.category_id, "description": row.description}
+            {
+                "category_id": row.category_id,
+                "description": row.description,
+                "name_en": row.name_en or "",
+            }
             if isinstance(row, Topic)
             else {"name_en": row.name_en}
         ),
@@ -167,7 +171,13 @@ def admin_routes():
             service.catalog_lock(db)
             if not db.get(Category, body.category_id):
                 raise DomainError(422, "listening_category_missing", "请选择有效分类")
-            row = Topic(**{**body.model_dump(), "description": body.description or ""})
+            row = Topic(
+                **{
+                    **body.model_dump(),
+                    "description": body.description or "",
+                    "name_en": body.name_en or "",
+                }
+            )
             db.add(row)
             db.flush()
             service.changed(db)
@@ -203,6 +213,8 @@ def admin_routes():
             row.name, row.category_id, row.sort_order = body.name, body.category_id, body.sort_order
             if body.description is not None:
                 row.description = body.description
+            if body.name_en is not None:
+                row.name_en = body.name_en
             row.revision += 1
             service.changed(db)
             return row_view(row)
@@ -617,6 +629,29 @@ def admin_routes():
 
         return deliver(playback_medium(db, medium), request)
 
+    @router.get("/articles/{article_id}/published", response_model=C.Article)
+    def published_article(
+        article_id: str,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """Read the active publication for administrator history without learner mutations."""
+        row, version = service.admin_publication(db, article_id)
+        return service.published_article_view(db, row, version)
+
+    @router.get("/articles/{article_id}/published/media/{media_id}")
+    @router.head("/articles/{article_id}/published/media/{media_id}", include_in_schema=False)
+    def published_media(
+        article_id: str,
+        media_id: str,
+        request: Request,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """Stream only media referenced by the article's current effective publication."""
+        _, version = service.admin_publication(db, article_id)
+        return deliver(media.controlled_media(db, version.payload, media_id), request)
+
     @router.get("/articles/{article_id}/timeline", response_model=C.Timeline)
     def timeline(
         article_id: str,
@@ -911,7 +946,9 @@ def mini_routes():
         return {
             "categories": categories,
             "topics": topics,
-            "continue_learning": service.summary(db, target, user.id, now) if target else None,
+            "continue_learning": service.summary(db, target, user.id, now, include_progress=True)
+            if target
+            else None,
             "configured": service.policy_view(db)["configured"],
             "authorization": authorization(db, user.id, now),
             "free_count": listening_policy["free_count"],
@@ -1084,7 +1121,9 @@ def mini_routes():
             snapshot = data["ids"]
         target = service.next_row(db, user.id, row, now, snapshot=snapshot)
         return {
-            "article": service.summary(db, target, user.id, now) if target else None,
+            "article": service.summary(db, target, user.id, now, include_progress=True)
+            if target
+            else None,
             "ended": target is None,
         }
 

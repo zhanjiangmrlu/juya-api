@@ -319,3 +319,21 @@ CLI commitb0e51a9 adds two further end-to-end boundary regressions: CI bundle pa
 ## 2026-10-28 MacBook接续提交
 
 用户新增明确授权把当前三端代码提交推送远程test，用另一台MacBook继续；CLI本轮无改动，仍不授权部署或远程迁移。Mac已有四项目环境，保留原配置和本地数据，备份后只做增量迁移；完整需求由用户自行同步，版本/hash引用以及报告、追踪和9张截图已归档到docs/handoff/revision17，根HANDOFF.md给出Mac本地初始化/启动及待办；不依赖Windows父目录或私密runner。提交前新鲜SQLite471通过/32跳过/15既有Windows失败，失败标识与前轮完全相同；后台完整188、小程序383通过，检查/构建通过。详细计数和边界见[提交前验证](../handoff/revision17/pre-push-verification.md)。
+
+## 2026-10-28 修订17还原度修复：主题英文名、用户发布预览与统计
+
+本域按修复计划Task3及A-05—A-08实施，仓库保留原test分支，未提交或推送。0023只兼容新增`listening_topics.name_en VARCHAR(300) NOT NULL DEFAULT ''`；输入省略/None不清空已有英文名，输出为空串兼容旧行，中文名和简介保持。两角色ready最低迁移同步为0023。迁移测试在临时SQLite验证旧表和中文简介保留，并检查MySQL离线DDL仅新增列；本域没有在业务库上运行迁移，实际本地备份和0023升级由父任务单独记录。
+
+管理员新增`GET /api/admin/v1/listening/articles/{id}/published`，复用Article形状，仅读取当前有效ListeningVersion.payload，并使用发布主题/顺序、发布正文的词数与时间轴，草稿元数据为空；独立`published/media/{media_id}` GET/HEAD只放行当前发布快照引用的受控媒体。无发布版、下线/删除、跨文章/新草稿素材均不开放；不调用学习者会话和学习写操作。用户已学听读与打卡来源均改为`/listening/:id/published-preview`，页面只读复用ListeningPreviewPanel，媒体走发布专用前缀。
+
+A14列表恢复场景/听读独立列、紧凑搜索/三类筛选、刷新及共用授权说明；A15恢复2×2指标、资料分隔行和值右对齐、独立授权审计表（管理员、动作、前后状态）、学习记录分卡与共同授权文案；A16统计为36px数字及191px紧凑卡，口径说明使用白底圆角描边容器。设计实现依据A14/A15/A16高保真上下文及对应PNG；浏览器视觉与真实已有历史联动由父任务继续验收。
+
+为设计中的真实数据展示，Summary兼容增加`audio_duration_seconds`和可空`progress`、`reading_paragraph`；继续卡只读取本人当前发布版本进度，换版后进度重置且无旧段落号。段落按原始codepoint与非空CRLF/CR/LF行定位，缺保存进度返回null。场景PersonalSummary增加`favorited_at`，只使用现有Favorite.created_at。两角色OpenAPI及两前端JSON/生成TS均通过既有脚本重新生成并格式化。
+
+最终新鲜验证：API `ruff check .`通过、`ruff format --check .`248文件通过、`mypy src`75源文件通过、完整`pytest -q` **493通过/32项真实MySQL或Redis环境依赖跳过**（119.29秒）。完整命令PATH包含本机已有`.tools/ffmpeg/bin`；自动化均为临时SQLite。新增HTTP测试验证发布/草稿差异、换版和跨文章媒体隔离、角色凭证隔离、无用户学习写入、不可用状态、英文名往返、继续进度和CRLF/emoji段落偏移。后台完整测试**200通过**，最终整库`pnpm check`及`pnpm build`通过；jsdom仍输出既有HTMLMediaElement.pause未实现提示。未连接真实MySQL/Redis做本轮并发验证，未启动服务、控制浏览器或操作远程。
+
+## 2026-10-29 提交远程test前复核
+
+用户明确要求将本轮代码提交到远程test。小程序提交014e95a、后台提交22c3a6e，CLI无改动；配套清单repository-set.json已更新。前端完整检查及测试环境构建通过，小程序398项/后台207项通过；API Ruff、格式248文件、mypy75源文件通过，完整pytest493通过/32真实MySQL或Redis环境依赖跳过（120.27秒）。两前端与API OpenAPI JSON语义一致。
+
+本轮只提交和推送源码，不部署、上传体验版或迁移远程数据库。新代码最低schema为0023；本机业务SQLite已先备份再增量升级，另一台机器须核验并备份其已有本地数据库后迁移。开发者工具此前停留在类型解析失败后的旧开发产物，重新启动本地watch后已现场确认M03分类胶囊/选中底色/主题分隔行，并验证源码不变时再次热编译成功。iPhone/Android真机、真实ASR和MySQL/Redis并发仍未验；导入进度保持明确的合并请求进度，不冒充各包独立传输进度。

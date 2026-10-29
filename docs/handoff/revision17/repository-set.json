@@ -1,14 +1,14 @@
 {
-  "date": "2026-10-28",
-  "purpose": "Existing MacBook four-project incremental handoff; local database only.",
+  "date": "2026-10-29",
+  "purpose": "Revision17 design repairs on test; source synchronization only, no deployment or remote database migration.",
   "repositories": {
     "juya-admin": {
       "branch": "test",
-      "commit": "e9e498d746e6d60cca588a50f22231f9846a0901"
+      "commit": "22c3a6e95244a76f0e4db0d4b16002107222dc79"
     },
     "juya-miniapp": {
       "branch": "test",
-      "commit": "1be8cd5c477cf5aabd7b19228b8ce2314c60f66d"
+      "commit": "014e95ad9a56e64667de719acfaeb8e5c21e4a9f"
     },
     "juya-cli": {
       "branch": "test",

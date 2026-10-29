@@ -54,6 +54,7 @@ class Category(CategoryUpdate):
 
 
 class TopicInput(Input):
+    name_en: str | None = Field(default=None, max_length=300)
     name: str = Field(min_length=1, max_length=160)
     sort_order: StrictInt = 0
     category_id: str = Field(min_length=1, max_length=36)
@@ -65,6 +66,7 @@ class TopicUpdate(TopicInput):
 
 
 class Topic(TopicUpdate):
+    name_en: str = ""
     id: str
     description: str = ""
 
@@ -136,6 +138,9 @@ class ArticleState(BaseModel):
 
 
 class Summary(BaseModel):
+    audio_duration_seconds: float | None = None
+    reading_paragraph: int | None = None
+    progress: "Progress | None" = None
     id: str
     content_type: Literal["listening"] = "listening"
     topic_id: str

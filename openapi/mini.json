@@ -10088,6 +10088,31 @@
     "schemas": {
       "ArticleDetail": {
         "properties": {
+          "audio_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Duration Seconds"
+          },
+          "reading_paragraph": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reading Paragraph"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/Progress"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -10200,9 +10225,6 @@
           "payload": {
             "$ref": "#/components/schemas/ListeningPayload"
           },
-          "progress": {
-            "$ref": "#/components/schemas/Progress"
-          },
           "timeline": {
             "$ref": "#/components/schemas/Timeline"
           },
@@ -10217,6 +10239,7 @@
         },
         "type": "object",
         "required": [
+          "progress",
           "id",
           "topic_id",
           "title_zh",
@@ -10229,7 +10252,6 @@
           "access",
           "state",
           "payload",
-          "progress",
           "timeline",
           "queue_token",
           "audio_duration"
@@ -11897,6 +11919,38 @@
       },
       "ListeningDailyRecord": {
         "properties": {
+          "audio_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Duration Seconds"
+          },
+          "reading_paragraph": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reading Paragraph"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Progress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -12618,6 +12672,17 @@
           },
           "state": {
             "$ref": "#/components/schemas/CardState"
+          },
+          "favorited_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Favorited At"
           }
         },
         "type": "object",
@@ -13383,6 +13448,38 @@
       },
       "Summary": {
         "properties": {
+          "audio_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Duration Seconds"
+          },
+          "reading_paragraph": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reading Paragraph"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Progress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -13641,6 +13738,11 @@
       },
       "TopicProgress": {
         "properties": {
+          "name_en": {
+            "type": "string",
+            "title": "Name En",
+            "default": ""
+          },
           "name": {
             "type": "string",
             "maxLength": 160,

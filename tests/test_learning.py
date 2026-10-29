@@ -102,6 +102,9 @@ def test_browsing_and_favorites_do_not_count_as_learning(admin, mini):
     assert mini.get("/api/mini/v1/me/statistics").json()["completed_cards"] == 0
     assert mini.get("/api/mini/v1/me/statistics").json()["total_checkin_days"] == 0
     assert mini.get("/api/mini/v1/favorites").json()["total"] == 1
+    assert mini.get("/api/mini/v1/favorites").json()["items"][0]["favorited_at"] == (
+        "2026-10-17T08:00:00.000000Z"
+    )
     assert mini.delete(f"/api/mini/v1/favorites/{card['id']}", headers=key()).status_code == 200
     assert mini.get("/api/mini/v1/favorites").json()["total"] == 0
 

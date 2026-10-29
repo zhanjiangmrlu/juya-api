@@ -227,6 +227,7 @@ class CardSummary(PublicModel):
 
 class PersonalSummary(CardSummary):
     state: CardState
+    favorited_at: str | None = None
 
 
 class LearningRecord(CardSummary):

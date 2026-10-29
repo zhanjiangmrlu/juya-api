@@ -20,6 +20,7 @@ class ListeningCategory(Base):
 
 class ListeningTopic(Base):
     __tablename__ = "listening_topics"
+    name_en: Mapped[str] = mapped_column(String(300), default="", server_default="")
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=identifier)
     category_id: Mapped[str] = mapped_column(ForeignKey("listening_categories.id"), index=True)
     name: Mapped[str] = mapped_column(String(160))

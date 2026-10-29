@@ -1,5 +1,6 @@
 """Listening content, one current authorization decision, and transactional learning facts."""
 
+import re
 from datetime import timedelta
 
 from sqlalchemy import func, select
@@ -159,6 +160,35 @@ def published(db, user_id, article_id, now, version_id=None, *, lookup=False, lo
     return article, version
 
 
+def admin_publication(db, article_id):
+    """Resolve the active immutable version without requiring a learner or recording activity."""
+    row = require_article(db, article_id)
+    version = db.get(Version, row.version_id) if row.version_id else None
+    if row.status != "published" or not version or version.article_id != row.id:
+        raise DomainError(404, "listening_publication_missing", "当前没有可查看的发布内容")
+    return row, version
+
+
+def published_article_view(db, row, version):
+    """Render the publication with the shared Article contract and no draft metadata."""
+    return {
+        "id": row.id,
+        "topic_id": row.topic_id,
+        "status": "published",
+        "revision": row.revision,
+        "version_id": version.id,
+        "topic_order": row.topic_order,
+        "global_order": row.global_order,
+        "payload": version.payload,
+        "word_count": len(body_tokens(version.payload["body_en"])),
+        "timeline": timeline_view(db, version.payload),
+        "created_at": timestamp(row.created_at),
+        "deleted_at": None,
+        "published_topic_id": row.topic_id,
+        "published_topic_order": row.topic_order,
+    }
+
+
 def validate_payload(db, payload, *, resource_owner=None, resource_ids=None):
     tokens = {(m.start(), m.end()): m.group() for m in body_tokens(payload["body_en"])}
     seen = set()
@@ -242,11 +272,24 @@ def state(db, user_id, article_id, now):
     }
 
 
-def summary(db, row, user_id, now):
+def reading_paragraph(body, progress):
+    """Locate saved codepoint progress in nonempty lines without normalizing CR/LF offsets."""
+    if not progress or progress["updated_at"] is None:
+        return None
+    spans = [match for match in re.finditer(r"[^\r\n]+", body) if match.group().strip()]
+    for number, span in enumerate(spans, 1):
+        if progress["reading_position"] < span.end():
+            return number
+    return len(spans) or None
+
+
+def summary(db, row, user_id, now, *, include_progress=False):
     version = db.get(Version, row.version_id) if row.version_id else None
     payload = version.payload if version else row.payload
     available = row.status == "published" and not row.deleted_at and version is not None
     image = db.get(Media, payload["image_id"]) if payload.get("image_id") else None
+    audio = db.get(Media, payload["audio_id"]) if available and payload.get("audio_id") else None
+    progress = progress_view(db, user_id, row) if include_progress and available else None
     # Thumbnail route resolves only the small derivative, never the protected original.
     thumbnail = (
         f"/api/mini/v1/listening/articles/{row.id}/thumbnail?version_id={version.id}"
@@ -264,6 +307,9 @@ def summary(db, row, user_id, now):
         "version_id": version.id if available and version else None,
         "available": bool(available),
         "thumbnail_url": thumbnail,
+        "audio_duration_seconds": audio.duration if audio and audio.state == "ready" else None,
+        "progress": progress,
+        "reading_paragraph": reading_paragraph(payload["body_en"], progress),
         "access": access(db, user_id, row, now),
         "state": state(db, user_id, row.id, now),
     }
@@ -496,6 +542,7 @@ def topics(db, user_id, now, category_id=None):
                 {
                     "id": row.id,
                     "name": row.name,
+                    "name_en": row.name_en or "",
                     "description": row.description,
                     "category_id": row.category_id,
                     "sort_order": row.sort_order,

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from .access_service import require_access
 from .content_models import Card
 from .content_service import published_card
+from .database import timestamp
 from .dependencies import database, learner, operation_key
 from .errors import DomainError
 from .learning_models import Favorite
@@ -137,6 +138,7 @@ def routes():
             "items": [
                 {
                     **card_summary(db, row.card_id, user.id),
+                    "favorited_at": timestamp(row.created_at),
                     "state": card_state(db, user.id, row.card_id, request.app.state.clock()),
                 }
                 for row in rows

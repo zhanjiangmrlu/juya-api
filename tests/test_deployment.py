@@ -33,13 +33,13 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
         db.execute(text("UPDATE alembic_version SET version_num='0014'"))
     assert client.get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 503
-    for revision in ("0015", "0016", "0017", "0018", "0019", "0020", "0021"):
+    for revision in ("0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"):
         with sessions.begin() as db:
             db.execute(text("UPDATE alembic_version SET version_num=:r"), {"r": revision})
         assert client.get("/health/ready").status_code == 503
         assert system["mini"].get("/health/ready").status_code == 503
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0022'"))
+        db.execute(text("UPDATE alembic_version SET version_num='0023'"))
         db.get(SettingCounter, "schema_contract").value = 2
     assert client.get("/health/ready").status_code == 200
     assert system["mini"].get("/health/ready").status_code == 200

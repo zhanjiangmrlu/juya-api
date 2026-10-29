@@ -94,6 +94,28 @@ def test_listening_expansion_preserves_every_existing_table_row(tmp_path, monkey
     command.upgrade(config, "0022")
     assert "name_en" in {c["name"] for c in inspect(engine).get_columns("listening_categories")}
     assert "description" in {c["name"] for c in inspect(engine).get_columns("listening_topics")}
+    with engine.begin() as db:
+        db.execute(
+            text(
+                "INSERT INTO listening_categories (id,name,sort_order,revision) "
+                "VALUES ('cat','日常',0,1)"
+            )
+        )
+        db.execute(
+            text(
+                "INSERT INTO listening_topics "
+                "(id,category_id,name,description,sort_order,revision) "
+                "VALUES ('topic','cat','午间','原简介',0,1)"
+            )
+        )
+    command.upgrade(config, "0023")
+    with engine.connect() as db:
+        assert db.execute(
+            text("SELECT name,description,name_en FROM listening_topics WHERE id='topic'")
+        ).one() == ("午间", "原简介", "")
+        assert {
+            name: db.execute(select(old.tables[name])).mappings().all() for name in before
+        } == before
     command.check(config)
     engine.dispose()
 
@@ -112,3 +134,16 @@ def test_listening_mysql_offline_ddl_is_pure_additive_and_microsecond(monkeypatc
     assert "UPDATE users" not in ddl and "UPDATE cards" not in ddl
     assert "FOREIGN KEY(user_id) REFERENCES users (id)" in ddl
     assert "CREATE INDEX ix_listening_jobs_state" in ddl
+
+
+def test_topic_english_name_mysql_migration_only_adds_compatible_column(monkeypatch):
+    monkeypatch.setenv("JUYA_DATABASE_URL", "mysql+pymysql://fixture:fixture@invalid/fixture")
+    monkeypatch.delenv("JUYA_MIGRATION_DATABASE_URL", raising=False)
+    config = Config("alembic.ini")
+    output = StringIO()
+    config.output_buffer = output
+    command.upgrade(config, "0022:0023", sql=True)
+    ddl = output.getvalue()
+    assert "ALTER TABLE listening_topics ADD COLUMN name_en VARCHAR(300) NOT NULL DEFAULT ''" in ddl
+    assert "DROP" not in ddl and "CREATE TABLE" not in ddl
+    assert "UPDATE listening_topics" not in ddl and "UPDATE users" not in ddl
