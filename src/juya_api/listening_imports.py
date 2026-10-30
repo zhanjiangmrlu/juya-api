@@ -62,11 +62,11 @@ class Selection(C.Revision):
     candidate_ids: list[str] = Field(min_length=1, max_length=1000)
 
 
-class ImportSelection(Selection):
+class ListeningImportSelection(Selection):
     submit_action: Literal["draft", "publish"] = "draft"
 
 
-class ImportConfirmation(C.Confirmation):
+class ListeningImportConfirmation(C.Confirmation):
     submit_action: Literal["draft", "publish"] = "draft"
 
 
@@ -150,11 +150,13 @@ class SaveItem(C.Input):
 class SaveResult(C.Input):
     batch: Batch
     items: list[SaveItem]
+    submit_action: Literal["draft", "publish"] = "draft"
 
 
 class DocxPreview(C.Input):
     payload: C.ListeningPayload
     hints: dict[str, str]
+    topic_id: str | None = None
 
 
 def owned(db, batch_id, admin_id, revision=None):
@@ -698,7 +700,7 @@ def routes():
 
         def execute():
             payload, hints = parse_docx(raw)
-            return {"payload": payload, "hints": hints}
+            return {"payload": payload, "hints": hints, "topic_id": matched_topic(db, hints)}
 
         return operate(
             db,
@@ -1077,7 +1079,7 @@ def routes():
     @router.post("/imports/{batch_id}/preview", response_model=ImportPreview)
     def preview(
         batch_id: str,
-        body: ImportSelection,
+        body: ListeningImportSelection,
         request: Request,
         admin=Depends(administrator),
         key=Depends(operation_key),
@@ -1151,7 +1153,7 @@ def routes():
     @router.post("/imports/{batch_id}/save", response_model=SaveResult)
     def save(
         batch_id: str,
-        body: ImportConfirmation,
+        body: ListeningImportConfirmation,
         request: Request,
         admin=Depends(administrator),
         key=Depends(operation_key),
@@ -1304,6 +1306,13 @@ def routes():
                         }
                     )
                 except DomainError as error:
+                    row.resources = {
+                        **row.resources,
+                        "_metadata": {
+                            **row.resources.get("_metadata", {}),
+                            "submit_action": body.submit_action,
+                        },
+                    }
                     results.append(
                         {"candidate_id": row.id, "status": "failed", "error": error.code}
                     )
@@ -1320,7 +1329,7 @@ def routes():
             batch.revision += 1
             service.audit(db, admin.id, "import.save", now)
             db.flush()
-            return {"batch": view(db, batch), "items": results}
+            return {"batch": view(db, batch), "items": results, "submit_action": body.submit_action}
 
         return operate(
             db,

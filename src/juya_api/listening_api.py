@@ -345,7 +345,14 @@ def admin_routes():
                         }
                     )
                 except DomainError as error:
-                    results.append({"id": item.id, "status": "failed", "error": error.code})
+                    results.append(
+                        {
+                            "id": item.id,
+                            "status": "failed",
+                            "error": error.code,
+                            "message": error.message,
+                        }
+                    )
             service.audit(db, admin.id, "articles.batch_publish", request.app.state.clock())
             return {"items": results}
 

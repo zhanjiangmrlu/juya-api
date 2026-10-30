@@ -136,6 +136,7 @@ class Article(BaseModel):
     timeline: Timeline
     created_at: str
     deleted_at: str | None
+    has_unpublished_changes: bool = False
     batch_id: str | None = None
     draft_topic_id: str | None = None
     draft_topic_order: int | None = None
@@ -301,9 +302,14 @@ class CatalogBatchDeleteResult(BaseModel):
     items: list[CatalogDeleteResult]
 
 
+class CatalogOrderInput(Input):
+    items: list[DeleteItem] = Field(min_length=1, max_length=50000)
+
+
 class PublishResult(DeleteResult):
     published_version_id: str | None = None
     revision: int | None = None
+    message: str | None = None
 
 
 class BatchPublishResult(BaseModel):

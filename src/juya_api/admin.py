@@ -41,7 +41,7 @@ def create_app(
     app.include_router(operation_routes("admin"))
     app.include_router(pronunciation_routes("admin"))
     app.include_router(feedback_routes("admin"))
-    app.include_router(listening_routes())
     app.include_router(listening_catalog_routes())
+    app.include_router(listening_routes())
     app.include_router(listening_import_routes())
     return app

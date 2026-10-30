@@ -84,6 +84,54 @@ def routes():
     router = APIRouter(prefix="/api/admin/v1/listening", tags=["listening administration"])
 
     def register(resource, model):
+        @router.put(f"/{resource}/order", response_model=C.CatalogOrderInput)
+        def save_order(
+            body: C.CatalogOrderInput,
+            request: Request,
+            admin=Depends(administrator),
+            key=Depends(operation_key),
+            db: Session = Depends(database, scope="function"),
+        ):
+            def execute():
+                service.catalog_lock(db)
+                rows: list[ListeningCategory | ListeningTopic] = list(
+                    db.scalars(
+                        select(model).with_for_update().execution_options(populate_existing=True)
+                    )
+                )
+                indexed = {row.id: row for row in rows}
+                if (
+                    len(body.items) != len(indexed)
+                    or len({item.id for item in body.items}) != len(indexed)
+                    or any(
+                        item.id not in indexed or indexed[item.id].revision != item.revision
+                        for item in body.items
+                    )
+                ):
+                    raise DomainError(
+                        409, "listening_catalog_order_changed", "分类或主题已变化，请刷新后重新排序"
+                    )
+                results = []
+                for position, item in enumerate(body.items):
+                    row = indexed[item.id]
+                    row.sort_order, row.revision = position, row.revision + 1
+                    results.append({"id": row.id, "revision": row.revision})
+                db.flush()
+                service.changed(db)
+                service.audit(db, admin.id, resource + ".order", request.app.state.clock())
+                return {"items": results}
+
+            return operate(
+                db,
+                admin,
+                "admin",
+                key,
+                "listening." + resource + ".order",
+                body.model_dump(),
+                request.app.state.clock(),
+                execute,
+            )
+
         @router.post(f"/{resource}/batch-delete", response_model=C.CatalogBatchDeleteResult)
         def batch_delete(
             body: C.BatchDelete,

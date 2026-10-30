@@ -81,6 +81,32 @@ def test_deleted_article_is_a_reported_historical_catalog_reference(admin):
     assert response.json()["error"]["details"]["references"]["deleted_articles"] == 1
 
 
+def test_catalog_reordering_preserves_names_and_checks_the_complete_versioned_set(admin):
+    first = post(admin, A + "/categories", {"name": "先显示"})
+    second = post(admin, A + "/categories", {"name": "后显示"})
+    response = admin.put(
+        A + "/categories/order",
+        headers=key(),
+        json={
+            "items": [
+                {"id": second["id"], "revision": second["revision"]},
+                {"id": first["id"], "revision": first["revision"]},
+            ]
+        },
+    )
+    assert response.status_code == 200, response.text
+    assert [row["name"] for row in admin.get(A + "/categories").json()["items"]] == [
+        "后显示",
+        "先显示",
+    ]
+    stale = admin.put(
+        A + "/categories/order",
+        headers=key(),
+        json={"items": [{"id": first["id"], "revision": first["revision"]}]},
+    )
+    assert stale.status_code == 409
+
+
 def test_free_count_saves_directly_with_version_and_idempotency(admin):
     current = admin.get(A + "/free-policy").json()
     headers = key()
@@ -102,3 +128,47 @@ def test_direct_free_count_rejects_non_integer_values(admin, count):
         json={"free_count": count, "revision": current["revision"]},
     )
     assert response.status_code == 422
+
+
+@pytest.mark.mysql
+def test_catalog_delete_and_new_reference_have_one_winner(admin, system):
+    if system["engine"].dialect.name != "mysql":
+        pytest.skip("Dedicated real MySQL required")
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from fastapi.testclient import TestClient
+
+
+    category = post(admin, A + "/categories", {"name": "并发引用"})
+    barrier = Barrier(2)
+    with TestClient(admin.app, base_url="https://testserver") as second:
+        login = second.post(
+            "/api/admin/v1/auth/login",
+            json={"username": "admin", "password": "correct-test-password"},
+        ).json()
+        second.headers["X-CSRF-Token"] = login["csrf_token"]
+
+        def remove():
+            barrier.wait()
+            return admin.post(
+                A + f"/categories/{category['id']}/delete",
+                headers=key(),
+                json={"revision": category["revision"]},
+            )
+
+        def create():
+            barrier.wait()
+            return second.post(
+                A + "/topics",
+                headers=key(),
+                json={"category_id": category["id"], "name_en": "New reference"},
+            )
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            a, b = pool.submit(remove), pool.submit(create)
+            deleted, created = a.result(), b.result()
+    assert (deleted.status_code, created.status_code) in [(200, 422), (409, 200)]
+    categories = admin.get(A + "/categories").json()["items"]
+    topics = admin.get(A + "/topics").json()["items"]
+    assert all(any(c["id"] == t["category_id"] for c in categories) for t in topics)

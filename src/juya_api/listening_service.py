@@ -241,6 +241,7 @@ def publication_errors(db, article):
 
 
 def article_view(db, row):
+    version = db.get(Version, row.version_id) if row.version_id else None
     return {
         "id": row.id,
         "topic_id": row.draft_topic_id or row.topic_id,
@@ -256,6 +257,12 @@ def article_view(db, row):
         "timeline": timeline_view(db, row.payload),
         "created_at": timestamp(row.created_at),
         "deleted_at": timestamp(row.deleted_at),
+        "has_unpublished_changes": bool(
+            row.status != "published"
+            or not version
+            or version.payload != row.payload
+            or row.draft_topic_id
+        ),
         "batch_id": row.batch_id,
         "draft_topic_id": row.draft_topic_id,
         "draft_topic_order": row.draft_topic_order,

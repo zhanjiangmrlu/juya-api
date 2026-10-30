@@ -27,11 +27,13 @@ def test_downloaded_template_parses_with_the_same_canonical_fields(admin):
 def test_single_publish_needs_no_manual_preview_and_replays_one_version(admin):
     _, topic = catalog_topic(admin)
     row = article(admin, topic["id"])
+    assert admin.get(A + f"/articles/{row['id']}").json().get("has_unpublished_changes") is True
     headers = key()
     path = A + f"/articles/{row['id']}/publish"
     response = admin.post(path, headers=headers, json={"revision": row["revision"]})
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "published"
+    assert response.json().get("has_unpublished_changes") is False
     assert (
         admin.post(path, headers=headers, json={"revision": row["revision"]}).json()
         == response.json()
@@ -74,6 +76,19 @@ def test_template_alias_and_english_ownership_are_matched_without_creating_catal
     assert candidate["state"] == "complete", candidate["errors"]
     assert candidate["topic_id"] == topic["id"]
     assert len(admin.get(A + "/topics").json()["items"]) == 1
+    single = admin.post(
+        A + "/docx-preview",
+        headers=key(),
+        files={
+            "file": (
+                "content.docx",
+                content.getvalue(),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+        },
+    )
+    assert single.status_code == 200
+    assert single.json().get("topic_id") == topic["id"]
 
 
 def test_import_publish_is_atomic_per_candidate_and_recoverable(admin, mini):
@@ -111,6 +126,10 @@ def test_import_publish_is_atomic_per_candidate_and_recoverable(admin, mini):
     assert result["items"][0]["published_version_id"]
     assert admin.get(A + "/articles").json()["total"] == 1
     assert result["batch"]["mode"] == "zip"
+    failed = next(
+        candidate for candidate in result["batch"]["candidates"] if candidate["id"] == bad["id"]
+    )
+    assert failed["submit_action"] == "publish" and failed["article_id"] is None
     assert (
         admin.post(A + f"/imports/{batch['id']}/save", headers=headers, json=body).json() == result
     )
