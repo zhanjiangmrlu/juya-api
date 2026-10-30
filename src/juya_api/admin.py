@@ -11,6 +11,7 @@ from .feedback_safety import FeedbackSafetyGateway
 from .import_api import routes as import_routes
 from .list_thumbnails import ListThumbnails
 from .listening_api import admin_routes as listening_routes
+from .listening_catalog import routes as listening_catalog_routes
 from .listening_imports import routes as listening_import_routes
 from .media_api import admin_routes as media_routes
 from .operation_api import routes as operation_routes
@@ -41,5 +42,6 @@ def create_app(
     app.include_router(pronunciation_routes("admin"))
     app.include_router(feedback_routes("admin"))
     app.include_router(listening_routes())
+    app.include_router(listening_catalog_routes())
     app.include_router(listening_import_routes())
     return app

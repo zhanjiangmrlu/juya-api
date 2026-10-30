@@ -43,7 +43,12 @@ def statistics(db, user_id: str, now: datetime) -> dict:
         previous = day
     if dates and dates[-1] in {today, today - timedelta(days=1)}:
         current = run
-    from .listening_models import ListeningCompletion, ListeningDaily, ListeningFavorite
+    from .listening_models import (
+        ListeningArticle,
+        ListeningCompletion,
+        ListeningDaily,
+        ListeningFavorite,
+    )
 
     completion_times = [
         db.scalar(
@@ -74,7 +79,8 @@ def statistics(db, user_id: str, now: datetime) -> dict:
         "listening_favorite_count": db.scalar(
             select(func.count())
             .select_from(ListeningFavorite)
-            .where(ListeningFavorite.user_id == user_id)
+            .join(ListeningArticle, ListeningFavorite.article_id == ListeningArticle.id)
+            .where(ListeningFavorite.user_id == user_id, ListeningArticle.deleted_at.is_(None))
         )
         or 0,
         "date": today.isoformat(),
@@ -92,7 +98,10 @@ def statistics(db, user_id: str, now: datetime) -> dict:
         ),
         "last_studied_at": timestamp(latest_completion),
         "favorite_count": db.scalar(
-            select(func.count()).select_from(Favorite).where(Favorite.user_id == user_id)
+            select(func.count())
+            .select_from(Favorite)
+            .join(Card, Favorite.card_id == Card.id)
+            .where(Favorite.user_id == user_id, Card.deleted_at.is_(None))
         ),
     }
 
@@ -236,11 +245,9 @@ def checkin_records(db, user_id: str, page: int, limit: int):
                 "card_count": db.scalar(
                     select(func.count())
                     .select_from(DailyLearning)
-                    .join(Card, DailyLearning.card_id == Card.id)
                     .where(
                         DailyLearning.user_id == user_id,
                         DailyLearning.date == row.date,
-                        Card.deleted_at.is_(None),
                     )
                 ),
             }

@@ -28,7 +28,7 @@ def test_topic_english_round_trip_preserves_legacy_updates(admin, mini):
             "name": "午间",
             "category_id": created["category_id"],
             "revision": created["revision"],
-            "name_en": None,
+            "name_en": "A short break",
         },
     )
     assert updated.status_code == 200, updated.text
@@ -39,7 +39,7 @@ def test_topic_english_round_trip_preserves_legacy_updates(admin, mini):
     assert mini.get(M + "/home").json()["topics"][0]["name_en"] == "A short break"
     assert mini.get(M + "/topics").json()["items"][0]["name_en"] == "A short break"
     assert live["topic_id"] == created["id"]
-    assert parent["name_en"] == ""
+    assert parent["name_en"] == "A short break"
 
 
 def test_admin_preview_reads_publication_and_only_its_media(admin, mini, system):

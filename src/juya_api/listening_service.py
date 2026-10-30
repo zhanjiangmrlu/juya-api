@@ -412,16 +412,26 @@ def preview_article(db, settings, admin_id, row, now):
 
 
 def publish_article(db, settings, admin_id, row, body, now):
-    data = read_preview(settings, body.preview_token, admin_id, "listening.publish", now)
-    if (
-        data["article_id"] != row.id
-        or data["revision"] != row.revision
-        or data["hash"] != fingerprint(row.payload)
-    ):
-        raise DomainError(409, "listening_preview_stale", "编辑稿已变化，请重新预览确认")
+    """Publish an explicit version-checked draft; optional old preview tokens stay validated."""
+    if body.preview_token is not None:
+        data = read_preview(settings, body.preview_token, admin_id, "listening.publish", now)
+        if (
+            data["article_id"] != row.id
+            or data["revision"] != row.revision
+            or data["hash"] != fingerprint(row.payload)
+        ):
+            raise DomainError(409, "listening_preview_stale", "编辑稿已变化，请重新核对")
     errors = publication_errors(db, row)
     if errors:
         raise DomainError(422, "listening_publish_invalid", "请补齐发布资料", errors)
+    current = db.get(Version, row.version_id) if row.version_id else None
+    if (
+        row.status == "published"
+        and current
+        and current.payload == row.payload
+        and not row.draft_topic_id
+    ):
+        return article_view(db, row)
     identity = ensure_timeline(db, row.payload, now)
     version = Version(article_id=row.id, payload=row.payload, input_hash=identity, published_at=now)
     db.add(version)
@@ -667,6 +677,16 @@ def save_free(db, settings, admin_id, token, now):
     ):
         raise DomainError(409, "listening_free_preview_stale", "免费名单已变化，请重新核对确认")
     row.free_count, row.revision = data["free_count"], row.revision + 1
+    db.flush()
+    return policy_view(db)
+
+
+def save_free_count(db, count, revision):
+    """Save an explicit M directly against the current policy revision and live catalog."""
+    row = catalog_lock(db)
+    if row.revision != revision:
+        raise DomainError(409, "listening_free_changed", "免费设置已变化，请刷新后重新保存")
+    row.free_count, row.revision = count, row.revision + 1
     db.flush()
     return policy_view(db)
 

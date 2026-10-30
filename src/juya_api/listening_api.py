@@ -313,6 +313,53 @@ def admin_routes():
     ):
         return batch_action(db, admin, key, body, "offline", request.app.state.clock())
 
+    @router.post("/articles/batch-publish", response_model=C.BatchPublishResult)
+    def batch_publish(
+        body: C.BatchDelete,
+        request: Request,
+        admin=Depends(administrator),
+        key=Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        def execute():
+            service.catalog_lock(db)
+            results = []
+            for item in body.items:
+                try:
+                    with db.begin_nested():
+                        row = service.require_article(db, item.id, item.revision, lock=True)
+                        result = service.publish_article(
+                            db,
+                            request.app.state.settings,
+                            admin.id,
+                            row,
+                            C.PublishInput(revision=item.revision),
+                            request.app.state.clock(),
+                        )
+                    results.append(
+                        {
+                            "id": item.id,
+                            "status": "success",
+                            "published_version_id": result["version_id"],
+                            "revision": result["revision"],
+                        }
+                    )
+                except DomainError as error:
+                    results.append({"id": item.id, "status": "failed", "error": error.code})
+            service.audit(db, admin.id, "articles.batch_publish", request.app.state.clock())
+            return {"items": results}
+
+        return operate(
+            db,
+            admin,
+            "admin",
+            key,
+            "listening.batch.publish",
+            body.model_dump(),
+            request.app.state.clock(),
+            execute,
+        )
+
     @router.get("/articles/{article_id}", response_model=C.Article)
     def read_article(
         article_id: str,
@@ -517,7 +564,7 @@ def admin_routes():
 
     @router.put("/free-policy", response_model=C.FreePolicy)
     def free_save(
-        body: C.Confirmation,
+        body: C.FreePolicyUpdate | C.Confirmation,
         request: Request,
         admin=Depends(administrator),
         key=Depends(operation_key),
@@ -526,13 +573,16 @@ def admin_routes():
         def execute():
             service.catalog_lock(db)
             before = service.policy_view(db)
-            result = service.save_free(
-                db,
-                request.app.state.settings,
-                admin.id,
-                body.preview_token,
-                request.app.state.clock(),
-            )
+            if isinstance(body, C.FreePolicyUpdate):
+                result = service.save_free_count(db, body.free_count, body.revision)
+            else:
+                result = service.save_free(
+                    db,
+                    request.app.state.settings,
+                    admin.id,
+                    body.preview_token,
+                    request.app.state.clock(),
+                )
             service.configuration_history(
                 db, admin.id, "free-policy", before, result, request.app.state.clock()
             )
@@ -704,7 +754,9 @@ def admin_routes():
     ):
         if not db.get(User, user_id):
             raise DomainError(404, "user_missing", "用户不存在")
-        return personal_page(db, user_id, "records", request.app.state.clock(), page, limit)
+        return personal_page(
+            db, user_id, "records", request.app.state.clock(), page, limit, include_deleted=True
+        )
 
     @router.get("/users/{user_id}/checkins/{day}", response_model=C.MixedDay)
     def user_checkin(
@@ -832,9 +884,14 @@ def timeline_change(db, admin, key, article_id, body, action, request):
     )
 
 
-def personal_page(db, user_id, kind, now, page, limit):
+def personal_page(db, user_id, kind, now, page, limit, *, include_deleted=False):
+    """Filter learner collections before totals/pagination while keeping admin history readable."""
     model = Favorite if kind == "favorites" else Completion
     query = select(model).where(model.user_id == user_id)
+    if not include_deleted:
+        query = query.join(Article, model.article_id == Article.id).where(
+            Article.deleted_at.is_(None)
+        )
     query = (
         query.order_by(Favorite.created_at.desc(), Favorite.article_id)
         if kind == "favorites"
@@ -861,7 +918,8 @@ def mixed_day(db, user_id, day, now):
     rows = list(
         db.scalars(
             select(Daily)
-            .where(Daily.user_id == user_id, Daily.date == day)
+            .join(Article, Daily.article_id == Article.id)
+            .where(Daily.user_id == user_id, Daily.date == day, Article.deleted_at.is_(None))
             .order_by(Daily.accepted_at.desc(), Daily.article_id)
         )
     )
@@ -872,12 +930,24 @@ def mixed_day(db, user_id, day, now):
         }
         for row in rows
     ]
+    from .learning_models import DailyLearning
+
     return {
         "date": day.isoformat(),
         "scene_items": scenes,
         "article_items": articles,
-        "card_count": len(scenes),
-        "article_count": len(articles),
+        "card_count": db.scalar(
+            select(func.count())
+            .select_from(DailyLearning)
+            .where(DailyLearning.user_id == user_id, DailyLearning.date == day)
+        )
+        or 0,
+        "article_count": db.scalar(
+            select(func.count())
+            .select_from(Daily)
+            .where(Daily.user_id == user_id, Daily.date == day)
+        )
+        or 0,
     }
 
 

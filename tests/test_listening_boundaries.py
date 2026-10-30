@@ -462,13 +462,19 @@ def test_category_english_and_topic_description_survive_older_update_requests(ad
     row = post(
         admin,
         A + "/topics",
-        {"name": "午间", "category_id": category["id"], "description": "用几分钟休息学习。"},
+        {
+            "name": "午间",
+            "name_en": "A short break",
+            "category_id": category["id"],
+            "description": "用几分钟休息学习。",
+        },
     )
     updated = admin.put(
         A + f"/topics/{row['id']}",
         headers=key(),
         json={
             "name": row["name"],
+            "name_en": row["name_en"],
             "category_id": row["category_id"],
             "sort_order": 1,
             "revision": row["revision"],

@@ -54,20 +54,32 @@ class Category(CategoryUpdate):
 
 
 class TopicInput(Input):
-    name_en: str | None = Field(default=None, max_length=300)
-    name: str = Field(min_length=1, max_length=160)
+    name_en: str = Field(min_length=1, max_length=300)
+    name: str = Field(default="", max_length=160)
     sort_order: StrictInt = 0
     category_id: str = Field(min_length=1, max_length=36)
     description: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("name_en")
+    @classmethod
+    def require_english(cls, value: str) -> str:
+        """Only explicit nonblank English names may be written; legacy reads stay valid."""
+        if not value.strip():
+            raise ValueError("请填写主题英文名称")
+        return value.strip()
 
 
 class TopicUpdate(TopicInput):
     revision: int = Field(ge=1)
 
 
-class Topic(TopicUpdate):
+class Topic(BaseModel):
+    name: str
     name_en: str = ""
     id: str
+    category_id: str
+    sort_order: int
+    revision: int
     description: str = ""
 
 
@@ -213,7 +225,7 @@ class NextArticle(BaseModel):
 
 
 class PublishInput(Revision):
-    preview_token: str
+    preview_token: str | None = None
 
 
 class ArticlePreview(BaseModel):
@@ -236,6 +248,10 @@ class OrderResult(BaseModel):
 
 class FreeCount(Input):
     free_count: StrictInt = Field(ge=0, le=2147483647)
+
+
+class FreePolicyUpdate(FreeCount):
+    revision: int = Field(ge=0)
 
 
 class Confirmation(Input):
@@ -274,6 +290,24 @@ class DeleteResult(BaseModel):
 
 class BatchDeleteResult(BaseModel):
     items: list[DeleteResult]
+
+
+class CatalogDeleteResult(DeleteResult):
+    references: dict[str, int] = Field(default_factory=dict)
+    message: str | None = None
+
+
+class CatalogBatchDeleteResult(BaseModel):
+    items: list[CatalogDeleteResult]
+
+
+class PublishResult(DeleteResult):
+    published_version_id: str | None = None
+    revision: int | None = None
+
+
+class BatchPublishResult(BaseModel):
+    items: list[PublishResult]
 
 
 class FavoriteResult(BaseModel):

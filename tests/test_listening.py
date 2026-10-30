@@ -18,7 +18,11 @@ def post(client, path, body):
 
 def topic(admin):
     category = post(admin, A + "/categories", {"name": "日常", "sort_order": 0})
-    return post(admin, A + "/topics", {"name": "午间", "category_id": category["id"]})
+    return post(
+        admin,
+        A + "/topics",
+        {"name": "午间", "name_en": "A short break", "category_id": category["id"]},
+    )
 
 
 def article(admin, topic_id=None, title="午间休息"):
@@ -136,7 +140,7 @@ def test_completion_receipt_cross_midnight_shared_checkin_and_deleted_history(ad
     post(admin, A + f"/articles/{first['id']}/delete", {"revision": first["revision"]})
     assert mini.get(M + f"/articles/{first['id']}").status_code in {403, 410}
     records = mini.get(M + "/records").json()
-    assert records["total"] == 1 and records["items"][0]["available"] is False
+    assert records["total"] == 0 and records["items"] == []
     assert mini.get(M + "/statistics").json()["completed_articles"] == 1
 
 

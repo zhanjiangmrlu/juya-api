@@ -127,8 +127,13 @@ def routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
-        query = select(Favorite).where(Favorite.user_id == user.id)
+        query = (
+            select(Favorite)
+            .join(Card, Favorite.card_id == Card.id)
+            .where(Favorite.user_id == user.id, Card.deleted_at.is_(None))
+        )
         total = db.scalar(select(func.count()).select_from(query.subquery()))
+        page = min(page, max(1, ((total or 0) + limit - 1) // limit))
         rows = db.scalars(
             query.order_by(Favorite.created_at.desc(), Favorite.card_id)
             .offset((page - 1) * limit)

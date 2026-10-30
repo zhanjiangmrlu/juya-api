@@ -140,7 +140,7 @@ def test_deleted_records_filtered_before_pagination_counts_and_new_queue(
     detail = mini.get(f"/api/mini/v1/me/checkins/{day}").json()
     assert detail["total"] == 2
     assert {item["id"] for item in detail["items"]} == {one["id"], cards[1]["id"]}
-    assert mini.get("/api/mini/v1/me/checkins").json()["items"][0]["card_count"] == 2
+    assert mini.get("/api/mini/v1/me/checkins").json()["items"][0]["card_count"] == 3
     assert mini.get("/api/mini/v1/me/statistics").json() == before
     body = {"source": source, "card_id": one["id"]}
     if source == "day":

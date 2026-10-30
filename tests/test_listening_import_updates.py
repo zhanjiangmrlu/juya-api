@@ -96,7 +96,13 @@ def test_batch_update_waits_for_confirmation_and_preserves_live_version_history_
         == saved.json()
     )
     assert saved.json()["items"] == [
-        {"candidate_id": cid, "status": "success", "article_id": target["id"], "error": None}
+        {
+            "candidate_id": cid,
+            "status": "success",
+            "article_id": target["id"],
+            "error": None,
+            "published_version_id": None,
+        }
     ]
     actual = admin.get(A + f"/articles/{target['id']}").json()
     assert actual["revision"] == target["revision"] + 1 and actual["version_id"] == old_version

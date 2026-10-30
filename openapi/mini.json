@@ -13738,41 +13738,35 @@
       },
       "TopicProgress": {
         "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
           "name_en": {
             "type": "string",
             "title": "Name En",
             "default": ""
           },
-          "name": {
+          "id": {
             "type": "string",
-            "maxLength": 160,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "sort_order": {
-            "type": "integer",
-            "title": "Sort Order",
-            "default": 0
+            "title": "Id"
           },
           "category_id": {
             "type": "string",
-            "maxLength": 36,
-            "minLength": 1,
             "title": "Category Id"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
           },
           "description": {
             "type": "string",
             "title": "Description",
             "default": ""
-          },
-          "revision": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Revision"
-          },
-          "id": {
-            "type": "string",
-            "title": "Id"
           },
           "total_articles": {
             "type": "integer",
@@ -13783,13 +13777,13 @@
             "title": "Completed Articles"
           }
         },
-        "additionalProperties": false,
         "type": "object",
         "required": [
           "name",
-          "category_id",
-          "revision",
           "id",
+          "category_id",
+          "sort_order",
+          "revision",
           "total_articles",
           "completed_articles"
         ],

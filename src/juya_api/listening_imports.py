@@ -6,6 +6,7 @@ from pathlib import PurePosixPath
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
+from fastapi.responses import Response
 from pydantic import Field, model_validator
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
@@ -20,7 +21,14 @@ from .errors import DomainError
 from .import_parser import W, checked_archive, member_bytes, paragraph_text, xml_document
 from .listening_api import mutate_timeline, page_view
 from .listening_media import save_media
-from .listening_models import ListeningArticle, ListeningCandidate, ListeningImport, ListeningTopic
+from .listening_models import (
+    ListeningArticle,
+    ListeningCandidate,
+    ListeningCategory,
+    ListeningImport,
+    ListeningTopic,
+)
+from .listening_template import template_document
 from .listening_timeline import ensure_timeline, timeline_view
 from .models import identifier
 from .response_contracts import Page
@@ -54,6 +62,14 @@ class Selection(C.Revision):
     candidate_ids: list[str] = Field(min_length=1, max_length=1000)
 
 
+class ImportSelection(Selection):
+    submit_action: Literal["draft", "publish"] = "draft"
+
+
+class ImportConfirmation(C.Confirmation):
+    submit_action: Literal["draft", "publish"] = "draft"
+
+
 class Resource(C.Input):
     id: str
     name: str
@@ -77,6 +93,9 @@ class Candidate(C.Input):
     resources: dict[str, list[Resource]]
     target_article_id: str | None = None
     target_revision: int | None = None
+    submit_action: Literal["draft", "publish"] | None = None
+    published_version_id: str | None = None
+    parse_error: dict[str, str] | None = None
 
 
 class Package(C.Input):
@@ -103,6 +122,7 @@ class ImportPreview(C.Input):
     candidate_ids: list[str]
     counts: dict[str, int]
     changes: list["ImportChange"]
+    submit_action: Literal["draft", "publish"] = "draft"
 
 
 class ContentSnapshot(C.Input):
@@ -124,6 +144,7 @@ class SaveItem(C.Input):
     status: Literal["success", "failed", "skipped"]
     article_id: str | None = None
     error: str | None = None
+    published_version_id: str | None = None
 
 
 class SaveResult(C.Input):
@@ -274,6 +295,11 @@ def view(db, batch):
                     if kind in {"audio", "image"}
                 },
                 **target_binding(row),
+                "submit_action": row.resources.get("_metadata", {}).get("submit_action"),
+                "published_version_id": row.resources.get("_metadata", {}).get(
+                    "published_version_id"
+                ),
+                "parse_error": row.resources.get("_metadata", {}).get("parse_error"),
             }
         )
     return {
@@ -313,12 +339,18 @@ def parse_docx(data):
         if element.tag == W + "p":
             text = paragraph_text(element)
             stripped = text.strip()
-            match = re.fullmatch(r"(中文标题|英文标题|分类|主题|内容标签)\s*[:：]\s*(.*)", stripped)
+            match = re.fullmatch(
+                r"(中文标题|英文标题|分类|所属主题|主题|内容标签)\s*[:：]\s*(.*)", stripped
+            )
             if match:
                 label, value = match.groups()
+                label = "主题" if label == "所属主题" else label
                 if label in seen_labels:
                     raise DomainError(
-                        422, "docx_structure", "一篇资料包含重复字段，请按独立文章拆分"
+                        422,
+                        "docx_structure",
+                        "一篇资料包含重复字段，请按独立文章拆分",
+                        {"stage": "元信息", "field": label},
                     )
                 seen_labels.add(label)
                 if label in {"中文标题", "英文标题"}:
@@ -345,7 +377,12 @@ def parse_docx(data):
                 ):
                     payload["title_zh"] = stripped
                 else:
-                    raise DomainError(422, "docx_structure", "请使用听读模板的明确标题和分区")
+                    raise DomainError(
+                        422,
+                        "docx_structure",
+                        "请使用听读模板的明确标题和分区",
+                        {"stage": "分区读取", "field": "标题与分区"},
+                    )
         elif element.tag == W + "tbl":
             rows = [
                 [
@@ -359,7 +396,12 @@ def parse_docx(data):
                 or not rows
                 or rows[0][:3] != ["英文", "中文释义", "替换例句"]
             ):
-                raise DomainError(422, "docx_structure", "请核对语块表格的三列字段")
+                raise DomainError(
+                    422,
+                    "docx_structure",
+                    "请核对语块表格的三列字段",
+                    {"stage": "语块读取", "field": "英文／中文释义／替换例句"},
+                )
             for cells in rows[1:]:
                 if len(cells) != 3:
                     raise DomainError(422, "docx_structure", "语块表格不能含合并单元格")
@@ -375,6 +417,32 @@ def parse_docx(data):
         return C.ListeningPayload.model_validate(payload).model_dump(), hints
     except ValueError:
         raise DomainError(422, "docx_structure", "资料字段超过限制，请拆分后重试") from None
+
+
+def matched_topic(db, hints):
+    """Resolve explicit Chinese/English names only when one existing owner matches."""
+
+    def normalize(value):
+        return (value or "").strip().casefold()
+
+    topic_name, category_name = normalize(hints.get("主题")), normalize(hints.get("分类"))
+    if not topic_name:
+        return None
+    matches = []
+    for topic, category in db.execute(
+        select(ListeningTopic, ListeningCategory).join(
+            ListeningCategory, ListeningTopic.category_id == ListeningCategory.id
+        )
+    ):
+        if topic_name not in {normalize(topic.name), normalize(topic.name_en)}:
+            continue
+        if category_name and category_name not in {
+            normalize(category.name),
+            normalize(category.name_en),
+        }:
+            continue
+        matches.append(topic.id)
+    return matches[0] if len(matches) == 1 else None
 
 
 def source_hash(db, payload):
@@ -507,20 +575,7 @@ def parse_package(db, settings, batch, name, data, now):
         db.flush()
         try:
             payload, hints = parse_docx(document)
-            matched = list(
-                db.scalars(
-                    select(ListeningTopic).where(ListeningTopic.name == hints.get("主题", ""))
-                )
-            )
-            if hints.get("分类"):
-                from .listening_models import ListeningCategory
-
-                matched = [
-                    t
-                    for t in matched
-                    if db.get(ListeningCategory, t.category_id).name == hints["分类"]
-                ]
-            row.topic_id = matched[0].id if len(matched) == 1 else None
+            row.topic_id = matched_topic(db, hints)
             directory = PurePosixPath(path).parent
             neighbors = [
                 (p, d)
@@ -583,6 +638,20 @@ def parse_package(db, settings, batch, name, data, now):
                 ensure_timeline(db, payload, now)
         except DomainError as error:
             row.state, row.errors = "unreadable", [error.code]
+            row.resources = {
+                **row.resources,
+                "_metadata": {
+                    "parse_error": {
+                        "stage": (error.details or {}).get("stage", "资料读取")
+                        if isinstance(error.details, dict)
+                        else "资料读取",
+                        "field": (error.details or {}).get("field", "内容文档")
+                        if isinstance(error.details, dict)
+                        else "内容文档",
+                        "message": error.message,
+                    }
+                },
+            }
     return package
 
 
@@ -605,6 +674,14 @@ def selected(db, batch, ids, *, saving=False):
 
 def routes():
     router = APIRouter(prefix="/api/admin/v1/listening", tags=["listening import staging"])
+
+    @router.get("/template")
+    def download_template(admin=Depends(administrator)):
+        return Response(
+            template_document(),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": 'attachment; filename="listening-template.docx"'},
+        )
 
     @router.post("/docx-preview", response_model=DocxPreview)
     def docx_preview(
@@ -1000,7 +1077,7 @@ def routes():
     @router.post("/imports/{batch_id}/preview", response_model=ImportPreview)
     def preview(
         batch_id: str,
-        body: Selection,
+        body: ImportSelection,
         request: Request,
         admin=Depends(administrator),
         key=Depends(operation_key),
@@ -1044,6 +1121,7 @@ def routes():
                     "revision": batch.revision,
                     "candidate_ids": body.candidate_ids,
                     "snapshots": snapshots,
+                    "submit_action": body.submit_action,
                 },
                 request.app.state.clock(),
             )
@@ -1056,6 +1134,7 @@ def routes():
                     "skipped": len(rows) - len(savable),
                 },
                 "changes": changes,
+                "submit_action": body.submit_action,
             }
 
         return operate(
@@ -1072,7 +1151,7 @@ def routes():
     @router.post("/imports/{batch_id}/save", response_model=SaveResult)
     def save(
         batch_id: str,
-        body: C.Confirmation,
+        body: ImportConfirmation,
         request: Request,
         admin=Depends(administrator),
         key=Depends(operation_key),
@@ -1091,6 +1170,10 @@ def routes():
             )
             if data["batch_id"] != batch_id:
                 raise DomainError(409, "listening_import_changed", "核对批次不匹配")
+            if data.get("submit_action", "draft") != body.submit_action:
+                raise DomainError(
+                    409, "listening_import_action_changed", "提交方式已变化，请重新核对"
+                )
             batch = owned(db, batch_id, admin.id, data["revision"])
             rows = selected(db, batch, data["candidate_ids"], saving=True)
             results = []
@@ -1098,11 +1181,28 @@ def routes():
                 try:
                     with db.begin_nested():
                         if row.article_id or row.state == "saved":
+                            receipt = row.resources.get("_metadata", {})
+                            if body.submit_action == "publish" and not receipt.get(
+                                "published_version_id"
+                            ):
+                                raise DomainError(
+                                    409, "listening_saved_draft", "草稿已保存，请在文章列表明确发布"
+                                )
                             results.append(
                                 {
                                     "candidate_id": row.id,
                                     "status": "skipped",
                                     "article_id": row.article_id,
+                                    "published_version_id": receipt.get("published_version_id"),
+                                }
+                            )
+                            continue
+                        if row.state == "duplicate":
+                            results.append(
+                                {
+                                    "candidate_id": row.id,
+                                    "status": "skipped",
+                                    "article_id": row.duplicate_of,
                                 }
                             )
                             continue
@@ -1137,6 +1237,7 @@ def routes():
                         imported_ids = validate_candidate_payload(
                             db, batch, row, row.payload, target
                         )
+                        same = False
                         if target:
                             same = (
                                 source_hash(db, target.payload) == row.source_hash
@@ -1151,42 +1252,56 @@ def routes():
                                 service.update_article(
                                     db, target, update, now, imported_ids=imported_ids
                                 )
-                            row.article_id, row.state = target.id, "saved"
-                            row.resources = {
-                                **row.resources,
-                                "_metadata": {
-                                    **row.resources.get("_metadata", {}),
-                                    "applied_media_ids": [
-                                        medium_id
-                                        for medium_id in [
-                                            target.payload.get("audio_id"),
-                                            target.payload.get("image_id"),
-                                        ]
-                                        if medium_id
-                                    ],
-                                },
-                            }
-                            db.flush()
-                            results.append(
-                                {
-                                    "candidate_id": row.id,
-                                    "status": "skipped" if same else "success",
-                                    "article_id": target.id,
-                                }
+                            article = target
+                        else:
+                            article = service.create_article(
+                                db,
+                                row.topic_id,
+                                row.payload,
+                                now,
+                                batch_id=batch.id,
+                                source_hash=row.source_hash,
+                                owners={batch.id},
                             )
-                            continue
-                        article = service.create_article(
-                            db,
-                            row.topic_id,
-                            row.payload,
-                            now,
-                            batch_id=batch.id,
-                            source_hash=row.source_hash,
-                            owners={batch.id},
-                        )
+                        published_version_id = None
+                        if body.submit_action == "publish":
+                            publication = service.publish_article(
+                                db,
+                                request.app.state.settings,
+                                admin.id,
+                                article,
+                                C.PublishInput(revision=article.revision),
+                                now,
+                            )
+                            published_version_id = publication["version_id"]
                         row.article_id, row.state = article.id, "saved"
+                        row.resources = {
+                            **row.resources,
+                            "_metadata": {
+                                **row.resources.get("_metadata", {}),
+                                "submit_action": body.submit_action,
+                                "published_version_id": published_version_id,
+                                "submitted_fingerprint": snapshot["fingerprint"],
+                                "applied_media_ids": [
+                                    medium_id
+                                    for medium_id in [
+                                        article.payload.get("audio_id"),
+                                        article.payload.get("image_id"),
+                                    ]
+                                    if medium_id
+                                ],
+                            },
+                        }
+                        db.flush()
                     results.append(
-                        {"candidate_id": row.id, "status": "success", "article_id": row.article_id}
+                        {
+                            "candidate_id": row.id,
+                            "status": "skipped"
+                            if same and body.submit_action == "draft"
+                            else "success",
+                            "article_id": row.article_id,
+                            "published_version_id": published_version_id,
+                        }
                     )
                 except DomainError as error:
                     results.append(
