@@ -34,6 +34,39 @@ def body_tokens(body):
     return list(TOKEN.finditer(body))
 
 
+def alignment_tokens(body):
+    """Exclude dialogue layout only, retaining original character offsets for readers."""
+    lines = list(re.finditer(r"[^\n]+", body))
+    speaker = re.compile(r"[ \t]*([A-Z][a-zA-Z]*(?:[ \t]+[A-Z][a-zA-Z]*){0,2}):[ \t]*(?=\S)")
+    labels = [(line, speaker.match(line.group())) for line in lines]
+    names = {match.group(1) for _, match in labels if match}
+    if len(names) < 2:
+        return body_tokens(body)
+    excluded = []
+    for index, (line, match) in enumerate(labels):
+        if match:
+            excluded.append((line.start(), line.start() + match.end()))
+        elif (
+            index + 1 < len(labels)
+            and labels[index + 1][1]
+            and re.fullmatch(r"[A-Z][A-Za-z’' \-]{0,119}", line.group().strip())
+            and len(body_tokens(line.group())) <= 12
+            and all(
+                word.group()[0].isupper()
+                or word.group()
+                in {"a", "an", "the", "and", "or", "of", "in", "on", "at", "to", "for", "with"}
+                for word in body_tokens(line.group())
+            )
+        ):
+            # A separate heading immediately introduces a labeled dialogue turn.
+            excluded.append((line.start(), line.end()))
+    return [
+        token
+        for token in body_tokens(body)
+        if not any(start <= token.start() < end for start, end in excluded)
+    ]
+
+
 def input_identity(db, payload):
     audio = db.get(Media, payload.get("audio_id")) if payload.get("audio_id") else None
     if not payload.get("body_en", "").strip() or not audio or audio.state != "ready":
@@ -98,7 +131,7 @@ def timeline_view(db, payload):
 
 
 def validate_words(body, words, duration_ms, *, minimum_coverage=1.0, max_word_ms=10000):
-    tokens = {(m.start(), m.end()): m.group() for m in body_tokens(body)}
+    tokens = {(m.start(), m.end()): m.group() for m in alignment_tokens(body)}
     previous_end = previous_character = 0
     seen = set()
     if not words or not tokens or duration_ms <= 0:
@@ -126,7 +159,7 @@ def validate_words(body, words, duration_ms, *, minimum_coverage=1.0, max_word_m
 
 def align_words(body, recognized, duration_ms, *, minimum_coverage=1.0, max_word_ms=10000):
     """Monotonic sequence matching preserves repeated word positions and real pauses."""
-    text = body_tokens(body)
+    text = alignment_tokens(body)
     normalized = lambda word: word.casefold().replace("’", "'")  # noqa: E731
     actual = []
     for word in recognized:
