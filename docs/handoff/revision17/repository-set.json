@@ -1,22 +1,48 @@
 {
-  "date": "2026-10-29",
-  "purpose": "Revision17 design repairs on test; source synchronization only, no deployment or remote database migration.",
+  "date": "2026-10-30",
+  "purpose": "Integration05 revision17 local implementation only; branches preserved, no merge/push/deployment/remote migration",
   "repositories": {
+    "juya-api": {
+      "branch": "codex/revision17-integration05",
+      "commit": "6b4af24017b6396975a6e68b53d21e2e721ee22b",
+      "worktree_relative_path": ".worktrees/revision17-integration05/juya-api",
+      "commit_reference": "API documentation commit containing this manifest; implementation commits cb9f94c,6b4af24"
+    },
     "juya-admin": {
-      "branch": "test",
-      "commit": "22c3a6e95244a76f0e4db0d4b16002107222dc79"
+      "branch": "codex/revision17-integration05",
+      "commit": "2ec0d0a53cebcfc2c5a86487974393bc32cf0f46",
+      "worktree_relative_path": ".worktrees/revision17-integration05/juya-admin"
     },
     "juya-miniapp": {
-      "branch": "test",
-      "commit": "014e95ad9a56e64667de719acfaeb8e5c21e4a9f"
+      "branch": "codex/revision17-integration05",
+      "commit": "1d399948fed18087c96a1685b07b9055a9431722",
+      "worktree_relative_path": ".worktrees/revision17-integration05/juya-miniapp"
     },
     "juya-cli": {
-      "branch": "test",
-      "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca"
-    },
-    "juya-api": {
-      "branch": "test",
-      "commit_reference": "The test commit containing this manifest; git rev-parse HEAD after pull."
+      "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca",
+      "change": "本轮未修改"
+    }
+  },
+  "previous_2026_10_29": {
+    "date": "2026-10-29",
+    "purpose": "Revision17 design repairs on test; source synchronization only, no deployment or remote database migration.",
+    "repositories": {
+      "juya-admin": {
+        "branch": "test",
+        "commit": "22c3a6e95244a76f0e4db0d4b16002107222dc79"
+      },
+      "juya-miniapp": {
+        "branch": "test",
+        "commit": "014e95ad9a56e64667de719acfaeb8e5c21e4a9f"
+      },
+      "juya-cli": {
+        "branch": "test",
+        "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca"
+      },
+      "juya-api": {
+        "branch": "test",
+        "commit_reference": "The test commit containing this manifest; git rev-parse HEAD after pull."
+      }
     }
   }
 }

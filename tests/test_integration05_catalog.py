@@ -139,7 +139,6 @@ def test_catalog_delete_and_new_reference_have_one_winner(admin, system):
 
     from fastapi.testclient import TestClient
 
-
     category = post(admin, A + "/categories", {"name": "并发引用"})
     barrier = Barrier(2)
     with TestClient(admin.app, base_url="https://testserver") as second:

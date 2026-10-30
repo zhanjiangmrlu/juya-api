@@ -1,3 +1,13 @@
+# 整合05／修订17本地执行交接（2026-10-30）
+
+当前需求已更新为V1.5整合05、T01—T300，设计为2026-10-30同步的55个当前画板及103个关联状态。执行在三个隔离工作树的`codex/revision17-integration05`，原运行目录、业务库、账号、配置与素材未覆盖。本轮没有推送、部署、远程迁移、OSS上传或真实云调用；下方旧交接的推送授权与环境命令属于历史记录。
+
+先读[本轮实施与验收](docs/handoff/revision17/integration05/README.md)、[需求版本/SHA](docs/handoff/revision17/requirement-reference.json)及[配套版本](docs/handoff/revision17/repository-set.json)。最低schema仍为0023，本轮不新增迁移。自动化只使用临时SQLite及独立`juya_verify`，不能把清表夹具指向业务库。
+
+---
+
+## 2026-10-29冻结交接（历史）
+
 # 修订17 MacBook增量接续交接
 
 交接日期：2026-10-29（北京时间）。用户明确要求提交、推送各仓库远程 **`test`**，在另一台MacBook继续。**MacBook上的四个项目此前都已运行，本次是在已有环境上增量接续。** 当前仍只使用本地数据库；推送源码不包含部署或远程迁移授权。

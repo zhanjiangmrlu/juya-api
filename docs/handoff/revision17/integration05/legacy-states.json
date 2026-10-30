@@ -1,0 +1,662 @@
+[
+  {
+    "key": "U01-access-free",
+    "nodeId": "7:2",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-access-zero",
+    "nodeId": "7:133",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-access-authorized",
+    "nodeId": "7:266",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-access-free-complete",
+    "nodeId": "7:388",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-access-error",
+    "nodeId": "7:505",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-access-locked",
+    "nodeId": "7:605",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-access-locked",
+    "nodeId": "7:745",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U06-access-locked",
+    "nodeId": "7:813",
+    "background": "BG05",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-free",
+    "nodeId": "7:896",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-lookup-locked",
+    "nodeId": "7:1288",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-restricted",
+    "nodeId": "7:1689",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-authorized",
+    "nodeId": "7:1732",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-authorized-locked",
+    "nodeId": "7:2124",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-expired-free",
+    "nodeId": "7:2436",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-expired-locked",
+    "nodeId": "7:2828",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-error",
+    "nodeId": "7:2871",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-share-locked",
+    "nodeId": "7:2913",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-access-queue-end",
+    "nodeId": "7:2956",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-access-none",
+    "nodeId": "7:3364",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-access-active",
+    "nodeId": "7:3438",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-access-expired",
+    "nodeId": "7:3512",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-access-prompt",
+    "nodeId": "9:454",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-access-removed",
+    "nodeId": "9:455",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U06-access-prompt",
+    "nodeId": "9:456",
+    "background": "BG05",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-normal",
+    "nodeId": "9:338",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-new",
+    "nodeId": "9:339",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-checked",
+    "nodeId": "9:340",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-stats-error",
+    "nodeId": "9:341",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-empty",
+    "nodeId": "9:342",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-list-error",
+    "nodeId": "9:343",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-normal",
+    "nodeId": "9:344",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-empty",
+    "nodeId": "9:345",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-unavailable",
+    "nodeId": "9:346",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U02-deleted",
+    "nodeId": "9:347",
+    "change": "已删除条目隐藏；下线条目保留不可用摘要，不回退历史累计",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-default",
+    "nodeId": "9:348",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-translated",
+    "nodeId": "9:349",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-full",
+    "nodeId": "9:350",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-no-chunks",
+    "nodeId": "9:351",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-playing",
+    "nodeId": "9:352",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-word-loading",
+    "nodeId": "9:353",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-word-error",
+    "nodeId": "9:354",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-audio-error",
+    "nodeId": "9:355",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-completing",
+    "nodeId": "9:356",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-today",
+    "nodeId": "9:357",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-review",
+    "nodeId": "9:358",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-complete-error",
+    "nodeId": "9:359",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-favorite-error",
+    "nodeId": "9:360",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-paused",
+    "nodeId": "9:361",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-ended",
+    "nodeId": "9:362",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-speed-options",
+    "nodeId": "9:363",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-speed-125",
+    "nodeId": "9:364",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-speed-150",
+    "nodeId": "9:365",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-speed-175",
+    "nodeId": "9:366",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-speed-200",
+    "nodeId": "9:367",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-missing-fields",
+    "nodeId": "9:368",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U06-records",
+    "nodeId": "9:373",
+    "background": "BG05",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U06-days",
+    "nodeId": "9:374",
+    "background": "BG05",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U06-empty",
+    "nodeId": "9:375",
+    "background": "BG05",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-profile",
+    "nodeId": "9:376",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-wechat-only",
+    "nodeId": "9:377",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-phone-only",
+    "nodeId": "9:378",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-default-identity",
+    "nodeId": "9:379",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-privacy",
+    "nodeId": "9:380",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-logout",
+    "nodeId": "9:381",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-updated",
+    "nodeId": "9:382",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U07-no-contact",
+    "nodeId": "9:383",
+    "background": "BG04",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U08-changed",
+    "nodeId": "9:385",
+    "background": "BG06",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U08-unsaved",
+    "nodeId": "9:386",
+    "background": "BG06",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U08-error",
+    "nodeId": "9:387",
+    "background": "BG06",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U08-saving",
+    "nodeId": "9:388",
+    "background": "BG06",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-legacy-title",
+    "nodeId": "9:399",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-all-learned",
+    "nodeId": "9:400",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-loading",
+    "nodeId": "9:401",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-refreshing",
+    "nodeId": "9:402",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-pagination",
+    "nodeId": "9:403",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-more-loading",
+    "nodeId": "9:404",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-more-error",
+    "nodeId": "9:405",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-thumb-loading",
+    "nodeId": "9:406",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-thumb-error",
+    "nodeId": "9:407",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-first-next",
+    "nodeId": "9:408",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-review-next",
+    "nodeId": "9:409",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-favorite-queue",
+    "nodeId": "9:410",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-queue-end",
+    "nodeId": "9:411",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-next-loading",
+    "nodeId": "9:412",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-next-error",
+    "nodeId": "9:413",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-share-complete",
+    "nodeId": "9:414",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-context",
+    "nodeId": "9:415",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-generic",
+    "nodeId": "9:416",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-lemma",
+    "nodeId": "9:417",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-missing",
+    "nodeId": "9:418",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-error",
+    "nodeId": "9:419",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-loading",
+    "nodeId": "9:420",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-dictionary-no-phonetic",
+    "nodeId": "9:421",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-image-loading",
+    "nodeId": "9:422",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-image-error",
+    "nodeId": "9:423",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-share-friends",
+    "nodeId": "9:440",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U01-share-timeline",
+    "nodeId": "9:441",
+    "background": "BG01",
+    "change": "仅更新背景承载层，保留白色内容卡、弹窗与功能",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-share-friends",
+    "nodeId": "9:442",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-share-timeline",
+    "nodeId": "9:443",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-review-queue-end",
+    "nodeId": "9:447",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-favorite-queue-end",
+    "nodeId": "9:448",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-share-entry",
+    "nodeId": "9:450",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  },
+  {
+    "key": "U03-favorite-complete",
+    "nodeId": "9:452",
+    "change": "收藏成功实心心形＋已收藏；取消恢复空心＋收藏，保留其他内容",
+    "verification": "按关联增量规则及共享组件实现；103状态未逐一真机截图验收"
+  }
+]

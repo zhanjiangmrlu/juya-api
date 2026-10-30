@@ -1,0 +1,35 @@
+{
+  "context": "isolated local fixture without cloud credentials",
+  "jobs": [
+    {
+      "state": "failed",
+      "error_code": "asr_unconfigured",
+      "provider_submitted": false
+    },
+    {
+      "state": "failed",
+      "error_code": "asr_unconfigured",
+      "provider_submitted": false
+    },
+    {
+      "state": "failed",
+      "error_code": "asr_unconfigured",
+      "provider_submitted": false
+    }
+  ],
+  "cloud_acceptance": "pending",
+  "article": {
+    "id": "9f75e80b-508c-4e95-849f-25bf5e419ade",
+    "published_version_id": "90f55dbd-196b-4953-8d49-1b6c84ef8073",
+    "audio_id": "58ff981c-6e68-43e9-b805-fcebae75abbf",
+    "body_sha256": "48a8d36aa8504379b874a3f75af0d9e7458d78d566f090f21b1419f32c1b1a3a",
+    "timeline": {
+      "state": "failed",
+      "input_hash": "fa63fac89e45a29d6c0c787297badfc6929163049f38838d0b38314edd170e39",
+      "job_id": "dd2f9e40-8ef7-4302-9bd0-847141b79c8c",
+      "error_code": "asr_unconfigured",
+      "reviewed_at": null
+    },
+    "media_time_evidence": "本地001完整音频时长39秒；初始播放态见M05截图；有效词轴媒体时间与暂停/拖动以reading-model及listening-body自动化验证，真实ASR尚未验收"
+  }
+}

@@ -1,0 +1,854 @@
+[
+  {
+    "id": "45:10036",
+    "key": "R17-M17",
+    "width": 390,
+    "height": 845,
+    "textCount": 5,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 6,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10036",
+    "implementation_screenshots": [
+      "screenshots/M17-image-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10405",
+    "key": "R17-M24",
+    "width": 390,
+    "height": 845,
+    "textCount": 8,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 6,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10405",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:11938",
+    "key": "R17-A08",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 54,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 13,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-11938",
+    "implementation_screenshots": [
+      "screenshots/A08-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:13777",
+    "key": "R17-A14",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 86,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 12,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-13777",
+    "implementation_screenshots": [
+      "screenshots/A14-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:14019",
+    "key": "R17-A15",
+    "width": 1440,
+    "height": 1571.1400146484375,
+    "textCount": 95,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 20,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-14019",
+    "implementation_screenshots": [
+      "screenshots/A15-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:14325",
+    "key": "R17-A16",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 40,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 6,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-14325",
+    "implementation_screenshots": [
+      "screenshots/A16-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:5196",
+    "key": "R17-M03-B",
+    "width": 390,
+    "height": 845,
+    "textCount": 32,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 13,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-5196",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:9558",
+    "key": "R17-M16",
+    "width": 390,
+    "height": 845,
+    "textCount": 34,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-9558",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10183",
+    "key": "R17-M20",
+    "width": 390,
+    "height": 845,
+    "textCount": 22,
+    "editable": true,
+    "images": 3,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10183",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10320",
+    "key": "R17-M22",
+    "width": 390,
+    "height": 845,
+    "textCount": 20,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10320",
+    "implementation_screenshots": [
+      "screenshots/M22-empty-injected-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10366",
+    "key": "R17-M23",
+    "width": 390,
+    "height": 845,
+    "textCount": 20,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10366",
+    "implementation_screenshots": [
+      "screenshots/M23-error-injected-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:11248",
+    "key": "R17-A04",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 30,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-11248",
+    "implementation_screenshots": [
+      "screenshots/A04-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:11758",
+    "key": "R17-A07",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 931,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 16,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-11758",
+    "implementation_screenshots": [
+      "screenshots/A07-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:13158",
+    "key": "R17-A12",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 103,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 22,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-13158",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:13477",
+    "key": "R17-A13",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 103,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 23,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-13477",
+    "implementation_screenshots": [
+      "screenshots/A13-delete-confirm-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:15581",
+    "key": "R17-A22",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 84,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 15,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-15581",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:16173",
+    "key": "R17-A24",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 95,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 20,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-16173",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "140:8962",
+    "key": "R17-M28",
+    "width": 390,
+    "height": 845,
+    "textCount": 33,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=140-8962",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:4897",
+    "key": "R17-M01",
+    "width": 390,
+    "height": 845,
+    "textCount": 23,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 13,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-4897",
+    "implementation_screenshots": [
+      "screenshots/M01-375.png",
+      "screenshots/M01-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:4984",
+    "key": "R17-M02",
+    "width": 390,
+    "height": 845,
+    "textCount": 25,
+    "editable": true,
+    "images": 4,
+    "autoLayouts": 9,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-4984",
+    "implementation_screenshots": [
+      "screenshots/M02-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:5089",
+    "key": "R17-M03",
+    "width": 390,
+    "height": 845,
+    "textCount": 32,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 14,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-5089",
+    "implementation_screenshots": [
+      "screenshots/M03-390.png",
+      "screenshots/M03-C-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:5301",
+    "key": "R17-M03-C",
+    "width": 390,
+    "height": 845,
+    "textCount": 44,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 15,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-5301",
+    "implementation_screenshots": [
+      "screenshots/M03-C-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:5452",
+    "key": "R17-M04",
+    "width": 390,
+    "height": 845,
+    "textCount": 22,
+    "editable": true,
+    "images": 3,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-5452",
+    "implementation_screenshots": [
+      "screenshots/M04-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:5589",
+    "key": "R17-M05",
+    "width": 390,
+    "height": 845,
+    "textCount": 32,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-5589",
+    "implementation_screenshots": [
+      "screenshots/M05-375.png",
+      "screenshots/M05-390.png",
+      "screenshots/M05-favorite-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:6165",
+    "key": "R17-M06",
+    "width": 390,
+    "height": 2847.610107421875,
+    "textCount": 95,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 9,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-6165",
+    "implementation_screenshots": [
+      "screenshots/M06-long-375.png",
+      "screenshots/M06-long-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:6764",
+    "key": "R17-M07",
+    "width": 390,
+    "height": 845,
+    "textCount": 28,
+    "editable": true,
+    "images": 3,
+    "autoLayouts": 10,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-6764",
+    "implementation_screenshots": [
+      "screenshots/M07-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:6860",
+    "key": "R17-M08",
+    "width": 390,
+    "height": 845,
+    "textCount": 28,
+    "editable": true,
+    "images": 3,
+    "autoLayouts": 10,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-6860",
+    "implementation_screenshots": [
+      "screenshots/M08-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:6976",
+    "key": "R17-M09",
+    "width": 390,
+    "height": 845,
+    "textCount": 30,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 12,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-6976",
+    "implementation_screenshots": [
+      "screenshots/M09-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:7106",
+    "key": "R17-M10",
+    "width": 390,
+    "height": 845,
+    "textCount": 21,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 15,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-7106",
+    "implementation_screenshots": [
+      "screenshots/M10-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:7202",
+    "key": "R17-M11",
+    "width": 390,
+    "height": 845,
+    "textCount": 13,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-7202",
+    "implementation_screenshots": [
+      "screenshots/M11-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:7258",
+    "key": "R17-M12",
+    "width": 390,
+    "height": 845,
+    "textCount": 13,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-7258",
+    "implementation_screenshots": [
+      "screenshots/M12-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:7343",
+    "key": "R17-M13",
+    "width": 390,
+    "height": 845,
+    "textCount": 37,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 9,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-7343",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:7950",
+    "key": "R17-M14",
+    "width": 390,
+    "height": 845,
+    "textCount": 36,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-7950",
+    "implementation_screenshots": [
+      "screenshots/M14-lookup-locked-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:8753",
+    "key": "R17-M15",
+    "width": 390,
+    "height": 845,
+    "textCount": 37,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-8753",
+    "implementation_screenshots": [
+      "screenshots/M15-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10074",
+    "key": "R17-M18",
+    "width": 390,
+    "height": 845,
+    "textCount": 39,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10074",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10131",
+    "key": "R17-M19",
+    "width": 390,
+    "height": 845,
+    "textCount": 38,
+    "editable": true,
+    "images": 2,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10131",
+    "implementation_screenshots": [
+      "screenshots/M19-last-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10269",
+    "key": "R17-M21",
+    "width": 390,
+    "height": 845,
+    "textCount": 10,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 6,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10269",
+    "implementation_screenshots": [
+      "screenshots/M21-locked-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "62:5129",
+    "key": "R17-M25",
+    "width": 390,
+    "height": 845,
+    "textCount": 30,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=62-5129",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "62:5273",
+    "key": "R17-M26",
+    "width": 390,
+    "height": 845,
+    "textCount": 30,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=62-5273",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "62:5415",
+    "key": "R17-M27",
+    "width": 390,
+    "height": 845,
+    "textCount": 31,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=62-5415",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "9:384",
+    "key": "U08-edit",
+    "width": 390,
+    "height": 845,
+    "textCount": 11,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=9-384",
+    "implementation_screenshots": [
+      "screenshots/U08-edit-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "9:328",
+    "key": "U00-default",
+    "width": 390,
+    "height": 845,
+    "textCount": 12,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=9-328",
+    "implementation_screenshots": [
+      "screenshots/U00-default-390.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10628",
+    "key": "R17-A01",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 94,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 20,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10628",
+    "implementation_screenshots": [
+      "screenshots/A01-list-960.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:10918",
+    "key": "R17-A02",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 52,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 13,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-10918",
+    "implementation_screenshots": [
+      "screenshots/A02-D-referenced.png",
+      "screenshots/A02-categories-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:11067",
+    "key": "R17-A03",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 58,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 11,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-11067",
+    "implementation_screenshots": [
+      "screenshots/A03-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "140:12046",
+    "key": "R17-A02-D",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 57,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 14,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=140-12046",
+    "implementation_screenshots": [
+      "screenshots/A02-D-referenced.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:11374",
+    "key": "R17-A05",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 58,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 10,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-11374",
+    "implementation_screenshots": [
+      "screenshots/A05-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:11566",
+    "key": "R17-A06",
+    "width": 1440,
+    "height": 2629.469970703125,
+    "textCount": 103,
+    "editable": true,
+    "images": 1,
+    "autoLayouts": 12,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-11566",
+    "implementation_screenshots": [
+      "screenshots/A06-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:12753",
+    "key": "R17-A11",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 59,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 10,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-12753",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:14443",
+    "key": "R17-A17",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 32,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 7,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-14443",
+    "implementation_screenshots": [
+      "screenshots/A17-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:14608",
+    "key": "R17-A18",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 71,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 11,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-14608",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:14861",
+    "key": "R17-A19",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 52,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 10,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-14861",
+    "implementation_screenshots": [
+      "screenshots/A19-review-960.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:15248",
+    "key": "R17-A20",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 41,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 8,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-15248",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:12124",
+    "key": "R17-A09",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 103,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 22,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-12124",
+    "implementation_screenshots": [
+      "screenshots/A09-1440.png"
+    ],
+    "verification": "本地实现截图留证；尚未等同真机像素验收",
+    "source": "2026-10-30同步完成核验.json"
+  },
+  {
+    "id": "45:15846",
+    "key": "R17-A23",
+    "width": 1440,
+    "height": 1025,
+    "textCount": 100,
+    "editable": true,
+    "images": 0,
+    "autoLayouts": 22,
+    "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=45-15846",
+    "implementation_screenshots": [],
+    "verification": "对应实现/自动化已纳入回归；当前状态逐图截图对照待补",
+    "source": "2026-10-30同步完成核验.json"
+  }
+]

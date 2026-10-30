@@ -1,0 +1,637 @@
+{
+  "identity": "isolated synthetic account, not the unidentified original feedback account",
+  "clock": "controlled, same account for each state transition",
+  "assertions": "passed",
+  "requests": [
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/categories",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/topics",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/33e2b404-e389-4c29-9abc-e48b5fd38664/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/33e2b404-e389-4c29-9abc-e48b5fd38664",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/f877ef6d-10a9-4475-b34f-93db706ea834/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/f877ef6d-10a9-4475-b34f-93db706ea834",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/58f29f13-c718-4718-9a09-5c0f322d5a3b/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/58f29f13-c718-4718-9a09-5c0f322d5a3b",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/fc5703f9-8331-4818-ae21-e6436c40470e/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/fc5703f9-8331-4818-ae21-e6436c40470e",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/47279bf9-c971-432c-987d-9252bec5100e/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/47279bf9-c971-432c-987d-9252bec5100e",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/0629be9f-8ec4-41c0-8528-524871f041dc/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/0629be9f-8ec4-41c0-8528-524871f041dc",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/55f116d7-62d9-4901-aca3-8eb3cde73d85/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/55f116d7-62d9-4901-aca3-8eb3cde73d85",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/02d224a4-2614-49b9-821e-95942f09fde1/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/02d224a4-2614-49b9-821e-95942f09fde1",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/8dc28458-0c52-42a9-9f78-4dd38715763e/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/8dc28458-0c52-42a9-9f78-4dd38715763e",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a/media",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/33e2b404-e389-4c29-9abc-e48b5fd38664/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/f877ef6d-10a9-4475-b34f-93db706ea834/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/58f29f13-c718-4718-9a09-5c0f322d5a3b/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/fc5703f9-8331-4818-ae21-e6436c40470e/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/47279bf9-c971-432c-987d-9252bec5100e/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/0629be9f-8ec4-41c0-8528-524871f041dc/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/55f116d7-62d9-4901-aca3-8eb3cde73d85/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/02d224a4-2614-49b9-821e-95942f09fde1/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/8dc28458-0c52-42a9-9f78-4dd38715763e/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a/publish",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/admin/v1/listening/free-policy",
+      "status": 200,
+      "policy": {
+        "configured": false,
+        "free_count": null,
+        "revision": 0,
+        "article_ids": []
+      }
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/free-policy",
+      "status": 200,
+      "policy": {
+        "configured": true,
+        "free_count": 10,
+        "revision": 1,
+        "article_ids": [
+          "33e2b404-e389-4c29-9abc-e48b5fd38664",
+          "f877ef6d-10a9-4475-b34f-93db706ea834",
+          "58f29f13-c718-4718-9a09-5c0f322d5a3b",
+          "fc5703f9-8331-4818-ae21-e6436c40470e",
+          "47279bf9-c971-432c-987d-9252bec5100e",
+          "0629be9f-8ec4-41c0-8528-524871f041dc",
+          "55f116d7-62d9-4901-aca3-8eb3cde73d85",
+          "02d224a4-2614-49b9-821e-95942f09fde1",
+          "8dc28458-0c52-42a9-9f78-4dd38715763e",
+          "774c666b-1d64-4b34-98e2-00b29adcb57a"
+        ]
+      }
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a",
+      "status": 200
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a/media-ticket",
+      "status": 200
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a/complete",
+      "status": 200
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a/favorite",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/admin/v1/listening/free-policy",
+      "status": 200,
+      "policy": {
+        "configured": true,
+        "free_count": 10,
+        "revision": 1,
+        "article_ids": [
+          "33e2b404-e389-4c29-9abc-e48b5fd38664",
+          "f877ef6d-10a9-4475-b34f-93db706ea834",
+          "58f29f13-c718-4718-9a09-5c0f322d5a3b",
+          "fc5703f9-8331-4818-ae21-e6436c40470e",
+          "47279bf9-c971-432c-987d-9252bec5100e",
+          "0629be9f-8ec4-41c0-8528-524871f041dc",
+          "55f116d7-62d9-4901-aca3-8eb3cde73d85",
+          "02d224a4-2614-49b9-821e-95942f09fde1",
+          "8dc28458-0c52-42a9-9f78-4dd38715763e",
+          "774c666b-1d64-4b34-98e2-00b29adcb57a"
+        ]
+      }
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/free-policy",
+      "status": 200,
+      "policy": {
+        "configured": true,
+        "free_count": 1,
+        "revision": 2,
+        "article_ids": [
+          "33e2b404-e389-4c29-9abc-e48b5fd38664"
+        ]
+      }
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/33e2b404-e389-4c29-9abc-e48b5fd38664",
+      "status": 200
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/f877ef6d-10a9-4475-b34f-93db706ea834",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/58f29f13-c718-4718-9a09-5c0f322d5a3b",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/fc5703f9-8331-4818-ae21-e6436c40470e",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/47279bf9-c971-432c-987d-9252bec5100e",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/0629be9f-8ec4-41c0-8528-524871f041dc",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/55f116d7-62d9-4901-aca3-8eb3cde73d85",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/02d224a4-2614-49b9-821e-95942f09fde1",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/8dc28458-0c52-42a9-9f78-4dd38715763e",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/favorites",
+      "status": 200
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/records",
+      "status": 200
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/media/<session-bound-ticket>",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/media/<session-bound-ticket>",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "HEAD",
+      "path": "/api/mini/v1/listening/media/<session-bound-ticket>",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/me",
+      "status": 200,
+      "synthetic_user_id": "861528f9-df45-4605-8b2b-f1b59e972036"
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/users/861528f9-df45-4605-8b2b-f1b59e972036/learning-authorization/preview",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/users/861528f9-df45-4605-8b2b-f1b59e972036/learning-authorization",
+      "status": 200,
+      "authorization_status": "active"
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/admin/v1/listening/free-policy",
+      "status": 200,
+      "policy": {
+        "configured": true,
+        "free_count": 1,
+        "revision": 2,
+        "article_ids": [
+          "33e2b404-e389-4c29-9abc-e48b5fd38664"
+        ]
+      }
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/listening/free-policy",
+      "status": 200,
+      "policy": {
+        "configured": true,
+        "free_count": 0,
+        "revision": 3,
+        "article_ids": []
+      }
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/users/861528f9-df45-4605-8b2b-f1b59e972036/learning-authorization/preview",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/users/861528f9-df45-4605-8b2b-f1b59e972036/learning-authorization",
+      "status": 200,
+      "authorization_status": "none"
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/33e2b404-e389-4c29-9abc-e48b5fd38664",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/learning-access",
+      "status": 200,
+      "permission": {
+        "authorization": "none",
+        "scene_free_count": null
+      }
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "POST",
+      "path": "/api/admin/v1/users/861528f9-df45-4605-8b2b-f1b59e972036/learning-authorization/preview",
+      "status": 200
+    },
+    {
+      "role": "admin",
+      "clock": "2026-10-17T08:00:00+00:00",
+      "method": "PUT",
+      "path": "/api/admin/v1/users/861528f9-df45-4605-8b2b-f1b59e972036/learning-authorization",
+      "status": 200,
+      "authorization_status": "active"
+    },
+    {
+      "role": "mini",
+      "clock": "2026-12-20T00:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/articles/774c666b-1d64-4b34-98e2-00b29adcb57a",
+      "status": 403
+    },
+    {
+      "role": "mini",
+      "clock": "2026-12-20T00:00:00+00:00",
+      "method": "GET",
+      "path": "/api/mini/v1/listening/statistics",
+      "status": 200
+    }
+  ]
+}

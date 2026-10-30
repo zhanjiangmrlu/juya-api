@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-30",
+  "api": {
+    "passed": 513,
+    "skipped": 33,
+    "ruff": "passed",
+    "format": "passed",
+    "mypy_files": 77
+  },
+  "isolated_mysql": {
+    "version": "8.4.13",
+    "database": "juya_verify",
+    "passed": 37,
+    "identity_guard": "UUID/datadir/bind/port/grants verified"
+  },
+  "admin": {
+    "passed": 220,
+    "files": 54,
+    "check": "passed",
+    "build": "passed",
+    "local_browser_e2e": 2
+  },
+  "mini": {
+    "passed": 407,
+    "files": 89,
+    "check": "passed",
+    "h5": "passed",
+    "mp_weixin": "passed",
+    "pages": 18,
+    "tabs": 3,
+    "source_main_bytes": 1052378,
+    "converted_main_bytes": 1262854,
+    "remaining_bytes": 834298
+  },
+  "review": {
+    "critical": 0,
+    "important_fixed": 1,
+    "minor": 0
+  },
+  "external_acceptance": "pending; see README"
+}
