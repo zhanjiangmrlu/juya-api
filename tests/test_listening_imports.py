@@ -3,6 +3,7 @@
 import io
 import zipfile
 
+import pytest
 from docx import Document
 
 from tests.content_helpers import key, recording
@@ -179,3 +180,59 @@ def test_docx_preview_has_no_article_write_and_staged_audio_is_private(admin, mi
     )
     assert changed["reviewed_at"] is not None
     assert admin.get(A + "/articles").json()["total"] == 0
+
+
+@pytest.mark.parametrize("reupload", [False, True])
+def test_deleted_article_no_longer_blocks_reimport(admin, reupload):
+    """Deleted articles and their saved import candidates cannot block a new draft."""
+    t = topic(admin)
+    original = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package())
+    cid = original["candidates"][0]["id"]
+    original = assign(admin, original, cid, t["id"])
+    preview = post(
+        admin,
+        A + f"/imports/{original['id']}/preview",
+        {"revision": original["revision"], "candidate_ids": [cid]},
+    )
+    saved = post(
+        admin,
+        A + f"/imports/{original['id']}/save",
+        {"preview_token": preview["preview_token"]},
+    )
+    old_id = saved["items"][0]["article_id"]
+    old = admin.get(A + f"/articles/{old_id}").json()
+    duplicate = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package())
+    assert duplicate["counts"]["duplicate"] == 1
+    post(admin, A + f"/articles/{old_id}/delete", {"revision": old["revision"]})
+    if reupload:
+        batch = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package())
+    else:
+        batch = admin.get(A + f"/imports/{duplicate['id']}").json()
+        assert batch["revision"] > duplicate["revision"]
+    candidate = batch["candidates"][0]
+    assert candidate["state"] == "incomplete"
+    assert candidate["duplicate_of"] is None
+    assert batch["counts"]["savable"] == 1
+    assert candidate["timeline"]["state"] == "pending"
+    assert candidate["timeline"]["job_id"] is not None
+    stable = admin.get(A + f"/imports/{batch['id']}").json()
+    assert stable["revision"] == batch["revision"]
+    assert stable["candidates"][0]["state"] == "incomplete"
+    batch = assign(admin, batch, candidate["id"], t["id"])
+    preview = post(
+        admin,
+        A + f"/imports/{batch['id']}/preview",
+        {"revision": batch["revision"], "candidate_ids": [candidate["id"]]},
+    )
+    current = post(
+        admin,
+        A + f"/imports/{batch['id']}/save",
+        {"preview_token": preview["preview_token"]},
+    )
+    assert current["items"][0]["status"] == "success"
+    assert current["items"][0]["article_id"] != old_id
+    assert admin.get(A + f"/articles/{old_id}").json()["deleted_at"] is not None
+    assert admin.get(A + "/articles").json()["total"] == 1
+    repeated = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package())
+    assert repeated["counts"]["duplicate"] == 1
+    assert repeated["candidates"][0]["duplicate_of"] == current["items"][0]["article_id"]

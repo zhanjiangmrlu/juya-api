@@ -16,7 +16,7 @@ from . import listening_service as service
 from .access_service import preview_token, read_preview
 from .content_models import Media
 from .database import timestamp
-from .dependencies import administrator, database, operation_key
+from .dependencies import administrator, database, operation_key, write_transaction
 from .errors import DomainError
 from .import_parser import W, checked_archive, member_bytes, paragraph_text, xml_document
 from .listening_api import mutate_timeline, page_view
@@ -457,6 +457,7 @@ def source_hash(db, payload):
 
 
 def classify(db, candidate):
+    """Classify the candidate against live articles and unsaved, active staging only."""
     if candidate.state == "unreadable" or candidate.removed or candidate.article_id:
         return
     candidate.source_hash = source_hash(db, candidate.payload)
@@ -466,7 +467,10 @@ def classify(db, candidate):
         if explicit_update
         else db.scalar(
             select(ListeningArticle)
-            .where(ListeningArticle.source_hash == candidate.source_hash)
+            .where(
+                ListeningArticle.source_hash == candidate.source_hash,
+                ListeningArticle.deleted_at.is_(None),
+            )
             .limit(1)
         )
     )
@@ -479,7 +483,8 @@ def classify(db, candidate):
                 ListeningCandidate.source_hash == candidate.source_hash,
                 ListeningCandidate.id != candidate.id,
                 ListeningCandidate.removed.is_(False),
-                ListeningCandidate.state.in_(["complete", "incomplete", "saved"]),
+                ListeningCandidate.article_id.is_(None),
+                ListeningCandidate.state.in_(["complete", "incomplete"]),
             )
             .limit(1)
         )
@@ -880,13 +885,32 @@ def routes():
             )
         return page_view(db, query, page, limit, lambda b: view(db, b))
 
-    @router.get("/imports/{batch_id}", response_model=Batch)
+    @router.get(
+        "/imports/{batch_id}", response_model=Batch, dependencies=[Depends(write_transaction)]
+    )
     def read(
         batch_id: str,
+        request: Request,
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
-        return view(db, owned(db, batch_id, admin.id))
+        """Recheck this owner's skipped candidates when their duplicate source changes."""
+        service.catalog_lock(db)
+        batch = owned(db, batch_id, admin.id)
+        changed = False
+        for row in candidates(db, batch):
+            if row.state != "duplicate" or row.removed:
+                continue
+            before = (row.state, row.duplicate_of)
+            classify(db, row)
+            if row.state in {"complete", "incomplete"}:
+                ensure_timeline(db, row.payload, request.app.state.clock())
+            changed = changed or before != (row.state, row.duplicate_of)
+        if changed:
+            batch.revision += 1
+            batch.status = "review"
+            db.flush()
+        return view(db, batch)
 
     @router.post("/imports/{batch_id}/files", response_model=Batch)
     def upload(
