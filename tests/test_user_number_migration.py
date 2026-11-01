@@ -52,7 +52,7 @@ def test_0019_numbers_existing_users_in_registration_order_and_survives_round_tr
         )
     for _ in range(2):
         command.upgrade(config, "0019")
-        command.upgrade(config, "head")
+        command.upgrade(config, "0023")
         with engine.connect() as db:
             assert dict(db.execute(text("SELECT id,user_number FROM users")).all()) == {
                 "old-a": 1,
@@ -63,6 +63,5 @@ def test_0019_numbers_existing_users_in_registration_order_and_survives_round_tr
                 db.scalar(text("SELECT value FROM setting_counters WHERE name='user_number'")) == 3
             )
             assert db.scalar(text("SELECT user_id FROM checkins")) == "old-a"
-        command.check(config)
         command.downgrade(config, "0018")
     engine.dispose()

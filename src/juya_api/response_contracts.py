@@ -74,6 +74,7 @@ class FieldIssue(PublicModel):
 
 
 class CardView(PublicModel):
+    free_revision: int = 1
     is_free: bool = False
     id: str
     display_name: str

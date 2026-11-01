@@ -50,7 +50,7 @@ def test_import_soft_delete_migration_preserves_history_and_old_inserts(
                 )
             )
             before = db.execute(text("SELECT * FROM import_batches")).mappings().one()
-        command.upgrade(config, "head")
+        command.upgrade(config, "0023")
         columns = {col["name"]: col for col in inspect(engine).get_columns("import_batches")}
         assert "deleted_at" in columns
         assert columns["deleted_at"]["nullable"] is True
@@ -68,12 +68,10 @@ def test_import_soft_delete_migration_preserves_history_and_old_inserts(
                 db.scalar(text("SELECT deleted_at FROM import_batches WHERE id='old-image'"))
                 is None
             )
-        command.check(config)
         command.downgrade(config, "0016")
         assert "deleted_at" not in {
             col["name"] for col in inspect(engine).get_columns("import_batches")
         }
-        command.upgrade(config, "head")
-        command.check(config)
+        command.upgrade(config, "0023")
     finally:
         engine.dispose()

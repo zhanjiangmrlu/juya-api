@@ -7,8 +7,8 @@ from sqlalchemy import inspect, text
 from .content_models import SettingCounter
 from .errors import DomainError
 
-MINIMUM_REVISION = 23
-CODE_CONTRACT = 2
+MINIMUM_REVISION = 24
+CODE_CONTRACT = 3
 
 
 def require_compatible_schema(db, *, minimum_revision=MINIMUM_REVISION):
@@ -27,7 +27,7 @@ def require_compatible_schema(db, *, minimum_revision=MINIMUM_REVISION):
         or not re.fullmatch(r"\d{4}", revisions[0])
         or int(revisions[0]) < minimum_revision
         or not contract
-        or not 1 <= contract.value <= CODE_CONTRACT
+        or not 3 <= contract.value <= CODE_CONTRACT
     ):
         raise DomainError(503, "schema_incompatible", "数据库与当前服务版本不兼容")
     return revisions[0]

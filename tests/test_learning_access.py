@@ -23,14 +23,27 @@ POLICY = "/api/admin/v1/learning-access/free-policy"
 
 
 def configure(admin, n):
-    admin.app.state.settings.learning_access_activation_ready = True
-    preview = admin.post(POLICY + "/preview", json={"free_count": n})
-    assert preview.status_code == 200, preview.text
-    response = admin.put(
-        POLICY, headers=key(), json={"preview_token": preview.json()["preview_token"]}
-    )
-    assert response.status_code == 200, response.text
-    return response.json()
+    """Select concrete scene fixtures using the independent free-access writer."""
+    from sqlalchemy import select
+
+    from juya_api.content_models import Card
+
+    with admin.app.state.sessions() as db:
+        ids = list(
+            db.scalars(
+                select(Card.id)
+                .where(Card.status == "published", Card.deleted_at.is_(None))
+                .order_by(Card.sort_order, Card.id)
+            )
+        )
+    for index, identifier in enumerate(ids):
+        path = f"/api/admin/v1/cards/{identifier}/free-access"
+        current = admin.get(path).json()
+        response = admin.put(
+            path, json={"is_free": index < n, "revision": current["revision"]}, headers=key()
+        )
+        assert response.status_code == 200, response.text
+    return admin.get(POLICY).json()
 
 
 def user_id(mini):
@@ -51,15 +64,15 @@ def change(admin, uid, action, expires_on=None):
 def test_unconfigured_does_not_gift_authorization(mini):
     response = mini.get("/api/mini/v1/learning-access")
     assert response.status_code == 200
-    assert response.json()["enabled"] is False
-    assert response.json()["free_count"] is None
+    assert response.json()["enabled"] is True
+    assert response.json()["free_count"] == 0
     assert response.json()["authorization"]["status"] == "none"
 
 
 @pytest.mark.parametrize("n", [-1, 1.5, "", "2", None, True])
 def test_invalid_count_does_not_enable(admin, mini, n):
     assert admin.post(POLICY + "/preview", json={"free_count": n}).status_code == 422
-    assert mini.get("/api/mini/v1/learning-access").json()["enabled"] is False
+    assert mini.get("/api/mini/v1/learning-access").json()["enabled"] is True
 
 
 def test_free_set_precedes_completed_filter_and_keeps_locked_summary(admin, mini):
@@ -84,12 +97,10 @@ def test_free_set_precedes_completed_filter_and_keeps_locked_summary(admin, mini
 
 
 def test_outdated_free_preview_is_rejected(admin, mini):
+    """No old numeric preview or confirmation can restore retired membership logic."""
     cards(admin, 1)
-    preview = admin.post(POLICY + "/preview", json={"free_count": 1}).json()
-    cards(admin, 1)
-    response = admin.put(POLICY, headers=key(), json={"preview_token": preview["preview_token"]})
-    assert response.status_code == 409
-    assert mini.get("/api/mini/v1/learning-access").json()["enabled"] is False
+    assert admin.post(POLICY + "/preview", json={"free_count": 1}).status_code == 410
+    assert admin.put(POLICY, headers=key(), json={"preview_token": "old-token"}).status_code == 410
 
 
 @pytest.mark.parametrize(
@@ -204,7 +215,7 @@ def test_free_preset_speech_and_active_body_lookup_have_distinct_permissions(adm
     assert response.json()["source"] == "context"
 
 
-def test_publication_changes_free_membership_without_changing_completion_history(admin, mini):
+def test_new_publication_preserves_other_free_membership_and_completion_history(admin, mini):
     cards(admin, 2)
     first = mini.get("/api/mini/v1/cards").json()["items"][0]
     configure(admin, 1)
@@ -222,7 +233,7 @@ def test_publication_changes_free_membership_without_changing_completion_history
         mini.get(f"/api/mini/v1/cards/{new_card['id']}/access").json()["access"]["is_free"] is True
     )
     assert (
-        mini.get(f"/api/mini/v1/cards/{first['id']}/access").json()["access"]["can_learn"] is False
+        mini.get(f"/api/mini/v1/cards/{first['id']}/access").json()["access"]["can_learn"] is True
     )
     assert mini.get("/api/mini/v1/me/statistics").json()["completed_cards"] == 1
 

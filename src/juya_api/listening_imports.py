@@ -26,10 +26,10 @@ from .listening_models import (
     ListeningCandidate,
     ListeningCategory,
     ListeningImport,
-    ListeningTopic,
 )
 from .listening_template import template_document
 from .listening_timeline import ensure_timeline, timeline_view
+from .listening_vocabulary import canonical_payload, sentence_spans, vocabulary_errors
 from .models import identifier
 from .response_contracts import Page
 from .security import fingerprint
@@ -43,7 +43,7 @@ class ImportInput(C.Input):
 
 
 class CandidateInput(C.Revision):
-    topic_id: str | None
+    category_id: str | None
     payload: C.ListeningPayload
     target_article_id: str | None = Field(default=None, min_length=1, max_length=36)
     target_revision: int | None = Field(default=None, ge=1)
@@ -84,7 +84,9 @@ class Candidate(C.Input):
     path: str
     state: str
     payload: C.ListeningPayload
-    topic_id: str | None
+    category_id: str | None
+    category_name: str = ""
+    category_order: int = 0
     errors: list[str]
     article_id: str | None
     duplicate_of: str | None
@@ -126,7 +128,7 @@ class ImportPreview(C.Input):
 
 
 class ContentSnapshot(C.Input):
-    topic_id: str | None
+    category_id: str | None
     payload: C.ListeningPayload
 
 
@@ -156,7 +158,7 @@ class SaveResult(C.Input):
 class DocxPreview(C.Input):
     payload: C.ListeningPayload
     hints: dict[str, str]
-    topic_id: str | None = None
+    category_id: str | None = None
 
 
 def owned(db, batch_id, admin_id, revision=None):
@@ -248,10 +250,11 @@ def assert_unique_target(db, batch, candidate_id, target_id):
 
 
 def candidate_fingerprint(candidate):
+    """Bind review tokens to candidate content, category and explicit target."""
     return fingerprint(
         {
             "id": candidate.id,
-            "topic_id": candidate.topic_id,
+            "category_id": candidate.category_id,
             "payload": candidate.payload,
             **target_binding(candidate),
         }
@@ -259,6 +262,7 @@ def candidate_fingerprint(candidate):
 
 
 def view(db, batch):
+    """Render persistent candidate state and directly owned category metadata."""
     rows = candidates(db, batch)
     counts = {
         "complete": 0,
@@ -285,7 +289,9 @@ def view(db, batch):
                 "path": row.path,
                 "state": row.state,
                 "payload": row.payload,
-                "topic_id": row.topic_id,
+                "category_id": row.category_id,
+                "category_name": service.category_name(db, row.category_id),
+                "category_order": 0,
                 "errors": row.errors,
                 "article_id": row.article_id,
                 "duplicate_of": row.duplicate_of,
@@ -334,6 +340,8 @@ def parse_docx(data):
         "5组语块": "expressions",
         "表达": "expressions",
         "5组表达": "expressions",
+        "重点词汇": "vocabulary",
+        "词汇": "vocabulary",
     }
     hints = {}
     seen_labels = set()
@@ -393,6 +401,24 @@ def parse_docx(data):
                 ]
                 for row in element.findall(W + "tr")
             ]
+            if section == "vocabulary":
+                if not rows or rows[0] != ["词汇", "本句释义", "音标", "对应英文原句"]:
+                    raise DomainError(422, "docx_structure", "请核对词汇表格的四列字段")
+                for cells in rows[1:]:
+                    if len(cells) != 4:
+                        raise DomainError(422, "docx_structure", "词汇表格不能含合并单元格")
+                    if any(cells):
+                        payload["vocabulary"].append(
+                            {
+                                "id": identifier(),
+                                "english": cells[0],
+                                "meaning": cells[1],
+                                "phonetic": cells[2],
+                                "source": None,
+                                "_quote": cells[3],
+                            }
+                        )
+                continue
             if (
                 section != "expressions"
                 or not rows
@@ -415,35 +441,53 @@ def parse_docx(data):
         while parts and not parts[-1].strip():
             parts.pop()
         payload[field] = "\n".join(parts)
+    for word in payload["vocabulary"]:
+        quote = word.pop("_quote")
+        word["source_hint"] = quote
+        sources = [
+            (start, end, sentence)
+            for start, end, sentence in sentence_spans(payload["body_en"])
+            if sentence == quote
+        ]
+        if len(sources) == 1:
+            start, end, sentence = sources[0]
+            matches = list(
+                re.finditer(r"\b" + re.escape(word["english"]) + r"\b", sentence, re.IGNORECASE)
+            )
+            all_matches = list(
+                re.finditer(
+                    r"\b" + re.escape(word["english"]) + r"\b", payload["body_en"], re.IGNORECASE
+                )
+            )
+            if len(matches) == 1 and len(all_matches) == 1:
+                match = matches[0]
+                word["source"] = {
+                    "start": start,
+                    "end": end,
+                    "quote": sentence,
+                    "word_start": start + match.start(),
+                    "word_end": start + match.end(),
+                    "word": match.group(),
+                    "confirmed": False,
+                }
     try:
         return C.ListeningPayload.model_validate(payload).model_dump(), hints
     except ValueError:
         raise DomainError(422, "docx_structure", "资料字段超过限制，请拆分后重试") from None
 
 
-def matched_topic(db, hints):
-    """Resolve explicit Chinese/English names only when one existing owner matches."""
-
-    def normalize(value):
-        return (value or "").strip().casefold()
-
-    topic_name, category_name = normalize(hints.get("主题")), normalize(hints.get("分类"))
-    if not topic_name:
+def matched_category(db, hints):
+    """Match one explicit live category exactly; historical topic hints never choose ownership."""
+    name = (hints.get("分类") or "").strip().casefold()
+    if not name:
         return None
-    matches = []
-    for topic, category in db.execute(
-        select(ListeningTopic, ListeningCategory).join(
-            ListeningCategory, ListeningTopic.category_id == ListeningCategory.id
+    matches = [
+        row.id
+        for row in db.scalars(
+            select(ListeningCategory).where(ListeningCategory.deleted_at.is_(None))
         )
-    ):
-        if topic_name not in {normalize(topic.name), normalize(topic.name_en)}:
-            continue
-        if category_name and category_name not in {
-            normalize(category.name),
-            normalize(category.name_en),
-        }:
-            continue
-        matches.append(topic.id)
+        if name in {row.name.strip().casefold(), row.name_en.strip().casefold()}
+    ]
     return matches[0] if len(matches) == 1 else None
 
 
@@ -453,14 +497,16 @@ def source_hash(db, payload):
     for name in ["audio_id", "image_id"]:
         medium = db.get(Media, payload.get(name)) if payload.get(name) else None
         normalized[name] = medium.sha256 if medium else None
-    return fingerprint(normalized)
+    return fingerprint(canonical_payload(normalized))
 
 
 def classify(db, candidate):
     """Classify the candidate against live articles and unsaved, active staging only."""
     if candidate.state == "unreadable" or candidate.removed or candidate.article_id:
         return
-    candidate.source_hash = source_hash(db, candidate.payload)
+    candidate.canonical_hash = source_hash(db, candidate.payload)
+    if not candidate.source_hash:
+        candidate.source_hash = candidate.canonical_hash
     explicit_update = bool(target_binding(candidate)["target_article_id"])
     existing = (
         None
@@ -468,7 +514,10 @@ def classify(db, candidate):
         else db.scalar(
             select(ListeningArticle)
             .where(
-                ListeningArticle.source_hash == candidate.source_hash,
+                (
+                    (ListeningArticle.canonical_hash == candidate.canonical_hash)
+                    | (ListeningArticle.source_hash == candidate.canonical_hash)
+                ),
                 ListeningArticle.deleted_at.is_(None),
             )
             .limit(1)
@@ -480,7 +529,7 @@ def classify(db, candidate):
         else db.scalar(
             select(ListeningCandidate)
             .where(
-                ListeningCandidate.source_hash == candidate.source_hash,
+                ListeningCandidate.canonical_hash == candidate.canonical_hash,
                 ListeningCandidate.id != candidate.id,
                 ListeningCandidate.removed.is_(False),
                 ListeningCandidate.article_id.is_(None),
@@ -499,12 +548,12 @@ def classify(db, candidate):
         candidate.errors = []
         return
     candidate.duplicate_of = None
-    errors = []
+    errors = vocabulary_errors(candidate.payload)
     for field in ["title_zh", "title_en", "body_en", "translation_zh"]:
         if not candidate.payload[field].strip():
             errors.append(field + ":required_for_publish")
-    if not candidate.topic_id:
-        errors.append("topic_id:confirmation_required")
+    if not candidate.category_id:
+        errors.append("category_id:confirmation_required")
     expressions = candidate.payload["expressions"]
     if len(expressions) != 5 or any(
         not all(e[f].strip() for f in ["english", "chinese", "example"]) for e in expressions
@@ -517,6 +566,7 @@ def classify(db, candidate):
 
 
 def parse_package(db, settings, batch, name, data, now):
+    """Stage package media and candidates without creating live articles."""
     package_id = identifier()
     checksum = hashlib.sha256(data).hexdigest()
     storage = ObjectStorage(settings)
@@ -582,7 +632,7 @@ def parse_package(db, settings, batch, name, data, now):
         db.flush()
         try:
             payload, hints = parse_docx(document)
-            row.topic_id = matched_topic(db, hints)
+            row.category_id = matched_category(db, hints)
             directory = PurePosixPath(path).parent
             neighbors = [
                 (p, d)
@@ -663,6 +713,7 @@ def parse_package(db, settings, batch, name, data, now):
 
 
 def selected(db, batch, ids, *, saving=False):
+    """Select active candidates and require direct category ownership before saving."""
     if len(ids) != len(set(ids)):
         raise DomainError(422, "listening_selection_invalid", "选择不能重复")
     by_id = {c.id: c for c in candidates(db, batch)}
@@ -671,7 +722,7 @@ def selected(db, batch, ids, *, saving=False):
         row = by_id.get(candidate_id)
         if not row or row.removed or (not saving and row.article_id):
             raise DomainError(409, "listening_candidate_changed", "候选已保存或移除，请刷新")
-        if saving and (row.state == "unreadable" or not row.topic_id):
+        if saving and (row.state == "unreadable" or not row.category_id):
             raise DomainError(
                 422, "listening_candidate_not_savable", "无法读取或未确认主题的候选不能保存"
             )
@@ -704,8 +755,9 @@ def routes():
             raise DomainError(413, "upload_limit", "DOCX为空或超过当前限制")
 
         def execute():
+            """Apply the checked revision change under the existing transaction locks."""
             payload, hints = parse_docx(raw)
-            return {"payload": payload, "hints": hints, "topic_id": matched_topic(db, hints)}
+            return {"payload": payload, "hints": hints, "category_id": matched_category(db, hints)}
 
         return operate(
             db,
@@ -1027,6 +1079,7 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         def execute():
+            """Apply the checked revision change under the existing transaction locks."""
             service.catalog_lock(db)
             batch = owned(db, batch_id, admin.id, body.revision)
             row = selected(db, batch, [candidate_id])[0]
@@ -1034,8 +1087,8 @@ def routes():
                 raise DomainError(
                     422, "listening_candidate_readonly", "无法读取或重复候选不可编辑保存"
                 )
-            if body.topic_id:
-                service.require_topic(db, body.topic_id)
+            if body.category_id:
+                service.require_category(db, body.category_id)
             binding = target_binding(row)
             if {"target_article_id", "target_revision"} <= body.model_fields_set:
                 binding = {
@@ -1052,7 +1105,7 @@ def routes():
             )
             validate_candidate_payload(db, batch, row, body.payload.model_dump(), target)
             row.resources = {**row.resources, "_metadata": binding}
-            row.payload, row.topic_id = body.payload.model_dump(), body.topic_id
+            row.payload, row.category_id = body.payload.model_dump(), body.category_id
             classify(db, row)
             ensure_timeline(db, row.payload, request.app.state.clock())
             batch.revision += 1
@@ -1110,6 +1163,7 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         def execute():
+            """Apply the checked revision change under the existing transaction locks."""
             service.catalog_lock(db)
             batch = owned(db, batch_id, admin.id, body.revision)
             rows = selected(db, batch, body.candidate_ids, saving=True)
@@ -1129,12 +1183,12 @@ def routes():
                         "operation": "update" if target else "create",
                         **binding,
                         "before": {
-                            "topic_id": target.draft_topic_id or target.topic_id,
+                            "category_id": target.draft_category_id or target.category_id,
                             "payload": target.payload,
                         }
                         if target
                         else None,
-                        "after": {"topic_id": row.topic_id, "payload": row.payload},
+                        "after": {"category_id": row.category_id, "payload": row.payload},
                     }
                 )
                 snapshots[row.id] = {"fingerprint": candidate_fingerprint(row), **binding}
@@ -1186,6 +1240,7 @@ def routes():
         now = request.app.state.clock()
 
         def execute():
+            """Apply the checked revision change under the existing transaction locks."""
             service.catalog_lock(db)
             data = read_preview(
                 request.app.state.settings,
@@ -1266,29 +1321,32 @@ def routes():
                         same = False
                         if target:
                             same = (
-                                source_hash(db, target.payload) == row.source_hash
-                                and (target.draft_topic_id or target.topic_id) == row.topic_id
+                                source_hash(db, target.payload) == row.canonical_hash
+                                and (target.draft_category_id or target.category_id)
+                                == row.category_id
                             )
                             if not same:
                                 update = C.ArticleUpdate(
                                     revision=binding["target_revision"],
-                                    topic_id=row.topic_id,
+                                    category_id=row.category_id,
                                     payload=row.payload,
                                 )
                                 service.update_article(
                                     db, target, update, now, imported_ids=imported_ids
                                 )
                             article = target
+                            article.canonical_hash = row.canonical_hash
                         else:
                             article = service.create_article(
                                 db,
-                                row.topic_id,
+                                row.category_id,
                                 row.payload,
                                 now,
                                 batch_id=batch.id,
                                 source_hash=row.source_hash,
                                 owners={batch.id},
                             )
+                        article.canonical_hash = row.canonical_hash
                         published_version_id = None
                         if body.submit_action == "publish":
                             publication = service.publish_article(

@@ -5,41 +5,17 @@ from sqlalchemy import func, select
 from juya_api.learning_models import Checkin
 from juya_api.listening_models import ListeningCompletion, ListeningDaily, ListeningProgress
 from tests.content_helpers import key, recording
-from tests.test_listening import A, M, article, policy, post, publish, topic
+from tests.test_listening import A, M, article, policy, post, publish
 
 
 def test_topic_english_round_trip_preserves_legacy_updates(admin, mini):
-    parent = topic(admin)
-    created = post(
-        admin,
-        A + "/topics",
-        {
-            "name": "午间休息",
-            "name_en": "A short break",
-            "description": "保留简介",
-            "category_id": parent["category_id"],
-        },
-    )
-    assert created["name_en"] == "A short break"
-    updated = admin.put(
-        A + "/topics/" + created["id"],
-        headers=key(),
-        json={
-            "name": "午间",
-            "category_id": created["category_id"],
-            "revision": created["revision"],
-            "name_en": "A short break",
-        },
-    )
-    assert updated.status_code == 200, updated.text
-    assert updated.json()["name_en"] == "A short break"
-    assert updated.json()["description"] == "保留简介"
-    live = publish(admin, article(admin, created["id"]))
+    """English category labels replace topic creation and remain visible on home."""
+    parent = post(admin, A + "/categories", {"name": "日常", "name_en": "Everyday"})
+    live = publish(admin, article(admin, parent["id"]))
     policy(admin, 1)
-    assert mini.get(M + "/home").json()["topics"][0]["name_en"] == "A short break"
-    assert mini.get(M + "/topics").json()["items"][0]["name_en"] == "A short break"
-    assert live["topic_id"] == created["id"]
-    assert parent["name_en"] == "A short break"
+    assert mini.get(M + "/home").json()["categories"][0]["name_en"] == "Everyday"
+    assert mini.get(M + "/home").json()["topics"] == []
+    assert live["category_id"] == parent["id"]
 
 
 def test_admin_preview_reads_publication_and_only_its_media(admin, mini, system):
@@ -62,7 +38,7 @@ def test_admin_preview_reads_publication_and_only_its_media(admin, mini, system)
             headers=key(),
             json={
                 "revision": live["revision"],
-                "topic_id": item["topic_id"],
+                "category_id": item["category_id"],
                 "payload": changed,
             },
         ).status_code
@@ -74,7 +50,7 @@ def test_admin_preview_reads_publication_and_only_its_media(admin, mini, system)
     assert preview.json()["payload"] == item["payload"]
     assert preview.json()["version_id"] == live["version_id"]
     assert preview.json()["word_count"] == item["word_count"]
-    assert preview.json()["draft_topic_id"] is None
+    assert preview.json()["draft_category_id"] is None
     assert admin.get(path + "/media/" + item["payload"]["audio_id"]).status_code == 200
     assert admin.head(path + "/media/" + item["payload"]["audio_id"]).status_code == 200
     assert admin.get(path + "/media/" + new_audio["id"]).status_code == 404
@@ -103,7 +79,7 @@ def test_admin_published_preview_rejects_unavailable_content(admin):
 def test_home_continue_progress_and_duration_use_current_publication(admin, mini):
     item = publish(admin, article(admin))
     policy(admin, 1)
-    summary = mini.get(M + "/topics/" + item["topic_id"] + "/articles").json()["items"][0]
+    summary = mini.get(M + "/articles?category_id=" + item["category_id"]).json()["items"][0]
     assert summary["audio_duration_seconds"] > 0
     assert summary["progress"] is None
     progress = {
@@ -127,7 +103,7 @@ def test_home_continue_progress_and_duration_use_current_publication(admin, mini
         headers=key(),
         json={
             "revision": item["revision"],
-            "topic_id": item["topic_id"],
+            "category_id": item["category_id"],
             "payload": {**item["payload"], "body_en": "We rest again."},
         },
     ).json()
@@ -151,7 +127,7 @@ def test_admin_media_follows_republication_and_deleted_articles_are_unavailable(
         headers=key(),
         json={
             "revision": item["revision"],
-            "topic_id": item["topic_id"],
+            "category_id": item["category_id"],
             "payload": {
                 **item["payload"],
                 "title_en": "Updated publication",
@@ -178,7 +154,7 @@ def test_continue_paragraph_uses_original_codepoints_and_nonempty_crlf_lines(adm
         headers=key(),
         json={
             "revision": item["revision"],
-            "topic_id": item["topic_id"],
+            "category_id": item["category_id"],
             "payload": {**item["payload"], "body_en": body},
         },
     ).json()

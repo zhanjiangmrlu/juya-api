@@ -17,14 +17,14 @@ def staged(admin, title="新的听读资料"):
     return upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package(title))
 
 
-def bind(admin, batch, candidate_id, target, *, payload=None, topic_id=None):
+def bind(admin, batch, candidate_id, target, *, payload=None, category_id=None):
     candidate = next(c for c in batch["candidates"] if c["id"] == candidate_id)
     response = admin.put(
         A + f"/imports/{batch['id']}/candidates/{candidate_id}",
         headers=key(),
         json={
             "revision": batch["revision"],
-            "topic_id": topic_id or target["topic_id"],
+            "category_id": category_id or target["category_id"],
             "payload": payload or candidate["payload"],
             "target_article_id": target["id"],
             "target_revision": target["revision"],
@@ -65,7 +65,7 @@ def test_batch_update_waits_for_confirmation_and_preserves_live_version_history_
     batch = staged(admin)
     cid = batch["candidates"][0]["id"]
     new_topic = topic(admin)
-    batch = bind(admin, batch, cid, target, topic_id=new_topic["id"])
+    batch = bind(admin, batch, cid, target, category_id=new_topic["id"])
     candidate = batch["candidates"][0]
     assert candidate["target_article_id"] == target["id"]
     assert candidate["target_revision"] == target["revision"]
@@ -80,8 +80,8 @@ def test_batch_update_waits_for_confirmation_and_preserves_live_version_history_
             "operation": "update",
             "target_article_id": target["id"],
             "target_revision": target["revision"],
-            "before": {"topic_id": target["topic_id"], "payload": old_payload},
-            "after": {"topic_id": new_topic["id"], "payload": candidate["payload"]},
+            "before": {"category_id": target["category_id"], "payload": old_payload},
+            "after": {"category_id": new_topic["id"], "payload": candidate["payload"]},
         }
     ]
     assert admin.get(A + f"/articles/{target['id']}").json()["payload"] == old_payload
@@ -113,7 +113,7 @@ def test_batch_update_waits_for_confirmation_and_preserves_live_version_history_
         == target["id"]
     )
     live = mini.get(M + f"/articles/{target['id']}").json()
-    assert live["payload"] == old_payload and live["topic_id"] == target["topic_id"]
+    assert live["payload"] == old_payload and live["category_id"] == target["category_id"]
     assert live["state"]["favorite"] and live["state"]["completed"]
     assert mini.get(M + "/statistics").json()["completed_articles"] == 1
     assert actual["timeline"]["job_id"] == candidate["timeline"]["job_id"]
@@ -125,7 +125,7 @@ def test_batch_update_waits_for_confirmation_and_preserves_live_version_history_
         headers=key(),
         json={
             "revision": actual["revision"],
-            "topic_id": actual["topic_id"],
+            "category_id": actual["category_id"],
             "payload": actual["payload"],
         },
     )
@@ -148,7 +148,7 @@ def test_staging_can_keep_only_bound_targets_selected_original_media(admin):
         headers=key(),
         json={
             "revision": target["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": {**target["payload"], "image_id": image["id"]},
         },
     ).json()
@@ -173,7 +173,7 @@ def test_staging_can_keep_only_bound_targets_selected_original_media(admin):
         headers=key(),
         json={
             "revision": batch["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "target_article_id": target["id"],
             "target_revision": target["revision"],
             "payload": {**kept, "audio_id": unrelated["payload"]["audio_id"]},
@@ -189,14 +189,14 @@ def test_target_conflict_is_per_item_and_only_failed_candidate_is_retried(admin)
     )
     update_id, create_id = [c["id"] for c in batch["candidates"]]
     batch = bind(admin, batch, update_id, target)
-    batch = assign(admin, batch, create_id, target["topic_id"])
+    batch = assign(admin, batch, create_id, target["category_id"])
     preview = confirm(admin, batch)
     externally_edited = admin.put(
         A + f"/articles/{target['id']}",
         headers=key(),
         json={
             "revision": target["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": {**target["payload"], "title_zh": "别人已修改"},
         },
     ).json()
@@ -262,7 +262,7 @@ def test_pair_validation_binding_recovery_and_same_batch_duplicate_target_confli
         headers=key(),
         json={
             "revision": batch["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": first["payload"],
             "target_article_id": target["id"],
         },
@@ -270,7 +270,7 @@ def test_pair_validation_binding_recovery_and_same_batch_duplicate_target_confli
     assert invalid.status_code == 422
     batch = bind(admin, batch, first["id"], target)
     # An older editor omitting new fields must not silently change update into create.
-    batch = assign(admin, batch, first["id"], target["topic_id"])
+    batch = assign(admin, batch, first["id"], target["category_id"])
     assert (
         next(c for c in batch["candidates"] if c["id"] == first["id"])["target_article_id"]
         == target["id"]
@@ -280,7 +280,7 @@ def test_pair_validation_binding_recovery_and_same_batch_duplicate_target_confli
         headers=key(),
         json={
             "revision": batch["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": second["payload"],
             "target_article_id": target["id"],
             "target_revision": target["revision"],
@@ -350,7 +350,7 @@ def test_target_media_preview_and_timeline_recheck_bound_revision_and_word_posit
         headers=key(),
         json={
             "revision": batch["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": invalid_words,
             "target_article_id": target["id"],
             "target_revision": target["revision"],
@@ -365,7 +365,7 @@ def test_target_media_preview_and_timeline_recheck_bound_revision_and_word_posit
         headers=key(),
         json={
             "revision": target["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": target["payload"],
         },
     )
@@ -383,7 +383,7 @@ def test_idempotency_distinguishes_omitted_target_binding_from_explicit_clear(ad
     headers = key()
     body = {
         "revision": batch["revision"],
-        "topic_id": target["topic_id"],
+        "category_id": target["category_id"],
         "payload": candidate["payload"],
     }
     path = A + f"/imports/{batch['id']}/candidates/{cid}"
@@ -414,7 +414,7 @@ def test_same_media_bytes_with_new_ids_skip_against_current_target_not_original_
         headers=key(),
         json={
             "revision": target["revision"],
-            "topic_id": target["topic_id"],
+            "category_id": target["category_id"],
             "payload": {**target["payload"], "image_id": image["id"]},
         },
     ).json()

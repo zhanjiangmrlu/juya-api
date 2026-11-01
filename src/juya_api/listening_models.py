@@ -16,6 +16,7 @@ class ListeningCategory(Base):
     name_en: Mapped[str] = mapped_column(String(300), default="", server_default="")
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     revision: Mapped[int] = mapped_column(Integer, default=1)
+    deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
 
 
 class ListeningTopic(Base):
@@ -32,7 +33,13 @@ class ListeningTopic(Base):
 class ListeningArticle(Base):
     __tablename__ = "listening_articles"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=identifier)
-    topic_id: Mapped[str] = mapped_column(ForeignKey("listening_topics.id"), index=True)
+    topic_id: Mapped[str | None] = mapped_column(ForeignKey("listening_topics.id"), index=True)
+    category_id: Mapped[str] = mapped_column(ForeignKey("listening_categories.id"), index=True)
+    draft_category_id: Mapped[str | None] = mapped_column(ForeignKey("listening_categories.id"))
+    category_order: Mapped[int] = mapped_column(Integer, default=0)
+    draft_category_order: Mapped[int | None] = mapped_column(Integer)
+    is_free: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    free_revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     draft_topic_id: Mapped[str | None] = mapped_column(ForeignKey("listening_topics.id"))
     draft_topic_order: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(16), default="draft", index=True)
@@ -43,6 +50,7 @@ class ListeningArticle(Base):
     global_order: Mapped[int] = mapped_column(Integer, default=0)
     batch_id: Mapped[str | None] = mapped_column(String(36), index=True)
     source_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+    canonical_hash: Mapped[str | None] = mapped_column(String(64), index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)
     deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
 
@@ -153,9 +161,19 @@ class ListeningCandidate(Base):
     state: Mapped[str] = mapped_column(String(24))
     payload: Mapped[dict] = mapped_column(JSON)
     topic_id: Mapped[str | None] = mapped_column(ForeignKey("listening_topics.id"))
+    category_id: Mapped[str | None] = mapped_column(ForeignKey("listening_categories.id"))
     source_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+    canonical_hash: Mapped[str | None] = mapped_column(String(64), index=True)
     errors: Mapped[list] = mapped_column(JSON, default=list)
     resources: Mapped[dict] = mapped_column(JSON, default=dict)
     article_id: Mapped[str | None] = mapped_column(ForeignKey("listening_articles.id"))
     duplicate_of: Mapped[str | None] = mapped_column(String(36))
     removed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class ContentMigrationSnapshot(Base):
+    """Frozen pre-DDL source for safely resuming MySQL's nontransactional expansion."""
+
+    __tablename__ = "content_migration_snapshots"
+    id: Mapped[str] = mapped_column(String(16), primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON)

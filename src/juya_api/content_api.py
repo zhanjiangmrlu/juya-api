@@ -120,7 +120,7 @@ def admin_routes():
             "items": [
                 {
                     **card_view(db, card),
-                    "is_free": card.id in free_ids(db, policy(db)["free_count"]),
+                    "is_free": card.is_free,
                 }
                 for card in rows
             ],

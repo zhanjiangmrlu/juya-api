@@ -87,7 +87,7 @@ def test_late_worker_result_cannot_replace_new_draft_input(admin, system):
                 headers=key(),
                 json={
                     "revision": row["revision"],
-                    "topic_id": row["topic_id"],
+                    "category_id": row["category_id"],
                     "payload": {**row["payload"], "body_en": "A new saved body."},
                 },
             )

@@ -78,6 +78,14 @@ def publish(admin, card):
         json={"revision": card["draft_revision"], "preview_id": preview.json()["preview_id"]},
     )
     assert response.status_code == 200, response.text
+    identifier = card["id"]
+    current = admin.get(f"/api/admin/v1/cards/{identifier}/free-access").json()
+    free = admin.put(
+        f"/api/admin/v1/cards/{identifier}/free-access",
+        json={"is_free": True, "revision": current["revision"]},
+        headers=key(),
+    )
+    assert free.status_code == 200, free.text
     return response.json()
 
 

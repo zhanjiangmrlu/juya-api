@@ -160,6 +160,7 @@ def revision_matches(draft: CardDraft | None, revision: int) -> CardDraft:
 
 
 def card_view(db, card: Card) -> dict:
+    """Render editable content and its independent configured free flag."""
     draft = db.get(CardDraft, card.id)
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
     assert draft is not None
@@ -174,6 +175,8 @@ def card_view(db, card: Card) -> dict:
         "status": card.status,
         "current_version_id": card.current_version_id,
         "draft_revision": draft.revision,
+        "is_free": card.is_free,
+        "free_revision": card.free_revision,
         "content": draft.payload,
         "sort_order": card.sort_order,
         "updated_at": timestamp(draft.updated_at),

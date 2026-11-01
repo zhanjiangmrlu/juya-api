@@ -33,14 +33,14 @@ def policy(db):
     """Missing policy means rollout is disabled, never a guessed free quantity."""
     row = db.get(FreePolicy, 1)
     return {
-        "enabled": bool(row and row.enabled),
-        "free_count": row.free_count if row else None,
+        "enabled": True,
+        "free_count": len(free_ids(db)),
         "revision": row.revision if row else 0,
     }
 
 
-def free_ids(db, count):
-    """Take the globally ordered published set before applying any personal filter."""
+def free_ids(db, count=None):
+    """Return the full explicit live set; the old numeric argument no longer selects content."""
     return list(
         db.scalars(
             select(Card.id)
@@ -48,33 +48,32 @@ def free_ids(db, count):
                 Card.status == "published",
                 Card.deleted_at.is_(None),
                 Card.current_version_id.is_not(None),
+                Card.is_free.is_(True),
             )
             .order_by(Card.sort_order, Card.id)
-            .limit(count or 0)
         )
     )
 
 
 def learning_access(db, user_id, card_id, now):
-    """Return explicit publish and user permissions without exposing protected content."""
-    config, grant = policy(db), authorization(db, user_id, now)
+    """Require live publication and either an explicit free flag or active grant."""
+    grant = authorization(db, user_id, now)
     card = db.get(Card, card_id)
     published = bool(
         card and not card.deleted_at and card.status == "published" and card.current_version_id
     )
-    free = bool(config["enabled"] and card_id in free_ids(db, config["free_count"]))
-    learn = published and (not config["enabled"] or free or grant["status"] == "active")
-    lookup = published and (not config["enabled"] or grant["status"] == "active")
+    free = bool(published and card.is_free)
+    learn = published and (free or grant["status"] == "active")
     counter = db.get(SettingCounter, "catalog_revision")
     return {
         "can_learn": bool(learn),
-        "can_lookup": bool(lookup),
+        "can_lookup": bool(published and grant["status"] == "active"),
         "is_free": free,
         "reason": None
         if learn
         else ("learning_authorization_required" if published else "content_unavailable"),
         "version": (
-            f"{config['revision']}:{grant['revision']}:"
+            f"{card.free_revision if card else 0}:{grant['revision']}:"
             f"{counter.value if counter else 0}:{grant['status']}"
         ),
         "server_now": timestamp(now),

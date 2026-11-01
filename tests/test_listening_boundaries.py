@@ -9,13 +9,13 @@ def test_frozen_queue_survives_admin_reorder(admin, mini):
     rows = [publish(admin, article(admin, t["id"], str(n))) for n in range(3)]
     policy(admin, 3)
     token = mini.get(M + f"/articles/{rows[0]['id']}").json()["queue_token"]
-    order = admin.get(A + "/order", params={"scope": "topic", "topic_id": t["id"]}).json()
+    order = admin.get(A + "/order", params={"scope": "category", "category_id": t["id"]}).json()
     changed = admin.put(
         A + "/order",
         headers=key(),
         json={
-            "scope": "topic",
-            "topic_id": t["id"],
+            "scope": "category",
+            "category_id": t["id"],
             "revision": order["revision"],
             "article_ids": [r["id"] for r in reversed(rows)],
         },
@@ -57,7 +57,7 @@ def test_restricted_safe_thumbnail_does_not_unlock_original(admin, mini):
         headers=key(),
         json={
             "revision": row["revision"],
-            "topic_id": row["topic_id"],
+            "category_id": row["category_id"],
             "payload": {**row["payload"], "image_id": image["id"]},
         },
     ).json()
@@ -95,7 +95,7 @@ def test_failed_batch_delete_preserves_success_and_cannot_resurrect(admin, mini)
             headers=key(),
             json={
                 "revision": first["revision"],
-                "topic_id": first["topic_id"],
+                "category_id": first["category_id"],
                 "payload": first["payload"],
             },
         ).status_code
@@ -234,7 +234,7 @@ def test_uploaded_ready_timeline_does_not_requeue_on_same_draft_save(admin, syst
             headers=key(),
             json={
                 "revision": row["revision"],
-                "topic_id": row["topic_id"],
+                "category_id": row["category_id"],
                 "payload": row["payload"],
             },
         ).status_code
@@ -299,7 +299,7 @@ def test_confirmed_context_lemma_and_exact_position_override_dictionary(admin, m
     row = admin.put(
         A + f"/articles/{row['id']}",
         headers=key(),
-        json={"revision": row["revision"], "topic_id": row["topic_id"], "payload": payload},
+        json={"revision": row["revision"], "category_id": row["category_id"], "payload": payload},
     ).json()
     row = publish(admin, row)
     policy(admin, 0)
@@ -334,9 +334,7 @@ def test_confirmed_context_lemma_and_exact_position_override_dictionary(admin, m
 def test_admin_category_filter_and_uploaded_unsaved_media_preview(admin):
     first = article(admin)
     second = article(admin)
-    category = next(
-        t for t in admin.get(A + "/topics").json()["items"] if t["id"] == first["topic_id"]
-    )["category_id"]
+    category = first["category_id"]
     result = admin.get(A + "/articles", params={"category_id": category}).json()
     assert [r["id"] for r in result["items"]] == [first["id"]]
     uploaded = admin.post(
@@ -397,14 +395,14 @@ def test_sorting_invalidates_old_edit_confirmation_without_changing_content_vers
     t = topic(admin)
     rows = [publish(admin, article(admin, t["id"], str(n))) for n in range(2)]
     first = rows[0]
-    order = admin.get(A + "/order", params={"scope": "topic", "topic_id": t["id"]}).json()
+    order = admin.get(A + "/order", params={"scope": "category", "category_id": t["id"]}).json()
     assert (
         admin.put(
             A + "/order",
             headers=key(),
             json={
-                "scope": "topic",
-                "topic_id": t["id"],
+                "scope": "category",
+                "category_id": t["id"],
                 "revision": order["revision"],
                 "article_ids": [r["id"] for r in reversed(rows)],
             },
@@ -414,7 +412,7 @@ def test_sorting_invalidates_old_edit_confirmation_without_changing_content_vers
     response = admin.put(
         A + f"/articles/{first['id']}",
         headers=key(),
-        json={"revision": first["revision"], "topic_id": t["id"], "payload": first["payload"]},
+        json={"revision": first["revision"], "category_id": t["id"], "payload": first["payload"]},
     )
     assert response.status_code == 409
     assert admin.get(A + f"/articles/{first['id']}").json()["version_id"] == first["version_id"]
@@ -430,21 +428,21 @@ def test_editing_published_topic_is_draft_only_until_explicit_publication(admin,
         headers=key(),
         json={
             "revision": first["revision"],
-            "topic_id": new_topic["id"],
+            "category_id": new_topic["id"],
             "payload": first["payload"],
         },
     )
     assert changed.status_code == 200
     changed = changed.json()
-    assert changed["topic_id"] == new_topic["id"]
-    assert mini.get(M + f"/articles/{first['id']}").json()["topic_id"] == old_topic["id"]
-    assert mini.get(M + f"/topics/{old_topic['id']}/articles").json()["total"] == 2
-    assert mini.get(M + f"/topics/{new_topic['id']}/articles").json()["total"] == 0
+    assert changed["category_id"] == new_topic["id"]
+    assert mini.get(M + f"/articles/{first['id']}").json()["category_id"] == old_topic["id"]
+    assert mini.get(M + f"/articles?category_id={old_topic['id']}").json()["total"] == 2
+    assert mini.get(M + f"/articles?category_id={new_topic['id']}").json()["total"] == 0
     assert mini.get(M + f"/articles/{first['id']}/next").json()["article"]["id"] == following["id"]
     publish(admin, changed)
-    assert mini.get(M + f"/articles/{first['id']}").json()["topic_id"] == new_topic["id"]
-    assert mini.get(M + f"/topics/{old_topic['id']}/articles").json()["total"] == 1
-    assert mini.get(M + f"/topics/{new_topic['id']}/articles").json()["total"] == 1
+    assert mini.get(M + f"/articles/{first['id']}").json()["category_id"] == new_topic["id"]
+    assert mini.get(M + f"/articles?category_id={old_topic['id']}").json()["total"] == 1
+    assert mini.get(M + f"/articles?category_id={new_topic['id']}").json()["total"] == 1
 
 
 def test_category_english_and_topic_description_survive_older_update_requests(admin):
@@ -459,29 +457,14 @@ def test_category_english_and_topic_description_survive_older_update_requests(ad
     )
     assert updated.status_code == 200
     assert updated.json()["name_en"] == "Everyday"
-    row = post(
-        admin,
-        A + "/topics",
-        {
-            "name": "午间",
-            "name_en": "A short break",
-            "category_id": category["id"],
-            "description": "用几分钟休息学习。",
-        },
+    assert (
+        admin.post(
+            A + "/topics",
+            headers=key(),
+            json={"name": "午间", "name_en": "A short break", "category_id": category["id"]},
+        ).status_code
+        == 410
     )
-    updated = admin.put(
-        A + f"/topics/{row['id']}",
-        headers=key(),
-        json={
-            "name": row["name"],
-            "name_en": row["name_en"],
-            "category_id": row["category_id"],
-            "sort_order": 1,
-            "revision": row["revision"],
-        },
-    )
-    assert updated.status_code == 200
-    assert updated.json()["description"] == "用几分钟休息学习。"
 
 
 def test_completion_uses_acceptance_clock_after_catalog_lock_at_midnight(
@@ -546,27 +529,23 @@ def test_authorization_expiring_during_catalog_wait_is_rechecked(admin, mini, sy
 
 
 def test_free_configuration_keeps_auditable_before_and_after_results(admin, system):
-    import json
-
+    """Audit binds individual stable objects, administrator and exact flag transitions."""
     from sqlalchemy import select
 
-    from juya_api.content_models import Operation
-    from juya_api.security import decrypt
+    from juya_api.access_models import AccessHistory
 
+    row = publish(admin, article(admin))
     policy(admin, 1)
     policy(admin, 0)
     with system["sessions"]() as db:
-        rows = list(
-            db.scalars(
-                select(Operation)
-                .where(Operation.action == "listening.free.save")
-                .order_by(Operation.accepted_at, Operation.key_digest)
-            )
+        facts = list(
+            db.scalars(select(AccessHistory).where(AccessHistory.action == "listening.free"))
         )
-        facts = [json.loads(decrypt(system["settings"], row.result)) for row in rows]
-        transitions = {
-            (fact["audit"]["before"]["free_count"], fact["audit"]["after"]["free_count"])
-            for fact in facts
+        assert {(fact.before["is_free"], fact.after["is_free"]) for fact in facts} == {
+            (False, True),
+            (True, False),
         }
-        assert transitions == {(None, 1), (1, 0)}
-        assert all(fact["audit"]["admin_id"] and fact["audit"]["occurred_at"] for fact in facts)
+        assert all(
+            fact.before["content_id"] == row["id"] and fact.admin_id and fact.occurred_at
+            for fact in facts
+        )

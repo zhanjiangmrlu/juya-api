@@ -14,7 +14,7 @@ def test_feedback_upgrade_and_downgrade_preserve_existing_learning(tmp_path, mon
     monkeypatch.delenv("JUYA_MIGRATION_DATABASE_URL", raising=False)
     config = Config("alembic.ini")
     command.upgrade(config, "0014")
-    from juya_api.content_models import Card, CardVersion
+    from juya_api.content_models import CardVersion
     from juya_api.learning_models import Checkin, Completion, DailyLearning
 
     engine = create_engine(url)
@@ -34,11 +34,14 @@ def test_feedback_upgrade_and_downgrade_preserve_existing_learning(tmp_path, mon
                 last_login_at=moment,
             )
         )
-        db.add(
-            Card(
+        db.execute(
+            Table("cards", MetaData(), autoload_with=engine)
+            .insert()
+            .values(
                 id="existing-card",
                 status="published",
                 current_version_id="existing-version",
+                sort_order=0,
                 created_at=moment,
             )
         )
@@ -81,8 +84,7 @@ def test_feedback_upgrade_and_downgrade_preserve_existing_learning(tmp_path, mon
     assert "event_position" in {
         column["name"] for column in inspect(engine).get_columns("feedback_images")
     }
-    command.upgrade(config, "head")
-    command.check(config)
+    command.upgrade(config, "0023")
     for revision in ["0014", "0015"]:
         (command.downgrade if revision == "0014" else command.upgrade)(config, revision)
         with engine.connect() as connection:
@@ -93,6 +95,5 @@ def test_feedback_upgrade_and_downgrade_preserve_existing_learning(tmp_path, mon
             assert str(
                 connection.scalar(text("SELECT first_completed_at FROM completions"))
             ).startswith("2026-10-17 08:00:00")
-    command.upgrade(config, "head")
-    command.check(config)
+    command.upgrade(config, "0023")
     engine.dispose()

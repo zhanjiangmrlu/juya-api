@@ -83,10 +83,15 @@ def admin_routes():
 
     @router.get("/categories", response_model=dict[str, list[C.Category]])
     def categories(admin=Depends(administrator), db: Session = Depends(database, scope="function")):
+        """List only live categories in configured order."""
         return {
             "items": [
                 row_view(r)
-                for r in db.scalars(select(Category).order_by(Category.sort_order, Category.id))
+                for r in db.scalars(
+                    select(Category)
+                    .where(Category.deleted_at.is_(None))
+                    .order_by(Category.sort_order, Category.id)
+                )
             ]
         }
 
@@ -127,9 +132,10 @@ def admin_routes():
         db: Session = Depends(database, scope="function"),
     ):
         def execute():
+            """Apply the checked revision change under the existing transaction locks."""
             service.catalog_lock(db)
             row = db.get(Category, category_id)
-            if not row or row.revision != body.revision:
+            if not row or row.deleted_at or row.revision != body.revision:
                 raise DomainError(409, "listening_category_changed", "分类已变化，请刷新")
             row.name, row.sort_order, row.revision = body.name, body.sort_order, row.revision + 1
             if body.name_en is not None:
@@ -167,32 +173,8 @@ def admin_routes():
         key=Depends(operation_key),
         db: Session = Depends(database, scope="function"),
     ):
-        def execute():
-            service.catalog_lock(db)
-            if not db.get(Category, body.category_id):
-                raise DomainError(422, "listening_category_missing", "请选择有效分类")
-            row = Topic(
-                **{
-                    **body.model_dump(),
-                    "description": body.description or "",
-                    "name_en": body.name_en or "",
-                }
-            )
-            db.add(row)
-            db.flush()
-            service.changed(db)
-            return row_view(row)
-
-        return operate(
-            db,
-            admin,
-            "admin",
-            key,
-            "listening.topic.create",
-            body.model_dump(),
-            request.app.state.clock(),
-            execute,
-        )
+        """Reject obsolete configuration writes while retaining role authentication."""
+        raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
     @router.put("/topics/{topic_id}", response_model=C.Topic)
     def edit_topic(
@@ -203,32 +185,8 @@ def admin_routes():
         key=Depends(operation_key),
         db: Session = Depends(database, scope="function"),
     ):
-        def execute():
-            service.catalog_lock(db)
-            row = db.get(Topic, topic_id)
-            if not row or row.revision != body.revision:
-                raise DomainError(409, "listening_topic_changed", "主题已变化，请刷新")
-            if not db.get(Category, body.category_id):
-                raise DomainError(422, "listening_category_missing", "请选择有效分类")
-            row.name, row.category_id, row.sort_order = body.name, body.category_id, body.sort_order
-            if body.description is not None:
-                row.description = body.description
-            if body.name_en is not None:
-                row.name_en = body.name_en
-            row.revision += 1
-            service.changed(db)
-            return row_view(row)
-
-        return operate(
-            db,
-            admin,
-            "admin",
-            key,
-            "listening.topic.update:" + topic_id,
-            body.model_dump(),
-            request.app.state.clock(),
-            execute,
-        )
+        """Reject obsolete configuration writes while retaining role authentication."""
+        raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
     @router.get("/articles", response_model=Page[C.Article])
     def articles(
@@ -242,11 +200,12 @@ def admin_routes():
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
+        """Page articles using direct category ownership."""
         query = select(Article).where(Article.deleted_at.is_(None))
         if category_id:
-            query = query.join(
-                Topic, func.coalesce(Article.draft_topic_id, Article.topic_id) == Topic.id
-            ).where(Topic.category_id == category_id)
+            query = query.where(
+                func.coalesce(Article.draft_category_id, Article.category_id) == category_id
+            )
         for field, value in [
             (func.coalesce(Article.draft_topic_id, Article.topic_id), topic_id),
             (Article.status, status),
@@ -285,7 +244,8 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            row = service.create_article(db, body.topic_id, body.payload.model_dump(), now)
+            """Apply the checked revision change under the existing transaction locks."""
+            row = service.create_article(db, body.category_id, body.payload.model_dump(), now)
             service.audit(db, admin.id, "article.create", now)
             return service.article_view(db, row)
 
@@ -480,12 +440,14 @@ def admin_routes():
 
     @router.get("/order", response_model=C.OrderResult)
     def order(
-        scope: Literal["global", "topic"],
+        scope: Literal["category", "global", "topic"],
+        category_id: str | None = None,
         topic_id: str | None = None,
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
-        return service.order_view(db, scope, topic_id)
+        """Read the complete category order and its shared revision."""
+        return service.order_view(db, scope, category_id if scope == "category" else topic_id)
 
     @router.put("/order", response_model=C.OrderResult)
     def save_order(
@@ -496,12 +458,15 @@ def admin_routes():
         db: Session = Depends(database, scope="function"),
     ):
         def execute():
+            """Apply the checked revision change under the existing transaction locks."""
             service.catalog_lock(db)
-            before = service.order_view(db, body.scope, body.topic_id)
+            before = service.order_view(
+                db, body.scope, body.category_id if body.scope == "category" else body.topic_id
+            )
             before = {
                 **before,
                 "scope": body.scope,
-                "topic_id": body.topic_id,
+                "category_id": body.category_id,
                 "policy": service.policy_view(db),
             }
             result = service.save_order(db, body)
@@ -513,7 +478,7 @@ def admin_routes():
                 {
                     **result,
                     "scope": body.scope,
-                    "topic_id": body.topic_id,
+                    "category_id": body.category_id,
                     "policy": service.policy_view(db),
                 },
                 request.app.state.clock(),
@@ -525,7 +490,7 @@ def admin_routes():
                     "admin_id": admin.id,
                     "occurred_at": timestamp(request.app.state.clock()),
                     "scope": body.scope,
-                    "topic_id": body.topic_id,
+                    "category_id": body.category_id,
                     "before": before,
                     "after": result,
                 },
@@ -556,18 +521,8 @@ def admin_routes():
         key=Depends(operation_key),
         db: Session = Depends(database, scope="function"),
     ):
-        return operate(
-            db,
-            admin,
-            "admin",
-            key,
-            "listening.free.preview",
-            body.model_dump(),
-            request.app.state.clock(),
-            lambda: service.free_preview(
-                db, request.app.state.settings, admin.id, body.free_count, request.app.state.clock()
-            ),
-        )
+        """Reject obsolete configuration writes while retaining role authentication."""
+        raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
     @router.put("/free-policy", response_model=C.FreePolicy)
     def free_save(
@@ -577,43 +532,8 @@ def admin_routes():
         key=Depends(operation_key),
         db: Session = Depends(database, scope="function"),
     ):
-        def execute():
-            service.catalog_lock(db)
-            before = service.policy_view(db)
-            if isinstance(body, C.FreePolicyUpdate):
-                result = service.save_free_count(db, body.free_count, body.revision)
-            else:
-                result = service.save_free(
-                    db,
-                    request.app.state.settings,
-                    admin.id,
-                    body.preview_token,
-                    request.app.state.clock(),
-                )
-            service.configuration_history(
-                db, admin.id, "free-policy", before, result, request.app.state.clock()
-            )
-            service.audit(db, admin.id, "free.save", request.app.state.clock())
-            return {
-                **result,
-                "audit": {
-                    "admin_id": admin.id,
-                    "occurred_at": timestamp(request.app.state.clock()),
-                    "before": before,
-                    "after": result,
-                },
-            }
-
-        return operate(
-            db,
-            admin,
-            "admin",
-            key,
-            "listening.free.save",
-            body.model_dump(),
-            request.app.state.clock(),
-            execute,
-        )
+        """Reject obsolete configuration writes while retaining role authentication."""
+        raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
     @router.post("/articles/{article_id}/media", response_model=MediaMetadata)
     def upload(
@@ -998,31 +918,24 @@ def token_target(db, settings, article_id, user_id, ref, now):
 
 
 def mini_routes():
+    """Register learner listening reads and version-bound learning actions."""
     router = APIRouter(prefix="/api/mini/v1/listening", tags=["thematic listening"])
 
     @router.get("/home", response_model=C.Home)
     def home(
         request: Request, user=Depends(learner), db: Session = Depends(database, scope="function")
     ):
+        """Return category progress and an independent continuation target."""
         now = request.app.state.clock()
         from .access_service import free_ids, policy
 
         scene_policy = policy(db)
         listening_policy = service.policy_view(db)
-        topics = service.topics(db, user.id, now)
-        ids = {t["category_id"] for t in topics}
-        categories = [
-            row_view(c)
-            for c in db.scalars(
-                select(Category)
-                .where(Category.id.in_(ids))
-                .order_by(Category.sort_order, Category.id)
-            )
-        ]
+        categories = service.categories_progress(db, user.id, now)
         target = service.continue_row(db, user.id, now)
         return {
             "categories": categories,
-            "topics": topics,
+            "topics": [],
             "continue_learning": service.summary(db, target, user.id, now, include_progress=True)
             if target
             else None,
@@ -1053,15 +966,16 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
-        service.require_topic(db, topic_id)
+        """Page articles using direct category ownership."""
+        owner = service.require_topic(db, topic_id)
         query = (
             select(Article)
             .where(
-                Article.topic_id == topic_id,
+                Article.category_id == owner.category_id,
                 Article.status == "published",
                 Article.deleted_at.is_(None),
             )
-            .order_by(Article.topic_order, Article.id)
+            .order_by(Article.category_order, Article.id)
         )
         return page_view(
             db,
@@ -1069,6 +983,37 @@ def mini_routes():
             page,
             limit,
             lambda r: service.summary(db, r, user.id, request.app.state.clock()),
+        )
+
+    @router.get("/articles", response_model=Page[C.Summary])
+    def category_articles(
+        request: Request,
+        category_id: str | None = None,
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=50),
+        user=Depends(learner),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """Page publications directly in configured category and article order."""
+        query = (
+            select(Article)
+            .join(Category, Article.category_id == Category.id)
+            .where(
+                Article.status == "published",
+                Article.version_id.is_not(None),
+                Article.deleted_at.is_(None),
+                Category.deleted_at.is_(None),
+            )
+        )
+        if category_id:
+            service.require_category(db, category_id)
+            query = query.where(Article.category_id == category_id)
+        return page_view(
+            db,
+            query.order_by(Category.sort_order, Category.id, Article.category_order, Article.id),
+            page,
+            limit,
+            lambda row: service.summary(db, row, user.id, request.app.state.clock()),
         )
 
     @router.get("/favorites", response_model=Page[C.Summary])
@@ -1186,6 +1131,7 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
+        """Advance only inside the current category and return its destination ID."""
         now = request.app.state.clock()
         row = service.require_article(db, article_id, allow_deleted=True)
         snapshot = None
@@ -1193,8 +1139,8 @@ def mini_routes():
             data = read_preview(
                 request.app.state.settings, queue_token, user.id, "listening.next", now
             )
-            if data["topic_id"] != row.topic_id or row.id not in data["ids"]:
-                raise DomainError(409, "listening_queue_changed", "文章所属主题已变化，请重新进入")
+            if data.get("category_id") != row.category_id or row.id not in data["ids"]:
+                raise DomainError(409, "listening_queue_changed", "文章所属分类已变化，请重新进入")
             snapshot = data["ids"]
         target = service.next_row(db, user.id, row, now, snapshot=snapshot)
         return {
@@ -1202,6 +1148,7 @@ def mini_routes():
             if target
             else None,
             "ended": target is None,
+            "category_id": row.category_id,
         }
 
     @router.put("/articles/{article_id}/progress", response_model=C.Progress)

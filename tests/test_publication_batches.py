@@ -47,6 +47,12 @@ def test_partial_publish_recovers_durably_without_republishing_success(admin, mi
     result = admin.get(f"/api/admin/v1/publication-batches/{batch['id']}").json()
     assert [row["state"] for row in result["items"]] == ["succeeded", "failed"]
     assert result["items"][1]["error_code"] == "revision_changed"
+    free = admin.put(
+        f"/api/admin/v1/cards/{one['id']}/free-access",
+        headers=key(),
+        json={"is_free": True, "revision": 1},
+    )
+    assert free.status_code == 200
     version = mini.get(f"/api/mini/v1/cards/{one['id']}").json()["version_id"]
     retry = admin.post(f"/api/admin/v1/publication-batches/{batch['id']}/retry", headers=key())
     assert retry.status_code == 200

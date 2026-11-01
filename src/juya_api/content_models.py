@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base, UTCDateTime, utc_now
@@ -13,6 +13,8 @@ class Card(Base):
     __tablename__ = "cards"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=identifier)
     status: Mapped[str] = mapped_column(String(16), default="draft", index=True)
+    is_free: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    free_revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     current_version_id: Mapped[str | None] = mapped_column(String(36))
     sort_order: Mapped[int] = mapped_column(Integer, default=0, index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utc_now)

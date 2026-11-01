@@ -8,55 +8,47 @@ from tests.test_listening import A, article, post
 
 
 def catalog_topic(admin, *, name="午间", name_en="A short break"):
-    category = post(admin, A + "/categories", {"name": "日常"})
-    return category, post(
-        admin,
-        A + "/topics",
-        {"name": name, "name_en": name_en, "category_id": category["id"]},
-    )
+    """Keep shared fixture naming while creating one direct category."""
+    category = post(admin, A + "/categories", {"name": name or "日常", "name_en": name_en})
+    return category, category
 
 
 def test_topic_requires_english_but_allows_empty_chinese_and_reads_legacy(admin, system):
-    category, topic = catalog_topic(admin, name="")
-    assert topic["name"] == "" and topic["name_en"] == "A short break"
-    for english in [None, "", "   "]:
-        response = admin.post(
+    """Old topics remain readable but creation is retired after direct ownership migration."""
+    category, _ = catalog_topic(admin)
+    assert (
+        admin.post(
             A + "/topics",
             headers=key(),
-            json={"name": "旧名称", "name_en": english, "category_id": category["id"]},
-        )
-        assert response.status_code == 422
+            json={"name_en": "Old topic", "category_id": category["id"]},
+        ).status_code
+        == 410
+    )
     with system["sessions"].begin() as db:
-        row = db.get(ListeningTopic, topic["id"])
-        row.name, row.name_en = "历史中文主题", ""
+        db.add(
+            ListeningTopic(
+                id="historic-topic", category_id=category["id"], name="历史中文主题", name_en=""
+            )
+        )
     legacy = admin.get(A + "/topics").json()["items"][0]
     assert legacy["name"] == "历史中文主题" and legacy["name_en"] == ""
 
 
 def test_empty_catalog_delete_checks_revision_and_replays_receipt(admin):
-    category, topic = catalog_topic(admin)
-    stale = admin.post(A + f"/topics/{topic['id']}/delete", headers=key(), json={"revision": 99})
-    assert stale.status_code == 409
-    headers = key()
-    path = A + f"/topics/{topic['id']}/delete"
-    accepted = admin.post(path, headers=headers, json={"revision": topic["revision"]})
+    """Soft deletion still checks revisions and replays the original successful receipt."""
+    category, _ = catalog_topic(admin)
+    path = A + f"/categories/{category['id']}/delete"
+    assert admin.post(path, headers=key(), json={"revision": 99}).status_code == 409
+    headers, body = key(), {"revision": category["revision"]}
+    accepted = admin.post(path, headers=headers, json=body)
     assert accepted.status_code == 200, accepted.text
-    assert accepted.json()["status"] == "success"
-    assert (
-        admin.post(path, headers=headers, json={"revision": topic["revision"]}).json()
-        == accepted.json()
-    )
-    assert admin.get(A + "/topics").json()["items"] == []
-    assert (
-        post(admin, A + f"/categories/{category['id']}/delete", {"revision": category["revision"]})[
-            "status"
-        ]
-        == "success"
-    )
+    assert admin.post(path, headers=headers, json=body).json() == accepted.json()
+    assert admin.get(A + "/categories").json()["items"] == []
 
 
 def test_catalog_batch_delete_preserves_referenced_and_deletes_only_empty(admin):
     category, topic = catalog_topic(admin)
+    article(admin, category["id"])
     empty = post(admin, A + "/categories", {"name": "空分类"})
     result = post(
         admin,
@@ -64,10 +56,9 @@ def test_catalog_batch_delete_preserves_referenced_and_deletes_only_empty(admin)
         {"items": [{"id": r["id"], "revision": r["revision"]} for r in [category, empty]]},
     )["items"]
     assert result[0]["status"] == "failed"
-    assert result[0]["references"]["topics"] == 1
+    assert result[0]["references"]["articles"] == 1
     assert result[1]["status"] == "success"
     assert admin.get(A + "/categories").json()["items"][0]["id"] == category["id"]
-    assert admin.get(A + "/topics").json()["items"][0]["id"] == topic["id"]
 
 
 def test_deleted_article_is_a_reported_historical_catalog_reference(admin):
@@ -75,10 +66,10 @@ def test_deleted_article_is_a_reported_historical_catalog_reference(admin):
     row = article(admin, topic["id"])
     post(admin, A + f"/articles/{row['id']}/delete", {"revision": row["revision"]})
     response = admin.post(
-        A + f"/topics/{topic['id']}/delete", headers=key(), json={"revision": topic["revision"]}
+        A + f"/categories/{topic['id']}/delete", headers=key(), json={"revision": topic["revision"]}
     )
-    assert response.status_code == 409
-    assert response.json()["error"]["details"]["references"]["deleted_articles"] == 1
+    assert response.status_code == 200
+    assert admin.get(A + "/categories").json()["items"] == []
 
 
 def test_catalog_reordering_preserves_names_and_checks_the_complete_versioned_set(admin):
@@ -108,15 +99,13 @@ def test_catalog_reordering_preserves_names_and_checks_the_complete_versioned_se
 
 
 def test_free_count_saves_directly_with_version_and_idempotency(admin):
+    """A valid former numeric request always returns retirement instead of changing state."""
     current = admin.get(A + "/free-policy").json()
-    headers = key()
-    body = {"free_count": 0, "revision": current["revision"]}
-    response = admin.put(A + "/free-policy", headers=headers, json=body)
-    assert response.status_code == 200, response.text
-    assert response.json()["configured"] is True
-    assert response.json()["free_count"] == 0
-    assert admin.put(A + "/free-policy", headers=headers, json=body).json() == response.json()
-    assert admin.put(A + "/free-policy", headers=key(), json=body).status_code == 409
+    assert current["free_count"] == 0
+    response = admin.put(
+        A + "/free-policy", headers=key(), json={"free_count": 0, "revision": current["revision"]}
+    )
+    assert response.status_code == 410
 
 
 @pytest.mark.parametrize("count", [None, -1, 1.5, True, "2"])
@@ -159,9 +148,9 @@ def test_catalog_delete_and_new_reference_have_one_winner(admin, system):
         def create():
             barrier.wait()
             return second.post(
-                A + "/topics",
+                A + "/articles",
                 headers=key(),
-                json={"category_id": category["id"], "name_en": "New reference"},
+                json={"category_id": category["id"], "payload": {}},
             )
 
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -169,5 +158,7 @@ def test_catalog_delete_and_new_reference_have_one_winner(admin, system):
             deleted, created = a.result(), b.result()
     assert (deleted.status_code, created.status_code) in [(200, 422), (409, 200)]
     categories = admin.get(A + "/categories").json()["items"]
-    topics = admin.get(A + "/topics").json()["items"]
-    assert all(any(c["id"] == t["category_id"] for c in categories) for t in topics)
+    articles = admin.get(A + "/articles").json()["items"]
+    assert all(
+        any(category["id"] == row["category_id"] for category in categories) for row in articles
+    )

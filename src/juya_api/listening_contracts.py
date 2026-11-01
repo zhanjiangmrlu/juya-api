@@ -26,6 +26,25 @@ class WordMeaning(Input):
     chinese: str = Field(min_length=1, max_length=3000)
 
 
+class VocabularySource(Input):
+    start: int = Field(ge=0)
+    end: int = Field(gt=0)
+    quote: str = Field(min_length=1, max_length=10000)
+    word_start: int = Field(ge=0)
+    word_end: int = Field(gt=0)
+    word: str = Field(min_length=1, max_length=300)
+    confirmed: bool = False
+
+
+class VocabularyWord(Input):
+    source_hint: str = Field(default="", max_length=10000)
+    id: str = Field(min_length=1, max_length=64)
+    english: str = Field(min_length=1, max_length=300)
+    meaning: str = Field(min_length=1, max_length=3000)
+    phonetic: str = Field(default="", max_length=300)
+    source: VocabularySource | None = None
+
+
 class ListeningPayload(Input):
     title_zh: str = Field(default="", max_length=160)
     title_en: str = Field(default="", max_length=300)
@@ -33,6 +52,7 @@ class ListeningPayload(Input):
     body_en: str = Field(default="", max_length=100000)
     translation_zh: str = Field(default="", max_length=100000)
     expressions: list[Expression] = Field(default_factory=list, max_length=20)
+    vocabulary: list[VocabularyWord] = Field(default_factory=list, max_length=1000)
     word_meanings: list[WordMeaning] = Field(default_factory=list, max_length=1000)
     audio_id: str | None = Field(default=None, max_length=36)
     image_id: str | None = Field(default=None, max_length=36)
@@ -42,6 +62,16 @@ class CategoryInput(Input):
     name: str = Field(min_length=1, max_length=160)
     name_en: str | None = Field(default=None, max_length=300)
     sort_order: StrictInt = 0
+
+
+class CategoryProgress(CategoryInput):
+    id: str
+    name_en: str = ""
+    revision: int
+    total_articles: int
+    completed_articles: int
+    restricted_articles: int
+    thumbnail_url: str | None = None
 
 
 class CategoryUpdate(CategoryInput):
@@ -89,7 +119,7 @@ class TopicProgress(Topic):
 
 
 class ArticleInput(Input):
-    topic_id: str = Field(min_length=1, max_length=36)
+    category_id: str = Field(min_length=1, max_length=36)
     payload: ListeningPayload
 
 
@@ -125,7 +155,10 @@ class TimelineInput(Revision):
 
 class Article(BaseModel):
     id: str
-    topic_id: str
+    topic_id: str | None = None
+    category_id: str
+    category_name: str = ""
+    category_order: int = 0
     status: str
     revision: int
     version_id: str | None
@@ -138,6 +171,12 @@ class Article(BaseModel):
     deleted_at: str | None
     has_unpublished_changes: bool = False
     batch_id: str | None = None
+    is_free: bool = False
+    free_revision: int = 1
+    draft_category_id: str | None = None
+    draft_category_order: int | None = None
+    published_category_id: str | None = None
+    published_category_order: int | None = None
     draft_topic_id: str | None = None
     draft_topic_order: int | None = None
     published_topic_id: str | None = None
@@ -156,7 +195,10 @@ class Summary(BaseModel):
     progress: "Progress | None" = None
     id: str
     content_type: Literal["listening"] = "listening"
-    topic_id: str
+    topic_id: str | None = None
+    category_id: str
+    category_name: str = ""
+    category_order: int = 0
     title_zh: str
     title_en: str
     tags: list[str]
@@ -208,7 +250,7 @@ class ArticleDetail(Summary):
 
 
 class Home(BaseModel):
-    categories: list[Category]
+    categories: list[CategoryProgress]
     topics: list[TopicProgress]
     continue_learning: Summary | None
     configured: bool
@@ -221,6 +263,7 @@ class Home(BaseModel):
 
 
 class NextArticle(BaseModel):
+    category_id: str
     article: Summary | None
     ended: bool
 
@@ -236,8 +279,9 @@ class ArticlePreview(BaseModel):
 
 
 class OrderInput(Input):
-    scope: Literal["global", "topic"]
+    scope: Literal["category", "global", "topic"]
     topic_id: str | None = None
+    category_id: str | None = None
     article_ids: list[str] = Field(max_length=50000)
     revision: int = Field(ge=0)
 
@@ -245,6 +289,17 @@ class OrderInput(Input):
 class OrderResult(BaseModel):
     revision: int
     article_ids: list[str]
+
+
+class FreeAccessUpdate(Input):
+    is_free: bool = Field(strict=True)
+    revision: int = Field(ge=1)
+
+
+class FreeAccess(BaseModel):
+    is_free: bool
+    revision: int
+    effective: bool
 
 
 class FreeCount(Input):

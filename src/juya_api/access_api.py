@@ -16,7 +16,7 @@ from .access_contracts import (
     GrantPreview,
     PolicyView,
 )
-from .access_models import AccessHistory, FreePolicy, LearningAuthorization
+from .access_models import AccessHistory, LearningAuthorization
 from .access_service import (
     authorization,
     free_ids,
@@ -26,14 +26,12 @@ from .access_service import (
     proposed_authorization,
     read_preview,
 )
-from .content_models import Card, SettingCounter
-from .content_service import catalog_lock
+from .content_models import Card
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
 from .errors import DomainError
 from .learning_service import business_date, card_state, card_summary
 from .models import User
-from .publication_api import catalog
 from .response_contracts import LearningPermission, PersonalSummary
 from .transactions import operate
 from .users_api import require_user
@@ -116,38 +114,8 @@ def admin_routes():
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
-        config, ordered = policy(db), catalog(db)
-        old_ids, next_ids = (
-            free_ids(db, config["free_count"]),
-            [r["id"] for r in ordered["items"][: body.free_count]],
-        )
-        items = [
-            {**r, "change": "retained" if r["id"] in old_ids else "added"}
-            for r in ordered["items"][: body.free_count]
-        ]
-        values = {
-            "free_count": body.free_count,
-            "revision": config["revision"],
-            "catalog_version": ordered["version"],
-        }
-        return {
-            **config,
-            "proposed_count": body.free_count,
-            "total": len(items),
-            "page": page,
-            "limit": limit,
-            "items": items[(page - 1) * limit : page * limit],
-            "added_count": len(set(next_ids) - set(old_ids)),
-            "removed_count": len(set(old_ids) - set(next_ids)),
-            "removed": [r for r in ordered["items"] if r["id"] in set(old_ids) - set(next_ids)],
-            "preview_token": preview_token(
-                request.app.state.settings,
-                admin.id,
-                "free-policy",
-                values,
-                request.app.state.clock(),
-            ),
-        }
+        """Reject obsolete configuration writes while retaining role authentication."""
+        raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
     @router.put(base, response_model=PolicyView)
     def save_policy(
@@ -157,65 +125,8 @@ def admin_routes():
         key: str = Depends(operation_key),
         db: Session = Depends(database, scope="function"),
     ):
-        def execute():
-            now = request.app.state.clock()
-            data = read_preview(
-                request.app.state.settings, body.preview_token, admin.id, "free-policy", now
-            )
-            catalog_lock(db)
-            before = policy(db)
-            if (
-                before["revision"] != data["revision"]
-                or catalog(db)["version"] != data["catalog_version"]
-            ):
-                raise DomainError(
-                    409, "free_preview_changed", "发布场景或排序已变化，请重新核对免费名单"
-                )
-            if (
-                not before["enabled"]
-                and request.app.state.settings.environment != "local"
-                and not request.app.state.settings.learning_access_activation_ready
-            ):
-                raise DomainError(
-                    409, "access_rollout_not_ready", "服务版本尚未就绪，暂不能启用学习授权"
-                )
-            row = db.get(FreePolicy, 1)
-            if row is None:
-                row = FreePolicy(id=1, revision=0)
-                db.add(row)
-            if before["enabled"] and row.free_count == data["free_count"]:
-                return {**before, "actual_free_count": len(free_ids(db, row.free_count))}
-            contract = db.get(SettingCounter, "schema_contract")
-            if contract:
-                contract.value = 2
-            row.enabled, row.free_count, row.revision = (
-                True,
-                data["free_count"],
-                before["revision"] + 1,
-            )
-            db.flush()
-            after = policy(db)
-            db.add(
-                AccessHistory(
-                    admin_id=admin.id,
-                    action="free-policy",
-                    before=before,
-                    after=after,
-                    occurred_at=now,
-                )
-            )
-            return {**after, "actual_free_count": len(free_ids(db, row.free_count))}
-
-        return operate(
-            db,
-            admin,
-            "admin",
-            key,
-            "learning.free-policy",
-            body.model_dump(),
-            request.app.state.clock(),
-            execute,
-        )
+        """Reject obsolete configuration writes while retaining role authentication."""
+        raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
     grant_path = "/users/{user_id}/learning-authorization"
 

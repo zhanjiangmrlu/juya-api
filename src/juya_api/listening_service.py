@@ -39,6 +39,7 @@ from .listening_models import (
     ListeningVersion as Version,
 )
 from .listening_timeline import body_tokens, ensure_timeline, timeline_view
+from .listening_vocabulary import content_equal, vocabulary_errors
 from .models import Audit
 from .persistence import insert_once
 from .security import fingerprint
@@ -76,10 +77,20 @@ def require_article(db, article_id, revision=None, *, lock=False, allow_deleted=
     return row
 
 
+def require_category(db, category_id):
+    """Resolve a live category under the caller's common catalog lock."""
+    row = db.get(Category, category_id)
+    if not row or row.deleted_at:
+        raise DomainError(422, "listening_category_missing", "请选择已有有效分类")
+    return row
+
+
 def require_topic(db, topic_id):
+    """Map historical topic reads to a live category without allowing topic writes."""
     row = db.get(Topic, topic_id)
-    if not row or not db.get(Category, row.category_id):
-        raise DomainError(422, "listening_topic_missing", "请选择已有有效分类和主题")
+    if not row:
+        raise DomainError(404, "listening_topic_missing", "旧主题不存在")
+    require_category(db, row.category_id)
     return row
 
 
@@ -98,25 +109,25 @@ def published_rows(db):
 
 
 def policy_view(db):
+    """Read the full effective explicit free set; legacy count is informational only."""
     row = db.get(Policy, 1)
-    configured = bool(row and row.free_count is not None)
-    ids = [a.id for a in published_rows(db)][: row.free_count] if configured else []
+    ids = [article.id for article in published_rows(db) if article.is_free]
     return {
-        "configured": configured,
-        "free_count": row.free_count if row else None,
+        "configured": True,
+        "free_count": len(ids),
         "revision": row.revision if row else 0,
         "article_ids": ids,
     }
 
 
 def access(db, user_id, article, now):
-    policy = policy_view(db)
+    """Compute current publication and explicit free or active-grant permissions."""
     grant = authorization(db, user_id, now)
     available = bool(
         article and article.status == "published" and article.version_id and not article.deleted_at
     )
-    free = bool(available and article.id in policy["article_ids"])
-    can_learn = bool(available and policy["configured"] and (free or grant["status"] == "active"))
+    free = bool(available and article.is_free)
+    can_learn = bool(available and (free or grant["status"] == "active"))
     catalog = db.get(Policy, 1)
     return {
         "can_learn": can_learn,
@@ -124,15 +135,10 @@ def access(db, user_id, article, now):
         "is_free": free,
         "reason": None
         if can_learn
-        else (
-            "content_unavailable"
-            if not available
-            else "learning_authorization_required"
-            if policy["configured"]
-            else "listening_not_open"
-        ),
+        else ("content_unavailable" if not available else "learning_authorization_required"),
         "version": (
-            f"{policy['revision']}:{catalog.catalog_revision if catalog else 0}:"
+            f"{article.free_revision if article else 0}:"
+            f"{catalog.catalog_revision if catalog else 0}:"
             f"{grant['revision']}:{grant['status']}"
         ),
         "server_now": timestamp(now),
@@ -174,6 +180,9 @@ def published_article_view(db, row, version):
     return {
         "id": row.id,
         "topic_id": row.topic_id,
+        "category_id": row.category_id,
+        "category_name": category_name(db, row.category_id),
+        "category_order": row.category_order,
         "status": "published",
         "revision": row.revision,
         "version_id": version.id,
@@ -218,9 +227,10 @@ def validate_payload(db, payload, *, resource_owner=None, resource_ids=None):
 
 
 def publication_errors(db, article):
+    """Collect mandatory publication fields and current vocabulary source errors."""
     payload = article.payload
-    errors = []
-    require_topic(db, article.topic_id)
+    errors = vocabulary_errors(payload)
+    require_category(db, article.draft_category_id or article.category_id)
     for field in ["title_zh", "title_en", "body_en", "translation_zh"]:
         if not payload.get(field, "").strip():
             errors.append(field + ":required")
@@ -241,10 +251,22 @@ def publication_errors(db, article):
 
 
 def article_view(db, row):
+    """Render draft ownership separately from immutable publication metadata."""
     version = db.get(Version, row.version_id) if row.version_id else None
     return {
         "id": row.id,
         "topic_id": row.draft_topic_id or row.topic_id,
+        "category_id": row.draft_category_id or row.category_id,
+        "category_name": category_name(db, row.draft_category_id or row.category_id),
+        "category_order": row.draft_category_order
+        if row.draft_category_order is not None
+        else row.category_order,
+        "draft_category_id": row.draft_category_id,
+        "draft_category_order": row.draft_category_order,
+        "published_category_id": row.category_id if row.version_id else None,
+        "published_category_order": row.category_order if row.version_id else None,
+        "is_free": row.is_free,
+        "free_revision": row.free_revision,
         "status": row.status,
         "revision": row.revision,
         "version_id": row.version_id,
@@ -260,8 +282,8 @@ def article_view(db, row):
         "has_unpublished_changes": bool(
             row.status != "published"
             or not version
-            or version.payload != row.payload
-            or row.draft_topic_id
+            or not content_equal(version.payload, row.payload)
+            or row.draft_category_id
         ),
         "batch_id": row.batch_id,
         "draft_topic_id": row.draft_topic_id,
@@ -291,6 +313,7 @@ def reading_paragraph(body, progress):
 
 
 def summary(db, row, user_id, now, *, include_progress=False):
+    """Render published category labels and optional personal reading progress."""
     version = db.get(Version, row.version_id) if row.version_id else None
     payload = version.payload if version else row.payload
     available = row.status == "published" and not row.deleted_at and version is not None
@@ -307,6 +330,9 @@ def summary(db, row, user_id, now, *, include_progress=False):
         "id": row.id,
         "content_type": "listening",
         "topic_id": row.topic_id,
+        "category_id": row.category_id,
+        "category_name": category_name(db, row.category_id),
+        "category_order": row.category_order,
         "title_zh": payload["title_zh"],
         "title_en": payload["title_en"],
         "tags": payload.get("tags", []),
@@ -322,17 +348,26 @@ def summary(db, row, user_id, now, *, include_progress=False):
     }
 
 
-def create_article(db, topic_id, payload, now, *, batch_id=None, source_hash=None, owners=None):
+def category_name(db, category_id):
+    """Keep historical summary labels even after safe category soft deletion."""
+    owner = db.get(Category, category_id) if category_id else None
+    return owner.name if owner else ""
+
+
+def create_article(db, category_id, payload, now, *, batch_id=None, source_hash=None, owners=None):
+    """Create an explicitly owned, nonfree draft without manufacturing a topic."""
     catalog_lock(db)
-    require_topic(db, topic_id)
+    require_category(db, category_id)
     validate_payload(db, payload, resource_owner=owners or set())
     row = Article(
-        topic_id=topic_id,
+        category_id=category_id,
         payload=payload,
         batch_id=batch_id,
         source_hash=source_hash,
-        topic_order=(
-            db.scalar(select(func.max(Article.topic_order)).where(Article.topic_id == topic_id))
+        category_order=(
+            db.scalar(
+                select(func.max(Article.category_order)).where(Article.category_id == category_id)
+            )
             or 0
         )
         + 1,
@@ -374,29 +409,35 @@ def imported_media_ids(db, row):
 
 
 def update_article(db, row, body, now, *, imported_ids=None):
-    require_topic(db, body.topic_id)
+    """Keep published ownership until publication and independently validate current sources."""
+    require_category(db, body.category_id)
     validate_payload(
         db,
         body.payload.model_dump(),
         resource_owner={row.id, row.batch_id},
         resource_ids=imported_media_ids(db, row) | (imported_ids or set()),
     )
-    if (row.draft_topic_id or row.topic_id) != body.topic_id:
+    if (row.draft_category_id or row.category_id) != body.category_id:
         new_order = (
             db.scalar(
-                select(func.max(Article.topic_order)).where(Article.topic_id == body.topic_id)
+                select(func.max(Article.category_order)).where(
+                    Article.category_id == body.category_id
+                )
             )
             or 0
         ) + 1
         if row.version_id:
-            if body.topic_id == row.topic_id:
-                row.draft_topic_id, row.draft_topic_order = None, None
+            if body.category_id == row.category_id:
+                row.draft_category_id, row.draft_category_order = None, None
             else:
-                row.draft_topic_id, row.draft_topic_order = body.topic_id, new_order
+                row.draft_category_id, row.draft_category_order = body.category_id, new_order
         else:
-            row.topic_id, row.topic_order = body.topic_id, new_order
+            row.category_id, row.category_order = body.category_id, new_order
         changed(db)
     row.payload = body.payload.model_dump()
+    from .listening_imports import source_hash
+
+    row.canonical_hash = source_hash(db, row.payload)
     row.revision += 1
     ensure_timeline(db, row.payload, now)
     db.flush()
@@ -432,31 +473,24 @@ def publish_article(db, settings, admin_id, row, body, now):
     if errors:
         raise DomainError(422, "listening_publish_invalid", "请补齐发布资料", errors)
     current = db.get(Version, row.version_id) if row.version_id else None
-    if (
-        row.status == "published"
-        and current
-        and current.payload == row.payload
-        and not row.draft_topic_id
-    ):
+    same_content = current is not None and content_equal(current.payload, row.payload)
+    if row.status == "published" and same_content and not row.draft_category_id:
         return article_view(db, row)
-    identity = ensure_timeline(db, row.payload, now)
-    version = Version(article_id=row.id, payload=row.payload, input_hash=identity, published_at=now)
-    db.add(version)
-    db.flush()
-    if row.draft_topic_id:
-        row.topic_id = row.draft_topic_id
-        row.topic_order = (
-            db.scalar(
-                select(func.max(Article.topic_order)).where(
-                    Article.topic_id == row.draft_topic_id, Article.id != row.id
-                )
-            )
-            or 0
-        ) + 1
-        row.draft_topic_id, row.draft_topic_order = None, None
+    if not same_content:
+        identity = ensure_timeline(db, row.payload, now)
+        current = Version(
+            article_id=row.id, payload=row.payload, input_hash=identity, published_at=now
+        )
+        db.add(current)
+        db.flush()
+    if row.draft_category_id:
+        row.category_id = row.draft_category_id
+        row.category_order = row.draft_category_order
+        row.draft_category_id, row.draft_category_order = None, None
     if row.status != "published":
         row.global_order = (db.scalar(select(func.max(Article.global_order))) or 0) + 1
-    row.version_id, row.status = version.id, "published"
+    assert current is not None
+    row.version_id, row.status = current.id, "published"
     row.revision += 1
     changed(db)
     return article_view(db, row)
@@ -542,9 +576,11 @@ def complete(db, user, article_id, version_id, now):
 
 
 def topics(db, user_id, now, category_id=None):
+    """Return historical topic-to-category mappings for old navigation links."""
     query = (
         select(Topic)
         .join(Category)
+        .where(Category.deleted_at.is_(None))
         .order_by(Category.sort_order, Category.id, Topic.sort_order, Topic.id)
     )
     if category_id:
@@ -553,30 +589,30 @@ def topics(db, user_id, now, category_id=None):
     valid = published_rows(db)
     completed = set(db.scalars(select(Completion.article_id).where(Completion.user_id == user_id)))
     for row in db.scalars(query):
-        ids = {a.id for a in valid if a.topic_id == row.id}
-        if ids:
-            result.append(
-                {
-                    "id": row.id,
-                    "name": row.name,
-                    "name_en": row.name_en or "",
-                    "description": row.description,
-                    "category_id": row.category_id,
-                    "sort_order": row.sort_order,
-                    "revision": row.revision,
-                    "total_articles": len(ids),
-                    "completed_articles": len(ids & completed),
-                }
-            )
+        ids = {a.id for a in valid if a.category_id == row.category_id}
+        result.append(
+            {
+                "id": row.id,
+                "name": row.name,
+                "name_en": row.name_en or "",
+                "description": row.description,
+                "category_id": row.category_id,
+                "sort_order": row.sort_order,
+                "revision": row.revision,
+                "total_articles": len(ids),
+                "completed_articles": len(ids & completed),
+            }
+        )
     return result
 
 
 def next_row(db, user_id, current, now, *, snapshot=None, uncompleted=False):
+    """Choose the next accessible article after the current one in the same category."""
     rows = list(
         db.scalars(
             select(Article)
-            .where(Article.topic_id == current.topic_id, Article.deleted_at.is_(None))
-            .order_by(Article.topic_order, Article.id)
+            .where(Article.category_id == current.category_id, Article.deleted_at.is_(None))
+            .order_by(Article.category_order, Article.id)
         )
     )
     ids = snapshot or [a.id for a in rows]
@@ -617,14 +653,23 @@ def continue_row(db, user_id, now):
     return None
 
 
-def order_view(db, scope, topic_id=None):
+def order_view(db, scope, category_id=None):
+    """Read only category order; old topic callers receive the corresponding category."""
     if scope == "topic":
-        require_topic(db, topic_id)
-        query = select(Article).where(Article.topic_id == topic_id, Article.deleted_at.is_(None))
-        query = query.order_by(Article.topic_order, Article.id)
+        category_id = require_topic(db, category_id).category_id
+    if scope in {"category", "topic"}:
+        require_category(db, category_id)
+        query = (
+            select(Article)
+            .where(Article.category_id == category_id, Article.deleted_at.is_(None))
+            .order_by(Article.category_order, Article.id)
+        )
     else:
-        query = select(Article).where(Article.status == "published", Article.deleted_at.is_(None))
-        query = query.order_by(Article.global_order, Article.id)
+        query = (
+            select(Article)
+            .where(Article.status == "published", Article.deleted_at.is_(None))
+            .order_by(Article.global_order, Article.id)
+        )
     policy = db.get(Policy, 1)
     return {
         "revision": policy.catalog_revision if policy else 0,
@@ -633,8 +678,11 @@ def order_view(db, scope, topic_id=None):
 
 
 def save_order(db, body):
+    """Persist revision-checked ordering with an auditable operation receipt."""
     catalog = catalog_lock(db)
-    current = order_view(db, body.scope, body.topic_id)
+    if body.scope != "category":
+        raise DomainError(410, "listening_order_retired", "请使用分类内文章排序")
+    current = order_view(db, body.scope, body.category_id)
     if body.revision != current["revision"]:
         raise DomainError(409, "listening_order_changed", "排序或发布集合已变化，请刷新确认")
     if len(body.article_ids) != len(set(body.article_ids)) or set(body.article_ids) != set(
@@ -643,59 +691,13 @@ def save_order(db, body):
         raise DomainError(422, "listening_order_incomplete", "请提交完整且无重复的排序集合")
     for index, article_id in enumerate(body.article_ids):
         row = db.get(Article, article_id)
-        field = "global_order" if body.scope == "global" else "topic_order"
+        field = "category_order"
         if getattr(row, field) != index + 1:
             setattr(row, field, index + 1)
             row.revision += 1
     catalog.catalog_revision += 1
     db.flush()
-    return order_view(db, body.scope, body.topic_id)
-
-
-def free_preview(db, settings, admin_id, count, now):
-    current = policy_view(db)
-    order = order_view(db, "global")
-    ids = order["article_ids"][:count]
-    data = {
-        "free_count": count,
-        "article_ids": ids,
-        "revision": current["revision"],
-        "catalog_revision": order["revision"],
-        "all_ids": order["article_ids"],
-    }
-    return {
-        "preview_token": preview_token(settings, admin_id, "listening.free", data, now),
-        "free_count": count,
-        "article_ids": ids,
-        "revision": current["revision"],
-        "added_ids": [a for a in ids if a not in current["article_ids"]],
-        "removed_ids": [a for a in current["article_ids"] if a not in ids],
-    }
-
-
-def save_free(db, settings, admin_id, token, now):
-    row = catalog_lock(db)
-    data = read_preview(settings, token, admin_id, "listening.free", now)
-    current = order_view(db, "global")
-    if (
-        data["catalog_revision"] != current["revision"]
-        or data["all_ids"] != current["article_ids"]
-        or data["revision"] != row.revision
-    ):
-        raise DomainError(409, "listening_free_preview_stale", "免费名单已变化，请重新核对确认")
-    row.free_count, row.revision = data["free_count"], row.revision + 1
-    db.flush()
-    return policy_view(db)
-
-
-def save_free_count(db, count, revision):
-    """Save an explicit M directly against the current policy revision and live catalog."""
-    row = catalog_lock(db)
-    if row.revision != revision:
-        raise DomainError(409, "listening_free_changed", "免费设置已变化，请刷新后重新保存")
-    row.free_count, row.revision = count, row.revision + 1
-    db.flush()
-    return policy_view(db)
+    return order_view(db, body.scope, body.category_id)
 
 
 def audit(db, admin_id, action, now):
@@ -729,14 +731,53 @@ def thumbnail_version(db, article_id, version_id):
 
 
 def queue_token(db, settings, user_id, row, now):
+    """Bind the next-article snapshot to one category and ordered stable IDs."""
     return preview_token(
         settings,
         user_id,
         "listening.next",
         {
             "article_id": row.id,
-            "topic_id": row.topic_id,
-            "ids": order_view(db, "topic", row.topic_id)["article_ids"],
+            "category_id": row.category_id,
+            "ids": order_view(db, "category", row.category_id)["article_ids"],
         },
         now + timedelta(days=1),
     )
+
+
+def categories_progress(db, user_id, now):
+    """Build full category progress and restriction counts independently of the active filter."""
+    rows = published_rows(db)
+    completed = set(db.scalars(select(Completion.article_id).where(Completion.user_id == user_id)))
+    result = []
+    for owner in db.scalars(
+        select(Category)
+        .where(Category.deleted_at.is_(None))
+        .order_by(Category.sort_order, Category.id)
+    ):
+        children = [row for row in rows if row.category_id == owner.id]
+        if not children:
+            continue
+        result.append(
+            {
+                "id": owner.id,
+                "name": owner.name,
+                "name_en": owner.name_en,
+                "sort_order": owner.sort_order,
+                "revision": owner.revision,
+                "total_articles": len(children),
+                "completed_articles": len({row.id for row in children} & completed),
+                "restricted_articles": sum(
+                    not access(db, user_id, row, now)["can_learn"] for row in children
+                ),
+                "thumbnail_url": next(
+                    (
+                        summary(db, row, user_id, now)["thumbnail_url"]
+                        for row in children
+                        if row.payload.get("image_id")
+                    ),
+                    None,
+                ),
+            }
+        )
+    return result

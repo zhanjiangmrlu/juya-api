@@ -6,21 +6,23 @@ from .test_revision15_learning import cards
 
 
 def test_activation_requires_deployment_ready_gate(admin, mini):
-    preview = admin.post(POLICY + "/preview", json={"free_count": 0}).json()
-    response = admin.put(POLICY, headers=key(), json={"preview_token": preview["preview_token"]})
-    assert response.status_code == 409
-    assert response.json()["error"]["code"] == "access_rollout_not_ready"
-    assert mini.get("/api/mini/v1/learning-access").json()["enabled"] is False
+    """The retired activation gate cannot reopen numeric free policy writing."""
+    assert admin.post(POLICY + "/preview", json={"free_count": 0}).status_code == 410
+    assert admin.put(POLICY, headers=key(), json={"preview_token": "obsolete"}).status_code == 410
+    assert mini.get("/api/mini/v1/learning-access").json()["enabled"] is True
 
 
 def test_zero_and_oversize_free_counts_and_global_preview_pagination(admin, mini):
+    """Read-only totals reflect all explicit objects rather than a page-local count."""
     cards(admin, 3)
     configure(admin, 0)
-    assert all(not r["access"]["can_learn"] for r in mini.get("/api/mini/v1/cards").json()["items"])
-    preview = admin.post(POLICY + "/preview?limit=1&page=2", json={"free_count": 99}).json()
-    assert preview["total"] == 3 and len(preview["items"]) == 1
+    assert all(
+        not row["access"]["can_learn"] for row in mini.get("/api/mini/v1/cards").json()["items"]
+    )
+    assert (
+        admin.post(POLICY + "/preview?limit=1&page=2", json={"free_count": 99}).status_code == 410
+    )
     assert configure(admin, 99)["actual_free_count"] == 3
-    assert all(r["access"]["is_free"] for r in mini.get("/api/mini/v1/cards").json()["items"])
 
 
 def test_stale_grant_preview_and_invalid_dates_leave_current_authorization(admin, mini):
@@ -112,9 +114,7 @@ def test_free_membership_crosses_admin_ten_row_pages_without_using_page_order(ad
     ordered = mini.get("/api/mini/v1/cards?limit=50").json()["items"]
     expected = [row["id"] for row in ordered[:11]]
     configure(admin, 11)
-    preview = admin.post(POLICY + "/preview?page=2&limit=10", json={"free_count": 11}).json()
-    assert preview["total"] == 11
-    assert [row["id"] for row in preview["items"]] == [expected[10]]
+    assert admin.get(POLICY).json()["actual_free_count"] == 11
     for page in (1, 2):
         response = admin.get(f"/api/admin/v1/cards?page={page}&limit=10")
         assert response.status_code == 200
@@ -136,7 +136,7 @@ def test_reorder_rejects_old_free_confirmation_and_moves_access_without_erasing_
         json={"version_id": rows[0]["version_id"]},
     )
     assert completed.status_code == 200
-    preview = admin.post(POLICY + "/preview", json={"free_count": 2}).json()
+    assert admin.post(POLICY + "/preview", json={"free_count": 2}).status_code == 410
     order = admin.get("/api/admin/v1/catalog-order").json()
     response = admin.put(
         "/api/admin/v1/catalog-order",
@@ -144,9 +144,9 @@ def test_reorder_rejects_old_free_confirmation_and_moves_access_without_erasing_
         json={"version": order["version"], "card_ids": [row["id"] for row in reversed(rows)]},
     )
     assert response.status_code == 200
-    stale = admin.put(POLICY, headers=key(), json={"preview_token": preview["preview_token"]})
-    assert stale.status_code == 409
+    stale = admin.put(POLICY, headers=key(), json={"preview_token": "obsolete"})
+    assert stale.status_code == 410
     assert admin.get(POLICY).json()["free_count"] == 1
-    assert mini.get(f"/api/mini/v1/cards/{rows[0]['id']}").status_code == 403
-    assert mini.get(f"/api/mini/v1/cards/{rows[-1]['id']}").status_code == 200
+    assert mini.get(f"/api/mini/v1/cards/{rows[0]['id']}").status_code == 200
+    assert mini.get(f"/api/mini/v1/cards/{rows[-1]['id']}").status_code == 403
     assert mini.get("/api/mini/v1/me/statistics").json()["completed_cards"] == 1

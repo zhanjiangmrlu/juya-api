@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from . import listening_contracts as C
 from . import listening_service as service
+from .database import utc_now
 from .dependencies import administrator, database, operation_key
 from .errors import DomainError
 from .listening_models import (
@@ -21,10 +22,14 @@ def reference_counts(db, model, identifier):
     """Count every actual foreign-key reference, including deleted content and old imports."""
     if model is ListeningCategory:
         return {
-            "topics": db.scalar(
+            "articles": db.scalar(
                 select(func.count())
-                .select_from(ListeningTopic)
-                .where(ListeningTopic.category_id == identifier)
+                .select_from(ListeningArticle)
+                .where(
+                    (ListeningArticle.category_id == identifier)
+                    | (ListeningArticle.draft_category_id == identifier),
+                    ListeningArticle.deleted_at.is_(None),
+                )
             )
             or 0
         }
@@ -61,7 +66,7 @@ def delete_catalog(db, model, identifier, revision):
         .with_for_update()
         .execution_options(populate_existing=True)
     )
-    if row is None:
+    if row is None or (model is ListeningCategory and row.deleted_at):
         raise DomainError(404, "listening_catalog_missing", "分类或主题已不存在，请刷新")
     if row.revision != revision:
         raise DomainError(409, "listening_catalog_changed", "分类或主题已变化，请刷新后重新确认")
@@ -74,13 +79,18 @@ def delete_catalog(db, model, identifier, revision):
             else "仍有下属引用，请先迁移到其他分类或主题"
         )
         raise DomainError(409, "listening_catalog_referenced", message, {"references": references})
-    db.delete(row)
+    if model is ListeningCategory:
+        row.deleted_at = utc_now()
+        row.revision += 1
+    else:
+        db.delete(row)
     db.flush()
     service.changed(db)
     return {"id": identifier, "status": "success", "references": references}
 
 
 def routes():
+    """Register category ordering and reference-safe soft deletion."""
     router = APIRouter(prefix="/api/admin/v1/listening", tags=["listening administration"])
 
     def register(resource, model):
@@ -93,10 +103,14 @@ def routes():
             db: Session = Depends(database, scope="function"),
         ):
             def execute():
+                """Apply the checked revision change under the existing transaction locks."""
                 service.catalog_lock(db)
                 rows: list[ListeningCategory | ListeningTopic] = list(
                     db.scalars(
-                        select(model).with_for_update().execution_options(populate_existing=True)
+                        select(model)
+                        .where(model.deleted_at.is_(None))
+                        .with_for_update()
+                        .execution_options(populate_existing=True)
                     )
                 )
                 indexed = {row.id: row for row in rows}
@@ -199,5 +213,12 @@ def routes():
             )
 
     register("categories", ListeningCategory)
-    register("topics", ListeningTopic)
+
+    @router.api_route(
+        "/topics/{path:path}", methods=["POST", "PUT", "DELETE"], include_in_schema=False
+    )
+    def retired_topics(path: str, admin=Depends(administrator)):
+        """Keep obsolete catalog mutation URLs explicit and authenticated."""
+        raise DomainError(410, "listening_topics_retired", "请使用分类管理")
+
     return router

@@ -12,6 +12,7 @@ from .feedback_safety import FeedbackSafetyGateway
 from .learning_api import routes as learning_routes
 from .list_thumbnails import ListThumbnails
 from .listening_api import mini_routes as listening_routes
+from .listening_pronunciation import routes as listening_pronunciation_routes
 from .media_api import mini_routes as media_routes
 from .operation_api import routes as operation_routes
 from .profile_api import routes as profile_routes
@@ -57,4 +58,5 @@ def create_app(
     app.include_router(feedback_routes("mini"))
     app.include_router(share_routes())
     app.include_router(listening_routes())
+    app.include_router(listening_pronunciation_routes("mini"))
     return app

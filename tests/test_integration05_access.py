@@ -6,7 +6,7 @@ from sqlalchemy import update
 
 from tests.content_helpers import key
 from tests.test_learning_access import change, user_id
-from tests.test_listening import A, M, article, post, topic
+from tests.test_listening import A, M, article, policy, post, topic
 
 
 def test_direct_m_ten_to_one_zero_and_all_authorization_states(admin, mini, system):
@@ -22,13 +22,8 @@ def test_direct_m_ten_to_one_zero_and_all_authorization_states(admin, mini, syst
     ]
 
     def count(n):
-        current = admin.get(A + "/free-policy").json()
-        response = admin.put(
-            A + "/free-policy",
-            headers=key(),
-            json={"free_count": n, "revision": current["revision"]},
-        )
-        assert response.status_code == 200, response.text
+        """Preserve the account-state regression using explicit free fixture settings."""
+        policy(admin, n)
 
     count(10)
     target = rows[-1]
@@ -64,7 +59,7 @@ def test_direct_m_ten_to_one_zero_and_all_authorization_states(admin, mini, syst
     assert mini.get(M + f"/articles/{target['id']}").status_code == 200
     change(admin, uid, "revoke")
     assert mini.get(M + f"/articles/{rows[0]['id']}").status_code == 403
-    assert mini.get("/api/mini/v1/learning-access").json()["free_count"] is None
+    assert mini.get("/api/mini/v1/learning-access").json()["free_count"] == 0
     change(admin, uid, "grant")
     system["time"][0] = datetime(2026, 12, 20, tzinfo=UTC)
     assert mini.get(M + f"/articles/{target['id']}").status_code == 403

@@ -49,7 +49,17 @@ def session_digest(request, role):
 
 
 def with_grant(
-    value, request, role, actor_id, card_id, word_id, ref, cache_key, *, import_context=None
+    value,
+    request,
+    role,
+    actor_id,
+    card_id,
+    word_id,
+    ref,
+    cache_key,
+    *,
+    import_context=None,
+    listening_context=None,
 ):
     """Issue a short-lived opaque audio reference without exposing a storage URL."""
     if value["state"] == "ready":
@@ -63,6 +73,7 @@ def with_grant(
             "revision": ref.revision,
             "cache_key": cache_key,
             "import_context": import_context,
+            "listening_context": listening_context,
             "expires": int(
                 (request.app.state.clock() + timedelta(minutes=5)).replace(tzinfo=UTC).timestamp()
             ),
@@ -216,6 +227,7 @@ def routes(role):
     @router.head("/pronunciation/{credential}", include_in_schema=False)
     @router.get("/pronunciation/{credential}")
     def audio(credential: str, request: Request, db: Session = Depends(database, scope="function")):
+        """Resolve session-bound speech grants and recheck current content before delivery."""
         settings, now = request.app.state.settings, request.app.state.clock()
         try:
             payload = json.loads(decrypt(settings, credential) or "{}")
@@ -237,10 +249,26 @@ def routes(role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
         if role == "admin" and payload["session"] != session_digest(request, role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
-        if role == "mini":
+        listening = payload.get("listening_context")
+        if role == "mini" and not listening:
             require_access(db, actor_id, payload.get("card_id"), now)
         context = payload.get("import_context")
-        if context:
+        if listening:
+            from .listening_pronunciation import reference as listening_reference
+
+            _, _, _, cache_key = listening_reference(
+                db,
+                settings,
+                role,
+                actor_id,
+                listening.get("article_id"),
+                payload.get("word_id"),
+                payload.get("version_id"),
+                payload.get("revision"),
+                context=listening if listening.get("candidate_id") else None,
+                now=now,
+            )
+        elif context:
             if role != "admin":
                 raise DomainError(401, "speech_grant_invalid", "请重新点击词汇试听")
             _, _, _, cache_key = import_reference(

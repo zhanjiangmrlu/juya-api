@@ -252,7 +252,7 @@ def test_new_audio_capable_apis_require_additive_playback_migration(system):
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES ('0010')"))
-        db.merge(SettingCounter(name="schema_contract", value=1))
+        db.merge(SettingCounter(name="schema_contract", value=3))
     assert system["admin"].get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 503
 

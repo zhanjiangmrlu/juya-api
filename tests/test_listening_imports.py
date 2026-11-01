@@ -52,12 +52,16 @@ def upload(admin, batch, *packages):
     return result.json()
 
 
-def assign(admin, batch, candidate_id, topic_id):
+def assign(admin, batch, candidate_id, category_id):
     candidate = next(c for c in batch["candidates"] if c["id"] == candidate_id)
     result = admin.put(
         A + f"/imports/{batch['id']}/candidates/{candidate_id}",
         headers=key(),
-        json={"revision": batch["revision"], "topic_id": topic_id, "payload": candidate["payload"]},
+        json={
+            "revision": batch["revision"],
+            "category_id": category_id,
+            "payload": candidate["payload"],
+        },
     )
     assert result.status_code == 200, result.text
     return result.json()

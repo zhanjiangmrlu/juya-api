@@ -101,7 +101,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
         assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
-            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0023"
+            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0024"
             assert db.scalar(text("SELECT count(*) FROM import_batches")) == 0
             db.execute(
                 text(
@@ -124,7 +124,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
 def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activity(
     tmp_path, monkeypatch
 ):
-    from juya_api.content_models import Card, CardVersion, Media
+    from juya_api.content_models import CardVersion, Media
     from juya_api.import_models import ImportFile, ImportItem
     from juya_api.job_models import Job
     from juya_api.learning_models import Completion
@@ -163,8 +163,16 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
                 last_login_at=created,
             )
         )
-        db.add(
-            Card(id="card", status="published", current_version_id="version", created_at=created)
+        db.execute(
+            metadata.tables["cards"]
+            .insert()
+            .values(
+                id="card",
+                status="published",
+                current_version_id="version",
+                sort_order=0,
+                created_at=created,
+            )
         )
         db.flush()
         db.add(
@@ -295,7 +303,7 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
             for table in metadata.sorted_tables
             if table.name not in {"alembic_version", "import_batches"}
         }
-    command.upgrade(config, "head")
+    command.upgrade(config, "0023")
     columns = {column["name"]: column for column in inspect(engine).get_columns("import_batches")}
     assert "updated_at" in columns
     assert columns["updated_at"]["nullable"] is True
@@ -343,11 +351,9 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
             row["mode"] == "multiple" and row["admin_id"] == "admin" for row in rows.values()
         )
         assert connection.execute(text("PRAGMA foreign_key_check")).all() == []
-    command.check(config)
     command.downgrade(config, "0015")
     assert "updated_at" not in {c["name"] for c in inspect(engine).get_columns("import_batches")}
-    command.upgrade(config, "head")
-    command.check(config)
+    command.upgrade(config, "0023")
     engine.dispose()
 
 

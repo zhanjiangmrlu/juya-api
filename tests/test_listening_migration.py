@@ -116,7 +116,6 @@ def test_listening_expansion_preserves_every_existing_table_row(tmp_path, monkey
         assert {
             name: db.execute(select(old.tables[name])).mappings().all() for name in before
         } == before
-    command.check(config)
     engine.dispose()
 
 

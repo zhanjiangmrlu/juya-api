@@ -21,7 +21,8 @@ def test_downloaded_template_parses_with_the_same_canonical_fields(admin):
     payload, hints = parse_docx(response.content)
     assert payload["title_zh"] and payload["title_en"] and payload["body_en"]
     assert payload["translation_zh"] and len(payload["expressions"]) == 5
-    assert hints["主题"] and hints["分类"]
+    assert "主题" not in hints and hints["分类"]
+    assert len(payload["vocabulary"]) == 1
 
 
 def test_single_publish_needs_no_manual_preview_and_replays_one_version(admin):
@@ -43,7 +44,7 @@ def test_single_publish_needs_no_manual_preview_and_replays_one_version(admin):
 def test_batch_publish_keeps_valid_success_when_another_draft_is_incomplete(admin):
     _, topic = catalog_topic(admin)
     valid = article(admin, topic["id"])
-    invalid = post(admin, A + "/articles", {"topic_id": topic["id"], "payload": {}})
+    invalid = post(admin, A + "/articles", {"category_id": topic["id"], "payload": {}})
     response = post(
         admin,
         A + "/articles/batch-publish",
@@ -74,8 +75,8 @@ def test_template_alias_and_english_ownership_are_matched_without_creating_catal
     batch = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package_stream.getvalue())
     candidate = batch["candidates"][0]
     assert candidate["state"] == "complete", candidate["errors"]
-    assert candidate["topic_id"] == topic["id"]
-    assert len(admin.get(A + "/topics").json()["items"]) == 1
+    assert candidate["category_id"] == topic["id"]
+    assert admin.get(A + "/topics").json()["items"] == []
     single = admin.post(
         A + "/docx-preview",
         headers=key(),
@@ -88,7 +89,7 @@ def test_template_alias_and_english_ownership_are_matched_without_creating_catal
         },
     )
     assert single.status_code == 200
-    assert single.json().get("topic_id") == topic["id"]
+    assert single.json().get("category_id") == topic["id"]
 
 
 def test_import_publish_is_atomic_per_candidate_and_recoverable(admin, mini):
@@ -104,7 +105,7 @@ def test_import_publish_is_atomic_per_candidate_and_recoverable(admin, mini):
         headers=key(),
         json={
             "revision": batch["revision"],
-            "topic_id": topic["id"],
+            "category_id": topic["id"],
             "payload": {**bad["payload"], "title_en": ""},
         },
     ).json()
@@ -146,7 +147,7 @@ def test_publish_explicit_update_of_unchanged_draft_does_not_skip_unpublished_ch
         headers=key(),
         json={
             "revision": live["revision"],
-            "topic_id": topic["id"],
+            "category_id": topic["id"],
             "payload": {**live["payload"], "title_zh": "未发布修改"},
         },
     ).json()

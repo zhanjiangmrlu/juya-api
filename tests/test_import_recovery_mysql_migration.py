@@ -160,7 +160,7 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
                 }
 
         original = facts()
-        command.upgrade(config, "head")
+        command.upgrade(config, "0023")
         assert facts() == original
         column = next(
             column
@@ -199,20 +199,22 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
                 ),
             )
             assert value["updated_at"] == "2026-10-17T08:00:00.123456Z"
-        command.check(config)
         before_round_trip = facts()
         command.downgrade(config, "0015")
         assert "updated_at" not in {
             column["name"] for column in inspect(engine).get_columns("import_batches")
         }
         assert facts() == before_round_trip
-        command.upgrade(config, "head")
+        command.upgrade(config, "0023")
         assert facts() == before_round_trip
         with Session(engine) as db:
             assert dict(db.execute(select(ImportBatch.id, ImportBatch.updated_at)).all()) == {
                 **expected,
                 "old-image": created,
             }
+        # Historical round trips stop before 0024's intentionally irreversible ownership change.
+        command.upgrade(config, "head")
+        assert facts() == before_round_trip
         command.check(config)
     finally:
         engine.dispose()

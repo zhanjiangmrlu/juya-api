@@ -8,11 +8,13 @@ from .config import Settings
 from .content_api import admin_routes as content_routes
 from .feedback_api import routes as feedback_routes
 from .feedback_safety import FeedbackSafetyGateway
+from .free_access import routes as free_access_routes
 from .import_api import routes as import_routes
 from .list_thumbnails import ListThumbnails
 from .listening_api import admin_routes as listening_routes
 from .listening_catalog import routes as listening_catalog_routes
 from .listening_imports import routes as listening_import_routes
+from .listening_pronunciation import routes as listening_pronunciation_routes
 from .media_api import admin_routes as media_routes
 from .operation_api import routes as operation_routes
 from .pronunciation_api import routes as pronunciation_routes
@@ -31,6 +33,7 @@ def create_app(
     )
     app.state.list_thumbnails = ListThumbnails()
     app.include_router(access_routes())
+    app.include_router(free_access_routes())
     app.include_router(admin_routes())
     app.include_router(content_routes())
     app.include_router(action_routes())
@@ -43,5 +46,6 @@ def create_app(
     app.include_router(feedback_routes("admin"))
     app.include_router(listening_catalog_routes())
     app.include_router(listening_routes())
+    app.include_router(listening_pronunciation_routes("admin"))
     app.include_router(listening_import_routes())
     return app

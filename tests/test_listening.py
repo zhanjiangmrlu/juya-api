@@ -17,16 +17,14 @@ def post(client, path, body):
 
 
 def topic(admin):
-    category = post(admin, A + "/categories", {"name": "日常", "sort_order": 0})
-    return post(
-        admin,
-        A + "/topics",
-        {"name": "午间", "name_en": "A short break", "category_id": category["id"]},
+    """Legacy helper name now creates a direct category and no topic."""
+    return post(admin, A + "/categories", {"name": "日常", "sort_order": 0})
+
+
+def article(admin, category_id=None, title="午间休息"):
+    item = post(
+        admin, A + "/articles", {"category_id": category_id or topic(admin)["id"], "payload": {}}
     )
-
-
-def article(admin, topic_id=None, title="午间休息"):
-    item = post(admin, A + "/articles", {"topic_id": topic_id or topic(admin)["id"], "payload": {}})
     audio = admin.post(
         A + f"/articles/{item['id']}/media?kind=audio",
         headers=key(),
@@ -50,7 +48,7 @@ def article(admin, topic_id=None, title="午间休息"):
     response = admin.put(
         A + f"/articles/{item['id']}",
         headers=key(),
-        json={"revision": item["revision"], "topic_id": item["topic_id"], "payload": payload},
+        json={"revision": item["revision"], "category_id": item["category_id"], "payload": payload},
     )
     assert response.status_code == 200, response.text
     return response.json()
@@ -66,12 +64,27 @@ def publish(admin, item):
 
 
 def policy(admin, count):
-    preview = post(admin, A + "/free-policy/preview", {"free_count": count})
-    response = admin.put(
-        A + "/free-policy", headers=key(), json={"preview_token": preview["preview_token"]}
-    )
-    assert response.status_code == 200, response.text
-    return response.json()
+    """Explicitly mark the requested fixture objects rather than enabling a numeric policy."""
+    from juya_api.listening_models import ListeningArticle
+
+    with admin.app.state.sessions() as db:
+        ids = list(
+            db.scalars(
+                select(ListeningArticle.id)
+                .where(
+                    ListeningArticle.status == "published", ListeningArticle.deleted_at.is_(None)
+                )
+                .order_by(ListeningArticle.global_order, ListeningArticle.id)
+            )
+        )
+    for index, identifier in enumerate(ids):
+        path = A + f"/articles/{identifier}/free-access"
+        current = admin.get(path).json()
+        result = admin.put(
+            path, json={"is_free": index < count, "revision": current["revision"]}, headers=key()
+        )
+        assert result.status_code == 200, result.text
+    return admin.get(A + "/free-policy").json()
 
 
 def test_draft_publish_snapshot_and_unconfigured_access(admin, mini):
@@ -87,7 +100,7 @@ def test_draft_publish_snapshot_and_unconfigured_access(admin, mini):
     update = admin.put(
         A + f"/articles/{live['id']}",
         headers=key(),
-        json={"revision": live["revision"], "topic_id": item["topic_id"], "payload": changed},
+        json={"revision": live["revision"], "category_id": item["category_id"], "payload": changed},
     )
     assert update.status_code == 200
     assert mini.get(M + f"/articles/{live['id']}").json()["payload"]["title_zh"] != "未发布改稿"
@@ -100,19 +113,19 @@ def test_draft_publish_snapshot_and_unconfigured_access(admin, mini):
     )
 
 
-def test_global_m_is_independent_of_topic_order_and_completion(admin, mini):
+def test_global_m_is_independent_of_category_order_and_completion(admin, mini):
     t = topic(admin)
     first, second = [publish(admin, article(admin, t["id"], str(n))) for n in range(2)]
     policy(admin, 1)
     post(mini, M + f"/articles/{first['id']}/complete", {"version_id": first["version_id"]})
     assert mini.get(M + f"/articles/{second['id']}/summary").json()["access"]["can_learn"] is False
-    order = admin.get(A + "/order?scope=topic&topic_id=" + t["id"]).json()
+    order = admin.get(A + "/order?scope=category&category_id=" + t["id"]).json()
     result = admin.put(
         A + "/order",
         headers=key(),
         json={
-            "scope": "topic",
-            "topic_id": t["id"],
+            "scope": "category",
+            "category_id": t["id"],
             "article_ids": [second["id"], first["id"]],
             "revision": order["revision"],
         },
@@ -165,7 +178,7 @@ def test_progress_version_reset_and_stale_publish_preview(admin, mini):
         headers=key(),
         json={
             "revision": live["revision"],
-            "topic_id": live["topic_id"],
+            "category_id": live["category_id"],
             "payload": {**live["payload"], "body_en": "We rest again."},
         },
     ).json()
@@ -184,22 +197,22 @@ def test_progress_version_reset_and_stale_publish_preview(admin, mini):
 
 
 def test_free_preview_stale_and_invalid_m(admin, mini):
+    """Retired M configuration never changes the explicit free set."""
     item = publish(admin, article(admin))
-    preview = post(admin, A + "/free-policy/preview", {"free_count": 1})
-    post(admin, A + f"/articles/{item['id']}/offline", {"revision": item["revision"]})
-    assert (
-        admin.put(
-            A + "/free-policy", headers=key(), json={"preview_token": preview["preview_token"]}
-        ).status_code
-        == 409
-    )
-    for value in [-1, 1.2, "1", None, True]:
+    for value in [0, 1, 99]:
         assert (
             admin.post(
                 A + "/free-policy/preview", headers=key(), json={"free_count": value}
             ).status_code
-            == 422
+            == 410
         )
+    assert (
+        admin.put(
+            A + "/free-policy", headers=key(), json={"free_count": 1, "revision": 0}
+        ).status_code
+        == 410
+    )
+    assert mini.get(M + f"/articles/{item['id']}").status_code == 403
 
 
 def test_timeline_job_deduplicates_and_rejects_wrong_ranges(admin, mini, system):
@@ -213,7 +226,7 @@ def test_timeline_job_deduplicates_and_rejects_wrong_ranges(admin, mini, system)
         headers=key(),
         json={
             "revision": item["revision"],
-            "topic_id": item["topic_id"],
+            "category_id": item["category_id"],
             "payload": item["payload"],
         },
     ).json()

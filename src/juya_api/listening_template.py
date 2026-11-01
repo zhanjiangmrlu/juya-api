@@ -11,13 +11,24 @@ def template_document() -> bytes:
     document.add_heading("午间休息", level=1)
     document.add_paragraph("英文标题：A Short Break")
     document.add_paragraph("分类：请填写已有分类的中文或英文名称")
-    document.add_paragraph("所属主题：请填写已有主题的英文或中文名称")
     document.add_heading("英文正文", level=2)
     document.add_paragraph(
         "Take a break and drink water. Slow down, take a breath, and feel better."
     )
     document.add_heading("全文中文译文", level=2)
     document.add_paragraph("休息一下，喝点水。放慢脚步，深呼吸，感觉更好一些。")
+    document.add_heading("重点词汇", level=2)
+    words = document.add_table(rows=1, cols=4)
+    for cell, value in zip(
+        words.rows[0].cells, ["词汇", "本句释义", "音标", "对应英文原句"], strict=True
+    ):
+        cell.text = value
+    for cell, value in zip(
+        words.add_row().cells,
+        ["break", "休息", "/breɪk/", "Take a break and drink water."],
+        strict=True,
+    ):
+        cell.text = value
     document.add_heading("5组语块", level=2)
     table = document.add_table(rows=1, cols=3)
     for cell, value in zip(table.rows[0].cells, ["英文", "中文释义", "替换例句"], strict=True):

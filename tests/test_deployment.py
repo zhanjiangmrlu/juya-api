@@ -16,7 +16,7 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
     with sessions.begin() as db:
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES ('0008')"))
-        db.merge(SettingCounter(name="schema_contract", value=1))
+        db.merge(SettingCounter(name="schema_contract", value=3))
     assert client.get("/health/ready").status_code == 503
     with sessions.begin() as db:
         db.execute(text("UPDATE alembic_version SET version_num='0011'"))
@@ -39,12 +39,12 @@ def test_readiness_requires_migration_and_allows_only_compatible_expansion(syste
         assert client.get("/health/ready").status_code == 503
         assert system["mini"].get("/health/ready").status_code == 503
     with sessions.begin() as db:
-        db.execute(text("UPDATE alembic_version SET version_num='0023'"))
-        db.get(SettingCounter, "schema_contract").value = 2
+        db.execute(text("UPDATE alembic_version SET version_num='0024'"))
+        db.get(SettingCounter, "schema_contract").value = 3
     assert client.get("/health/ready").status_code == 200
     assert system["mini"].get("/health/ready").status_code == 200
     with sessions.begin() as db:
-        db.get(SettingCounter, "schema_contract").value = 3
+        db.get(SettingCounter, "schema_contract").value = 4
     assert client.get("/health/ready").status_code == 503
     assert system["mini"].get("/health/ready").status_code == 503
 
@@ -134,7 +134,7 @@ def test_worker_probe_checks_the_selected_roles_schema(
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
-        db.merge(SettingCounter(name="schema_contract", value=1))
+        db.merge(SettingCounter(name="schema_contract", value=3))
     settings = config.Settings(
         **{**system["settings"].model_dump(), "image_role": role, "worker_role": role}
     )
@@ -177,7 +177,7 @@ def test_runtime_preflight_rejects_admin_schema_before_import_deletion(
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
-        db.merge(SettingCounter(name="schema_contract", value=1))
+        db.merge(SettingCounter(name="schema_contract", value=3))
     settings = Settings(**{**system["settings"].model_dump(), "image_role": role})
 
     class Broker:
@@ -219,7 +219,7 @@ def test_admin_bootstrap_requires_current_admin_schema(system, monkeypatch, revi
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES (:revision)"), {"revision": revision})
-        db.merge(SettingCounter(name="schema_contract", value=1))
+        db.merge(SettingCounter(name="schema_contract", value=3))
     settings = Settings(**{**system["settings"].model_dump(), "image_role": "admin"})
     path = Path(__file__).resolve().parents[1] / "deploy/bootstrap-admin.py"
     spec = importlib.util.spec_from_file_location("bootstrap_admin_schema", path)

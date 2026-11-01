@@ -8,6 +8,14 @@ import pytest
 from .content_helpers import content, draft, key, publish, recording
 
 
+@pytest.fixture(autouse=True)
+def authorized_dictionary_user(admin, mini):
+    """Dictionary behavior is tested with the active authorization it now requires."""
+    from tests.test_learning_access import change, user_id
+
+    change(admin, user_id(mini), "grant")
+
+
 def source(text, word, occurrence=0):
     """Build an exact UTF-16 fixture range independently of dictionary tokenization."""
     start = -1

@@ -3,7 +3,7 @@ import os
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import MetaData, create_engine, inspect, text
 
 
 @pytest.mark.mysql
@@ -11,13 +11,14 @@ from sqlalchemy import create_engine, inspect, text
     not os.getenv("JUYA_TEST_DATABASE_URL"), reason="Fresh MySQL migration verification"
 )
 def test_fresh_migration_creates_empty_business_tables(monkeypatch):
-    from juya_api.database import Base
-
+    """Verify a fresh schema independently of ORM module import order."""
     url = os.environ["JUYA_TEST_DATABASE_URL"]
     engine = create_engine(url)
-    if engine.url.database != "juya_verify":
+    if engine.dialect.name != "mysql" or engine.url.database != "juya_verify":
         raise RuntimeError("Migration tests require the dedicated verification database")
-    Base.metadata.drop_all(engine)
+    metadata = MetaData()
+    metadata.reflect(engine)
+    metadata.drop_all(engine)
     with engine.begin() as db:
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
     monkeypatch.setenv("JUYA_DATABASE_URL", url)

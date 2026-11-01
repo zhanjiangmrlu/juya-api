@@ -25,7 +25,7 @@ def test_thumbnail_ticket_is_session_bound_and_safe_for_restricted_article(admin
         headers=key(),
         json={
             "revision": row["revision"],
-            "topic_id": row["topic_id"],
+            "category_id": row["category_id"],
             "payload": {**row["payload"], "image_id": image["id"]},
         },
     ).json()
@@ -128,37 +128,26 @@ def test_recent_study_uses_successful_scene_and_listening_completions_including_
 
 
 def test_m_and_both_order_scopes_persist_before_after_audit_once(admin, system):
-    t = topic(admin)
-    rows = [publish(admin, article(admin, t["id"], str(i))) for i in range(2)]
+    """Category ordering keeps one audited receipt and cannot transfer explicit free flags."""
+    owner = topic(admin)
+    rows = [publish(admin, article(admin, owner["id"], str(index))) for index in range(2)]
     policy(admin, 1)
-    for scope in ["topic", "global"]:
-        order = admin.get(A + "/order", params={"scope": scope, "topic_id": t["id"]}).json()
-        body = {
-            **order,
-            "scope": scope,
-            "topic_id": t["id"] if scope == "topic" else None,
-            "article_ids": [r["id"] for r in reversed(rows)],
-        }
-        headers = key()
-        first = admin.put(A + "/order", json=body, headers=headers)
-        assert first.status_code == 200, first.text
-        assert admin.put(A + "/order", json=body, headers=headers).json() == first.json()
+    order = admin.get(A + "/order", params={"scope": "category", "category_id": owner["id"]}).json()
+    body = {
+        **order,
+        "scope": "category",
+        "category_id": owner["id"],
+        "article_ids": [row["id"] for row in reversed(rows)],
+    }
+    headers = key()
+    first = admin.put(A + "/order", json=body, headers=headers)
+    assert first.status_code == 200, first.text
+    assert admin.put(A + "/order", json=body, headers=headers).json() == first.json()
     with system["sessions"]() as db:
         history = list(
-            db.scalars(
-                select(AccessHistory)
-                .where(AccessHistory.action.like("listening.%"))
-                .order_by(AccessHistory.occurred_at)
-            )
+            db.scalars(select(AccessHistory).where(AccessHistory.action == "listening.order"))
         )
-        assert len(history) == 3
-        free = next(h for h in history if h.action == "listening.free-policy")
-        assert free.before["configured"] is False and free.after["free_count"] == 1
-        assert free.after["article_ids"] == [rows[0]["id"]]
-        orders = [h for h in history if h.action == "listening.order"]
-        assert {h.after["scope"] for h in orders} == {"global", "topic"}
-        assert all(h.before["article_ids"] == [r["id"] for r in rows] for h in orders)
-        assert all(h.after["article_ids"] == [r["id"] for r in reversed(rows)] for h in orders)
-        global_order = next(h for h in orders if h.after["scope"] == "global")
-        assert global_order.before["policy"]["article_ids"] == [rows[0]["id"]]
-        assert global_order.after["policy"]["article_ids"] == [rows[1]["id"]]
+        assert len(history) == 1
+        assert history[0].after["scope"] == "category"
+        assert history[0].before["policy"]["article_ids"] == [rows[0]["id"]]
+        assert history[0].after["policy"]["article_ids"] == [rows[0]["id"]]

@@ -376,7 +376,7 @@ def test_readiness_rejects_schema_before_feedback_tables(system):
         db.execute(text("DROP TABLE IF EXISTS alembic_version"))
         db.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL)"))
         db.execute(text("INSERT INTO alembic_version VALUES ('0014')"))
-        db.merge(SettingCounter(name="schema_contract", value=1))
+        db.merge(SettingCounter(name="schema_contract", value=3))
     assert system["mini"].get("/health/ready").status_code == 503
     assert system["admin"].get("/health/ready").status_code == 503
 
