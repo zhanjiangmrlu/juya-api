@@ -1,0 +1,261 @@
+[
+  {
+    "id": "T301",
+    "scenario": "首页两模块名称、简介和入口",
+    "expected": "雅思词汇进入原场景；三个听读介绍准确，1.5万—2万只指生活场景听读，数字非实时统计。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "screenshots/"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T302",
+    "scenario": "手机高度、长简介与三Tab",
+    "expected": "正文可滚动，卡片可扩展，按钮可见，底部三Tab和安全区清晰。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "screenshots/"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T303",
+    "scenario": "大类名称、数量与直接列表",
+    "expected": "三当前大类可增减，2／10／超过10及长英文均可选，不出现小主题中间页。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "screenshots/"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T304",
+    "scenario": "无主题的新包及含主题的旧包",
+    "expected": "均按有效分类匹配，旧主题缺失不阻断，冲突不猜测迁移。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T305",
+    "scenario": "分类删除、迁移和排序",
+    "expected": "先调整全部未删除文章引用再删除；身份、成绩、收藏、进度和时间轴不重置。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T306",
+    "scenario": "可选词汇为空／存在",
+    "expected": "空区整体隐藏且可发布；有词展示英文、音标可选、释义及正文原句，仍恰好5组表达。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "screenshots/"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T307",
+    "scenario": "同词同义与不同义",
+    "expected": "同义可用一个已确认句；不同义分条保留并分别匹配，不按拼写合并。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T308",
+    "scenario": "来源多处、词形变换、部分字符串",
+    "expected": "管理员确认来源及词形关联；不误匹配子串，不自动推断释义。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T309",
+    "scenario": "正文修改造成原句失效",
+    "expected": "重新核对来源，可修正或移除条目，不沿用错误引用。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T310",
+    "scenario": "词汇单词发音与全文",
+    "expected": "只读单词，全文及逐字高亮／尾迹暂停，保持进度倍速位置，手动恢复。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T311",
+    "scenario": "快速切词、离开与音频失败",
+    "expected": "旧发音停止，无叠播；失败原位重试不阻断合法学习。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T312",
+    "scenario": "免费预置词汇与正文查词",
+    "expected": "免费可听预置词汇／看原句，任意点词仍需授权；受限文章不能借此泄露资源。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "http-access-evidence.json"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T313",
+    "scenario": "词汇数据和全文边界",
+    "expected": "释义／重复原句不计正文词数，不进全文时间轴，不新增学习计数或单词收藏。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T314",
+    "scenario": "后台词汇维护和导入",
+    "expected": "添加删除排序及来源核对一致，旧无词汇模板仍有效，不要求上传单词音频。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "screenshots/"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T315",
+    "scenario": "逐项启用／关闭免费",
+    "expected": "只作用指定稳定对象，动作和状态及汇总一致，列表位置保留。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "screenshots/"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T316",
+    "scenario": "新建导入、草稿下线及删除",
+    "expected": "默认关闭；草稿下线不可读，下线保留开关；删除不复活且不补位。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T317",
+    "scenario": "排序、归属、学习完成和发布",
+    "expected": "不替换免费集合，场景及听读开关彼此独立，普通排序仍有效。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T318",
+    "scenario": "关闭后权限及资源",
+    "expected": "授权有效仍可学；其他账号受限，停止非法播放／大图，旧入口和缓存不得绕过。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "http-access-evidence.json"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T319",
+    "scenario": "失败、重复与并发保存",
+    "expected": "失败留真实状态，未知查询，防重复且记录管理员前后值，不改不相关字段。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T320",
+    "scenario": "旧免费规则迁移",
+    "expected": "固化切换前实际有效两类名单到逐项设置，异常核对，不再读取旧N/M作判定。",
+    "status": "local_verified",
+    "evidence": [
+      "api-report.md",
+      "admin-report.md",
+      "mini-report.md",
+      "mysql-verification.json"
+    ],
+    "limits": "本地自动化及所列浏览器范围；云/真机不包含"
+  },
+  {
+    "id": "T321",
+    "scenario": "合并文档及预览状态",
+    "expected": "CHG0032—0035合并06，16预览待评审；原型／Figma保持05，程序未验收。",
+    "status": "source_verified",
+    "evidence": [
+      "source-reference.json"
+    ],
+    "note": "正文旧待评审描述由同文末2026-11-01执行记录与本次同步说明替代；程序结果另列"
+  }
+]

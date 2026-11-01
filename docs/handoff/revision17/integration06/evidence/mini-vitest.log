@@ -1,0 +1,438 @@
+$ vitest run --maxWorkers=2
+
+ RUN  v3.2.4 /Users/lubi/Desktop/juya/.worktrees/revision17-integration06/juya-miniapp
+
+ ✓ tests/contracts/mp-source-navigation.spec.ts (8 tests) 3919ms
+ ✓ tests/unit/services/source-queue.spec.ts (3 tests) 47ms
+ ✓ tests/contracts/local-share-h5.spec.ts (1 test) 41ms
+ ✓ tests/unit/services/media-service.spec.ts (3 tests) 25ms
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > shows loading and resolves audio concurrently with permission, without playing before approval
+[word-audio] { stage: 'permission', outcome: 'error', elapsed: 1 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > recovers temporary native failure twice at 250 and 750ms and then exposes a retry
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > recovers temporary native failure twice at 250 and 750ms and then exposes a retry
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0, code: '10002' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > recovers temporary native failure twice at 250 and 750ms and then exposes a retry
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > recovers temporary native failure twice at 250 and 750ms and then exposes a retry
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0, code: '10002' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > recovers temporary native failure twice at 250 and 750ms and then exposes a retry
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > recovers temporary native failure twice at 250 and 750ms and then exposes a retry
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0, code: '10002' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > re-downloads a bad local file only once and does not retry permanent or forbidden failures
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0, code: '10004' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > re-downloads a bad local file only once and does not retry permanent or forbidden failures
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0, code: '10004' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > reissues expired speech grants but does not continue after leaving or switching words
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0, code: '10002' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > reissues expired speech grants but does not continue after leaving or switching words
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 1000, code: '10002' }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > leaves loading after a rejected permission request and never retries denied permissions
+[word-audio] { stage: 'permission', outcome: 'error', elapsed: 0 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > does not let a late denied permission from a failed attempt cancel its newer recovery
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > does not let a late denied permission from a failed attempt cancel its newer recovery
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/word-playback-recovery.spec.ts > does not let a late denied permission from a failed attempt cancel its newer recovery
+[word-audio] { stage: 'permission', outcome: 'error', elapsed: 250 }
+
+ ✓ tests/unit/features/learning/word-playback-recovery.spec.ts (9 tests) 18ms
+ ✓ tests/unit/services/word-audio-preparation.spec.ts (18 tests) 13ms
+ ✓ tests/unit/composables/use-feedback-draft.spec.ts (15 tests) 9ms
+ ✓ tests/unit/services/full-audio-preparation.spec.ts (13 tests) 8ms
+stdout | tests/unit/services/pronunciation-service.spec.ts > submits one controlled reference and polls the same target until ready
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/services/pronunciation-service.spec.ts > cancels polling when the word or page changes and bounds a slow synthesis
+[word-audio] { stage: 'resolve', outcome: 'cancelled', elapsed: 0 }
+
+stdout | tests/unit/services/pronunciation-service.spec.ts > cancels polling when the word or page changes and bounds a slow synthesis
+[word-audio] {
+  stage: 'resolve',
+  outcome: 'error',
+  elapsed: 0,
+  code: 'pronunciation_unavailable',
+  status: 0
+}
+
+stdout | tests/unit/services/pronunciation-service.spec.ts > keeps waiting beyond the former twenty checks and follows the server polling interval
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+ ✓ tests/unit/services/pronunciation-service.spec.ts (3 tests) 9ms
+ ✓ tests/unit/features/learning/scene-model.spec.ts (5 tests) 10ms
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > does not seek an unready word and clears an earlier error once playback starts
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > does not seek an unready word and clears an earlier error once playback starts
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 1 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > does not seek an unready word and clears an earlier error once playback starts
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > starts a prepared word synchronously without a promise boundary or another URL cache
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > starts a prepared word synchronously without a promise boundary or another URL cache
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > invalidates a failed word in the external preparation service
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > invalidates a failed word in the external preparation service
+[word-audio] { stage: 'native', outcome: 'error', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > cancels pending native full playback when a word is selected between pause and play events
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > retains session speed across scenes, word playback, retry and manual replay
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > pauses whole audio at its position for a word and never automatically resumes it
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > single whole-audio player and word pronunciation > ignores a late word response after a different word is selected
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/audio-controller.spec.ts > stops only the selected popup word and leaves full playback position rate and intent unchanged
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+ ✓ tests/unit/features/learning/audio-controller.spec.ts (21 tests) 8ms
+ ✓ tests/unit/services/operation-service.spec.ts (14 tests) 6ms
+ ✓ tests/unit/composables/use-scene-list.spec.ts (12 tests) 6ms
+stdout | tests/unit/services/word-audio-file.spec.ts > downloads only a complete successful response and deletes its temporary file once
+[word-audio] { stage: 'download', outcome: 'ready', elapsed: 0 }
+[word-audio] { stage: 'format', outcome: 'ready', elapsed: 0, format: 'mp3' }
+
+stdout | tests/unit/services/word-audio-file.spec.ts > aborts an active native download and cleans up a successful callback arriving after cancellation
+[word-audio] { stage: 'download', outcome: 'cancelled', elapsed: 1 }
+
+stdout | tests/unit/services/word-audio-file.spec.ts > rejects non-audio HTTP errors and removes the downloaded error document
+[word-audio] {
+  stage: 'download',
+  outcome: 'error',
+  elapsed: 0,
+  code: 'word_audio_download_failed',
+  status: 410
+}
+
+stdout | tests/unit/services/word-audio-file.spec.ts > removes only expired owned audio after a previous interrupted session
+[word-audio] { stage: 'download', outcome: 'ready', elapsed: 0 }
+[word-audio] { stage: 'format', outcome: 'ready', elapsed: 0, format: 'mp3' }
+
+stdout | tests/unit/services/word-audio-file.spec.ts > preserves a signed grant expiration code separately from an expired login
+[word-audio] {
+  stage: 'download',
+  outcome: 'error',
+  elapsed: 0,
+  code: 'speech_grant_expired',
+  status: 401
+}
+
+ ✓ tests/unit/services/word-audio-file.spec.ts (5 tests) 7ms
+ ✓ tests/unit/services/feedback-inbox.spec.ts (5 tests) 5ms
+ ✓ tests/unit/composables/use-scene-dictionary.spec.ts (5 tests) 4ms
+ ✓ tests/unit/services/share-operation-isolation.spec.ts (3 tests) 4ms
+ ✓ tests/unit/services/share-cover-file.spec.ts (4 tests) 3ms
+ ✓ tests/unit/services/client-thumbnail.spec.ts (6 tests) 5ms
+ ✓ tests/unit/features/listening/listening-recovery.spec.ts (4 tests) 3ms
+ ✓ tests/unit/sub-packages/scenes/scene-share-service.spec.ts (10 tests) 4ms
+stdout | tests/unit/services/dictionary-service.spec.ts > prepares only after an explicit load and posts the original clicked reference before polling the same controlled target
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 250 }
+
+ ✓ tests/unit/services/dictionary-service.spec.ts (1 test) 3ms
+ ✓ tests/unit/services/runtime-mode.spec.ts (5 tests) 3ms
+ ✓ tests/unit/services/media-processing.spec.ts (2 tests) 3ms
+ ✓ tests/contracts/remote-font-build.spec.ts (2 tests) 7533ms
+   ✓ ships remote fonts only in the test rollout, preserving the original production font data (test)  3884ms
+   ✓ ships remote fonts only in the test rollout, preserving the original production font data (production)  3605ms
+ ✓ tests/unit/features/listening/phrase-highlights.spec.ts (2 tests) 3ms
+ ✓ tests/unit/features/learning/dictionary-tokens.spec.ts (4 tests) 3ms
+ ✓ tests/unit/sub-packages/scenes/access-monitor.spec.ts (2 tests) 3ms
+ ✓ tests/unit/services/local-image.spec.ts (3 tests) 2ms
+ ✓ tests/unit/services/session-service.spec.ts (7 tests) 3ms
+ ✓ tests/unit/services/word-audio-diagnostics.spec.ts (1 test) 3ms
+ ✓ tests/unit/services/public-request.spec.ts (1 test) 3ms
+ ✓ tests/unit/services/word-audio-port.spec.ts (1 test) 3ms
+ ✓ tests/unit/services/native-share.spec.ts (2 tests) 2ms
+ ✓ tests/unit/features/listening/reading-model.spec.ts (5 tests) 3ms
+ ✓ tests/unit/services/learning-queue.spec.ts (5 tests) 3ms
+ ✓ tests/unit/features/profile/contact-model.spec.ts (5 tests) 3ms
+ ✓ tests/unit/composables/use-list-position.spec.ts (3 tests) 3ms
+ ✓ tests/unit/services/navigation.spec.ts (4 tests) 2ms
+ ✓ tests/unit/features/listening/reading-boundaries.spec.ts (5 tests) 2ms
+ ✓ tests/unit/features/learning/reading-position.spec.ts (3 tests) 2ms
+ ✓ tests/unit/services/image-preview.spec.ts (2 tests) 2ms
+ ✓ tests/unit/services/thumbnail-dimensions.spec.ts (8 tests) 2ms
+ ✓ tests/unit/features/listening/listening-presenter.spec.ts (3 tests) 2ms
+ ✓ tests/unit/services/list-page-size.spec.ts (1 test) 1ms
+ ✓ tests/unit/features/listening/listening-service.spec.ts (2 tests) 2ms
+ ✓ tests/contracts/navigation.spec.ts (1 test) 2ms
+ ✓ tests/unit/services/audio-port.spec.ts (1 test) 2ms
+ ✓ tests/unit/features/listening/reading-anchor.spec.ts (1 test) 1ms
+ ✓ tests/unit/services/share-service.spec.ts (1 test) 2ms
+ ✓ tests/unit/services/scene-image.spec.ts (1 test) 1ms
+ ✓ tests/unit/features/profile/identity-model.spec.ts (2 tests) 1ms
+ ✓ tests/unit/components/local-design-assets.spec.ts (1 test) 1ms
+stderr | tests/unit/app-fonts.spec.ts > selects system fonts while requests are pending and switches each face only after success
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/app-fonts.spec.ts > selects system fonts while requests are pending and switches each face only after success
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/app-fonts.spec.ts > keeps serif styles independent when face 2 succeeds and face 1 fails
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/app-fonts.spec.ts > keeps serif styles independent when face 2 succeeds and face 1 fails
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/app-fonts.spec.ts > keeps serif styles independent when face 1 succeeds and face 2 fails
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/app-fonts.spec.ts > keeps serif styles independent when face 1 succeeds and face 2 fails
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+ ✓ tests/unit/app-fonts.spec.ts (10 tests) 390ms
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > prepares the current vocabulary after showing the scene and plays locally without another request
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 3 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > prepares the current vocabulary after showing the scene and plays locally without another request
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > prepares complete audio independently and plays its cached file in the original click event
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > prepares complete audio independently and plays its cached file in the original click event
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > streams immediately when clicked during a slow full download and rejects its late file
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > streams immediately when clicked during a slow full download and rejects its late file
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > cleans audio and files on hide, rebuilds on return, and unsubscribes on unload
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > cleans audio and files on hide, rebuilds on return, and unsubscribes on unload
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > cleans audio and files on hide, rebuilds on return, and unsubscribes on unload
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > cleans audio and files on hide, rebuilds on return, and unsubscribes on unload
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not start late scene preparation while hidden, and prepares it when shown again
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not start late scene preparation while hidden, and prepares it when shown again
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > disposes cached local audio when the authenticated session expires
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > disposes cached local audio when the authenticated session expires
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not reuse a cached local file after another session logs into the same account
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not reuse a cached local file after another session logs into the same account
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > discards prepared audio after the server reports a changed publication
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > discards prepared audio after the server reports a changed publication
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > shows word loading immediately while the real permission response is pending and plays only after it succeeds
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > shows word loading immediately while the real permission response is pending and plays only after it succeeds
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > shows word loading immediately while the real permission response is pending and plays only after it succeeds
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not play a downloaded word after the click permission is revoked
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not play a downloaded word after the click permission is revoked
+[word-audio] { stage: 'resolve', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/learning/scene-word-preload.spec.ts > does not play a downloaded word after the click permission is revoked
+[word-audio] { stage: 'permission', outcome: 'error', elapsed: 2 }
+
+ ✓ tests/unit/features/learning/scene-word-preload.spec.ts (10 tests) 550ms
+   ✓ prepares the current vocabulary after showing the scene and plays locally without another request  509ms
+ ✓ tests/unit/sub-packages/scenes/detail-completion.spec.ts (13 tests) 71ms
+ ✓ tests/unit/sub-packages/scenes/detail.spec.ts (9 tests) 48ms
+ ✓ tests/unit/features/learning/image-preview.spec.ts (2 tests) 55ms
+ ✓ tests/unit/features/learning/list-navigation.spec.ts (6 tests) 37ms
+ ✓ tests/unit/features/account-login.spec.ts (8 tests) 36ms
+ ✓ tests/unit/sub-packages/feedback/feedback-pages.spec.ts (5 tests) 40ms
+ ✓ tests/unit/sub-packages/records/records-pagination.spec.ts (9 tests) 50ms
+ ✓ tests/unit/sub-packages/scenes/image-preview.spec.ts (10 tests) 37ms
+stdout | tests/unit/sub-packages/scenes/detail-dictionary.spec.ts > opens a word without changing full playback, pauses only on speaker, and closes without losing translation or resuming audio
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+ ✓ tests/unit/features/share/share-entry.spec.ts (9 tests) 45ms
+stdout | tests/unit/sub-packages/scenes/detail-dictionary.spec.ts > rechecks a cached dictionary pronunciation after revocation and preserves audio on a still-free scene
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 1 }
+
+stdout | tests/unit/sub-packages/scenes/detail-dictionary.spec.ts > rechecks a cached dictionary pronunciation after revocation and preserves audio on a still-free scene
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/sub-packages/scenes/detail-dictionary.spec.ts > rechecks a cached dictionary pronunciation after revocation and preserves audio on a still-free scene
+[word-audio] { stage: 'permission', outcome: 'error', elapsed: 1 }
+
+ ✓ tests/unit/sub-packages/scenes/detail-dictionary.spec.ts (6 tests) 46ms
+ ✓ tests/unit/features/learning/scene-dialogue.spec.ts (2 tests) 30ms
+ ✓ tests/unit/features/learning/learning-list.spec.ts (3 tests) 28ms
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > only shows word definitions while full audio continues, and pauses full audio only for pronunciation
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > plays preset vocabulary for a free reader without dictionary permission and keeps full audio paused
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > plays preset vocabulary for a free reader without dictionary permission and keeps full audio paused
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > cancels a delayed preset pronunciation when another word is selected
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > cancels a delayed preset pronunciation when another word is selected
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > cancels a delayed preset pronunciation when another word is selected
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > keeps a free preset word playing after the periodic check removes only dictionary permission
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > keeps a free preset word playing after the periodic check removes only dictionary permission
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > immediately removes private content if the preset pronunciation endpoint rejects access
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > retries failed preset pronunciation on the same entry without restarting full audio
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > retries failed preset pronunciation on the same entry without restarting full audio
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > retries failed preset pronunciation on the same entry without restarting full audio
+[word-audio] { stage: 'native', outcome: 'ready', elapsed: 0 }
+
+stdout | tests/unit/features/listening/use-listening-article.spec.ts > does not issue a preset request or play late audio after leaving during its asynchronous preparation
+[word-audio] { stage: 'permission', outcome: 'ready', elapsed: 0 }
+
+ ✓ tests/unit/features/listening/use-listening-article.spec.ts (17 tests) 33ms
+ ✓ tests/unit/sub-packages/listening/index.spec.ts (4 tests) 35ms
+stderr | tests/unit/components/app-page.spec.ts > keeps unavailable native channels hidden across preparation, hide, and official mode changes
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="场景学习" shareable=true shareChannels= { friends: true, timeline: false }  ... >
+  at <VTUROOT>
+
+stderr | tests/unit/components/app-page.spec.ts > keeps unavailable native channels hidden across preparation, hide, and official mode changes
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="场景学习" shareable=true shareChannels= { friends: true, timeline: true }  ... >
+  at <VTUROOT>
+
+stderr | tests/unit/components/app-page.spec.ts > keeps unavailable native channels hidden across preparation, hide, and official mode changes
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="场景学习" shareable=true shareChannels= { friends: true, timeline: true }  ... >
+  at <VTUROOT>
+
+stderr | tests/unit/components/app-page.spec.ts > covers the status bar and viewport with the page artwork and keeps native edges cream
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="句芽英语" backgroundImage="/static/listening/home-watercolor@3x.jpg" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/components/app-page.spec.ts > loads artwork at its original ratio and leaves readable content after asset failure
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="学习记录" backgroundKind="records" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+stderr | tests/unit/components/app-page.spec.ts > loads artwork at its original ratio and leaves readable content after asset failure
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <AppPage title="学习记录" backgroundKind="records" ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+ ✓ tests/unit/components/app-page.spec.ts (4 tests) 27ms
+ ✓ tests/unit/features/profile/profile-logout.spec.ts (3 tests) 24ms
+ ✓ tests/unit/features/learning/scene-unavailable.spec.ts (1 test) 25ms
+ ✓ tests/unit/features/learning/scene-card.spec.ts (6 tests) 21ms
+stderr | tests/unit/features/feedback/feedback-entrances.spec.ts > shows only an aggregate dot on the learning account entrance
+[Vue warn]: Failed to resolve component: scroll-view
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.
+  at <Index ref="VTU_COMPONENT" >
+  at <VTUROOT>
+
+ ✓ tests/unit/features/feedback/feedback-entrances.spec.ts (2 tests) 20ms
+ ✓ tests/unit/features/learning/scene-dictionary.spec.ts (3 tests) 21ms
+ ✓ tests/unit/features/listening/listening-body.spec.ts (1 test) 20ms
+ ✓ tests/unit/features/learning/scene-rev13.spec.ts (3 tests) 19ms
+ ✓ tests/unit/features/learning/scene-list-auto-load.spec.ts (4 tests) 18ms
+ ✓ tests/unit/features/listening/listening-image-viewer.spec.ts (1 test) 15ms
+ ✓ tests/unit/sub-packages/listening/topic.spec.ts (2 tests) 17ms
+ ✓ tests/unit/features/feedback/feedback-composer.spec.ts (2 tests) 13ms
+ ✓ tests/unit/features/listening/listening-vocabulary.spec.ts (1 test) 14ms
+ ✓ tests/unit/pages/home/index.spec.ts (1 test) 14ms
+ ✓ tests/unit/components/app-bottom-tabs.spec.ts (1 test) 11ms
+ ✓ tests/unit/pages/records/primary-records.spec.ts (1 test) 13ms
+ ✓ tests/unit/components/app-state.spec.ts (2 tests) 13ms
+ ✓ tests/unit/features/learning/scene-list-footer.spec.ts (1 test) 11ms
+ ✓ tests/unit/composables/use-unsaved-guard.spec.ts (3 tests) 9ms
+ ✓ tests/unit/features/share/share-sheet.spec.ts (1 test) 13ms
+ ✓ tests/unit/features/learning/statistics-navigation.spec.ts (1 test) 13ms
+ ✓ tests/unit/features/listening/listening-completion.spec.ts (1 test) 13ms
+ ✓ tests/unit/composables/use-reading-position.spec.ts (2 tests) 9ms
+ ✓ tests/unit/features/listening/listening-article-card.spec.ts (1 test) 8ms
+ ✓ tests/unit/features/listening/use-listening-catalog.spec.ts (2 tests) 3ms
+
+ Test Files  94 passed (94)
+      Tests  427 passed (427)
+   Start at  10:19:33
+   Duration  16.41s (transform 1.35s, setup 0ms, collect 4.22s, tests 13.68s, environment 4.49s, prepare 3.01s)

@@ -1,0 +1,3 @@
+{"exit_code": 0, "seconds": 34.91, "database": "127.0.0.1:18216/juya_verify", "identity_verified": true, "selection": ["-m", "mysql"]}
+.....................................                                    [100%]
+37 passed, 545 deselected in 33.90s

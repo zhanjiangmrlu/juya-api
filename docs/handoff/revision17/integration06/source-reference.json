@@ -1,0 +1,27 @@
+{
+  "version": "V1.5-整合06",
+  "design_revision": 17,
+  "synced_on": "2026-11-01",
+  "core_frames": 62,
+  "associated_scene_states": 18,
+  "sources": [
+    {
+      "workspace_relative_path": "句芽英语-原型与Figma-整合06同步版-20261031-修订17/句芽英语V1.5完整需求文档-当前确认版.md",
+      "sha256": "3a0d7caa18da2eebd572cf17f91f484dc866c782690cfe8df4715608c4c64c26"
+    },
+    {
+      "workspace_relative_path": "句芽英语-原型与Figma-整合06同步版-20261031-修订17/本次同步说明.txt",
+      "sha256": "ad3698323aa78a6459f614dfcb8f4d3021b8a804701f135092ffd3dbc7c325e4"
+    },
+    {
+      "workspace_relative_path": "句芽英语-原型与Figma-整合06同步版-20261031-修订17/README-修订17同步交付.md",
+      "sha256": "ad3698323aa78a6459f614dfcb8f4d3021b8a804701f135092ffd3dbc7c325e4"
+    },
+    {
+      "workspace_relative_path": "句芽英语-原型与Figma-整合06同步版-20261031-修订17/页面同步清单-整合06.json",
+      "sha256": "f38f3c0a99ca6549cd7d8c2256a70e0f3bab74ffc220bacb231fe8534d61eec9"
+    }
+  ],
+  "design_status_authority": "本次同步说明.txt + 整合06设计同步执行记录",
+  "runtime_status": "pending_implementation_verification"
+}

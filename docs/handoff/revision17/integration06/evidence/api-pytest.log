@@ -1,0 +1,43 @@
+.............................................ss......................... [ 12%]
+.....................................................................s.. [ 24%]
+........ss.................s.......................s....s.............ss [ 37%]
+.................................s......................s.s.s.ssss...... [ 49%]
+...s........s..............................ss........................... [ 61%]
+......................s..........sss................................s... [ 74%]
+.................................s........................ss....s....... [ 86%]
+.................................................s........s....sssssss.. [ 98%]
+......                                                                   [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_auth_concurrency.py:18: Real MySQL is required for concurrent identity constraints
+SKIPPED [1] tests/test_auth_concurrency.py:43: Real MySQL is required for concurrent identity constraints
+SKIPPED [1] tests/test_feedback.py:435: Real MySQL feedback row locking and displayed-event read watermarks
+SKIPPED [2] tests/test_feedback_snapshot.py:113: Real MySQL READ COMMITTED detail snapshot and inter-query commit
+SKIPPED [1] tests/test_import_batch_deletion_migration.py:21: Private MySQL migration target is not configured
+SKIPPED [1] tests/test_import_recovery.py:463: Real MySQL progress/removal row lock order
+SKIPPED [1] tests/test_import_recovery_mysql_migration.py:14: Historical MySQL import migration verification
+SKIPPED [1] tests/test_import_removal.py:302: Real MySQL actor serialization
+SKIPPED [1] tests/test_import_removal.py:345: Real MySQL actor serialization
+SKIPPED [1] tests/test_integration05_catalog.py:125: Dedicated real MySQL required
+SKIPPED [1] tests/test_integration06_migration.py:40: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_integration06_migration.py:68: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_integration06_migration.py:131: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_integration06_migration.py:226: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_integration06_mysql.py:27: Dedicated real MySQL required
+SKIPPED [1] tests/test_integration06_mysql.py:76: Dedicated real MySQL required
+SKIPPED [1] tests/test_integration06_mysql.py:81: Dedicated real MySQL required
+SKIPPED [1] tests/test_jobs.py:172: Real MySQL row locking
+SKIPPED [1] tests/test_learning.py:175: Real MySQL concurrency
+SKIPPED [1] tests/test_learning_access_mysql.py:15: Dedicated real MySQL required
+SKIPPED [1] tests/test_learning_access_mysql.py:36: Dedicated real MySQL required
+SKIPPED [1] tests/test_listening_import_updates.py:472: Dedicated MySQL required
+SKIPPED [1] tests/test_listening_mysql.py:21: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_listening_mysql.py:45: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_listening_mysql.py:72: Dedicated MySQL verification database required
+SKIPPED [1] tests/test_migrations.py:9: Fresh MySQL migration verification
+SKIPPED [1] tests/test_pronunciation.py:181: Real MySQL cache reservation concurrency
+SKIPPED [2] tests/test_public_share.py:253: Real MySQL READ COMMITTED share revocation during source IO
+SKIPPED [1] tests/test_queue_integration.py:18: Isolated real Redis required
+SKIPPED [1] tests/test_user_number_migration.py:22: Dedicated real MySQL required
+SKIPPED [1] tests/test_user_numbers.py:129: Dedicated real MySQL required
+SKIPPED [7] tests/test_v15_mysql_concurrency.py:18: Requires the verified private MySQL instance
+542 passed, 40 skipped in 158.91s (0:02:38)

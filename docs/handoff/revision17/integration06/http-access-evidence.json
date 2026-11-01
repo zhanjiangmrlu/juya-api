@@ -1,0 +1,16 @@
+{
+  "before": {
+    "get": 200,
+    "head": 200,
+    "range": 206
+  },
+  "after_close_free": {
+    "detail": 403,
+    "get": 403,
+    "head": 403,
+    "range": 403,
+    "word": 403
+  },
+  "safe_summary_status": 200,
+  "scope": "isolated local HTTP"
+}

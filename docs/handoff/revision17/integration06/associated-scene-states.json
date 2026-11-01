@@ -1,0 +1,218 @@
+[
+  {
+    "id": "9:460",
+    "key": "A02-drafts",
+    "freeActions": 2,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:461",
+    "key": "A02-empty",
+    "freeActions": 0,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:462",
+    "key": "A02-sorting",
+    "freeActions": 0,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:463",
+    "key": "A02-sort-unsaved",
+    "freeActions": 0,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:464",
+    "key": "A02-offline",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:465",
+    "key": "A02-delete",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:466",
+    "key": "A02-batch",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:467",
+    "key": "A02-result",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:468",
+    "key": "A02-error",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:469",
+    "key": "A02-published",
+    "freeActions": 2,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:515",
+    "key": "A02-page-2",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:516",
+    "key": "A02-loading",
+    "freeActions": 0,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:517",
+    "key": "A02-load-error",
+    "freeActions": 0,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:518",
+    "key": "A02-image",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:519",
+    "key": "A02-bulk-offline",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:520",
+    "key": "A02-bulk-delete",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:521",
+    "key": "A02-bulk-result",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  },
+  {
+    "id": "9:522",
+    "key": "A02-bulk-unknown",
+    "freeActions": 4,
+    "implementation_status": "shared_free_control_implemented",
+    "visual_status": "not_individually_verified",
+    "evidence": [
+      "screenshots/admin-scene-free-on-1440.png",
+      "screenshots/admin-scene-free-off-1440.png"
+    ],
+    "limits": "共用控件状态实测，不代表18状态逐图验收"
+  }
+]
