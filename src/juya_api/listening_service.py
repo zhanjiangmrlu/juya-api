@@ -484,8 +484,19 @@ def publish_article(db, settings, admin_id, row, body, now):
         db.add(current)
         db.flush()
     if row.draft_category_id:
-        row.category_id = row.draft_category_id
-        row.category_order = row.draft_category_order
+        # Draft positions are previews; allocate the actual tail under the held catalog lock.
+        target = row.draft_category_id
+        row.category_order = (
+            db.scalar(
+                select(func.max(Article.category_order)).where(
+                    Article.category_id == target,
+                    Article.id != row.id,
+                    Article.deleted_at.is_(None),
+                )
+            )
+            or 0
+        ) + 1
+        row.category_id = target
         row.draft_category_id, row.draft_category_order = None, None
     if row.status != "published":
         row.global_order = (db.scalar(select(func.max(Article.global_order))) or 0) + 1
@@ -758,6 +769,7 @@ def categories_progress(db, user_id, now):
         children = [row for row in rows if row.category_id == owner.id]
         if not children:
             continue
+        thumbnails = (summary(db, row, user_id, now)["thumbnail_url"] for row in children)
         result.append(
             {
                 "id": owner.id,
@@ -770,14 +782,7 @@ def categories_progress(db, user_id, now):
                 "restricted_articles": sum(
                     not access(db, user_id, row, now)["can_learn"] for row in children
                 ),
-                "thumbnail_url": next(
-                    (
-                        summary(db, row, user_id, now)["thumbnail_url"]
-                        for row in children
-                        if row.payload.get("image_id")
-                    ),
-                    None,
-                ),
+                "thumbnail_url": next((url for url in thumbnails if url), None),
             }
         )
     return result

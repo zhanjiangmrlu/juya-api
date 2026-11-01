@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .dependencies import administrator, database, learner, operation_key
 from .errors import DomainError
 from .listening_models import ListeningCandidate
-from .listening_service import published, require_article
+from .listening_service import catalog_lock, published, require_article
 from .pronunciation import request as request_speech
 from .pronunciation import status, word_reference
 from .pronunciation_api import SpeechReference, SpeechState, with_grant
@@ -25,6 +25,7 @@ def reference(
     *,
     context=None,
     now=None,
+    lock=False,
 ):
     """Resolve saved article or owned staging words; clients never supply synthesis text."""
     if (version_id is None) == (revision is None) or (role == "mini" and not version_id):
@@ -34,7 +35,7 @@ def reference(
     if context:
         from .listening_imports import owned
 
-        batch = owned(db, context["batch_id"], actor_id, revision)
+        batch = owned(db, context["batch_id"], actor_id, revision, lock=lock)
         candidate = db.get(ListeningCandidate, context["candidate_id"])
         if (
             not candidate
@@ -80,14 +81,12 @@ def routes(role):
             ref.version_id,
             ref.revision,
         )
-        word, reading, config, cache_key = reference(
-            *args, context=context, now=request.app.state.clock()
-        )
 
         def execute():
-            """Recheck publication and authorization after operation locks are acquired."""
+            """Resolve references only after actor, then catalog, then optional batch locks."""
+            catalog_lock(db, shared=True)
             word, reading, config, cache_key = reference(
-                *args, context=context, now=request.app.state.clock()
+                *args, context=context, now=request.app.state.clock(), lock=True
             )
             return request_speech(
                 db,
@@ -101,8 +100,8 @@ def routes(role):
                 request.app.state.clock(),
             )
 
-        value = (
-            operate(
+        if create:
+            value = operate(
                 db,
                 actor,
                 role,
@@ -112,9 +111,10 @@ def routes(role):
                 request.app.state.clock(),
                 execute,
             )
-            if create
-            else status(db, cache_key)
-        )
+        # Polling and receipt replay resolve current delivery context without taking write locks.
+        _, _, _, cache_key = reference(*args, context=context, now=request.app.state.clock())
+        if not create:
+            value = status(db, cache_key)
         return with_grant(
             value,
             request,

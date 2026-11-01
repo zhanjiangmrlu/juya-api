@@ -161,13 +161,14 @@ class DocxPreview(C.Input):
     category_id: str | None = None
 
 
-def owned(db, batch_id, admin_id, revision=None):
-    row = db.scalar(
-        select(ListeningImport)
-        .where(ListeningImport.id == batch_id, ListeningImport.admin_id == admin_id)
-        .with_for_update()
-        .execution_options(populate_existing=True)
+def owned(db, batch_id, admin_id, revision=None, *, lock=True):
+    """Resolve an owned batch; pure reads opt out of the writer's explicit row lock."""
+    query = select(ListeningImport).where(
+        ListeningImport.id == batch_id, ListeningImport.admin_id == admin_id
     )
+    if lock:
+        query = query.with_for_update()
+    row = db.scalar(query.execution_options(populate_existing=True))
     if not row:
         raise DomainError(404, "listening_import_missing", "未找到本人可恢复的听读批次")
     if revision is not None and row.revision != revision:

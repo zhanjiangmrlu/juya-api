@@ -221,3 +221,90 @@ def test_interrupted_ddl_resumes_from_durable_snapshot_without_reapplying_batch_
             == "original-encrypted-receipt"
         )
     command.check(config)
+
+
+def test_draft_category_orders_flatten_all_target_topics_after_existing_articles(
+    migration_database,
+):
+    """Historical topic-relative draft positions become unique category-relative pending slots."""
+    config, engine = migration_database
+    metadata = MetaData()
+    metadata.reflect(engine)
+    with engine.begin() as db:
+        db.execute(
+            metadata.tables["listening_categories"].insert(),
+            [
+                {"id": "origin", "name": "原类", "sort_order": 0, "revision": 1},
+                {"id": "target", "name": "目标", "sort_order": 1, "revision": 1},
+            ],
+        )
+        db.execute(
+            metadata.tables["listening_topics"].insert(),
+            [
+                {
+                    "id": "source",
+                    "category_id": "origin",
+                    "name": "原",
+                    "sort_order": 0,
+                    "revision": 1,
+                },
+                {
+                    "id": "one",
+                    "category_id": "target",
+                    "name": "第一主题",
+                    "sort_order": 0,
+                    "revision": 1,
+                },
+                {
+                    "id": "two",
+                    "category_id": "target",
+                    "name": "第二主题",
+                    "sort_order": 1,
+                    "revision": 1,
+                },
+            ],
+        )
+        db.execute(
+            metadata.tables["listening_policy"]
+            .insert()
+            .values(id=1, free_count=0, revision=0, catalog_revision=0)
+        )
+        rows = []
+        for identifier, topic, draft in [
+            ("existing-one", "one", None),
+            ("existing-two", "two", None),
+            ("move-first", "source", "one"),
+            ("move-second", "source", "two"),
+        ]:
+            rows.append(
+                {
+                    "id": identifier,
+                    "topic_id": topic,
+                    "draft_topic_id": draft,
+                    "draft_topic_order": 2 if draft else None,
+                    "status": "published",
+                    "revision": 2,
+                    "version_id": "version-" + identifier,
+                    "payload": {},
+                    "topic_order": 1,
+                    "global_order": len(rows) + 1,
+                    "created_at": datetime(2026, 10, 1),
+                }
+            )
+        db.execute(metadata.tables["listening_articles"].insert(), rows)
+    command.upgrade(config, "head")
+    with engine.connect() as db:
+        values = {
+            row.id: row
+            for row in db.execute(
+                text(
+                    "SELECT id,category_id,category_order,draft_category_id,"
+                    "draft_category_order FROM listening_articles"
+                )
+            )
+        }
+        assert [values[name].category_order for name in ["existing-one", "existing-two"]] == [1, 2]
+        assert [values[name].draft_category_order for name in ["move-first", "move-second"]] == [
+            3,
+            4,
+        ]

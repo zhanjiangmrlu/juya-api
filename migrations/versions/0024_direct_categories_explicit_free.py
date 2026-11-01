@@ -117,7 +117,7 @@ def preflight(bind):
             "draft_category_id": draft["category_id"]
             if draft and draft["category_id"] != topic["category_id"]
             else None,
-            "draft_category_order": row["draft_topic_order"] if draft else None,
+            "draft_category_order": None,
         }
     grouped = {}
     for row in rows["listening_articles"]:
@@ -135,6 +135,23 @@ def preflight(bind):
         )
         for index, row in enumerate(articles, 1):
             mappings[row["id"]]["category_order"] = index
+    pending = {}
+    for row in rows["listening_articles"]:
+        mapping = mappings.get(row["id"])
+        if mapping and mapping["draft_category_id"]:
+            pending.setdefault(mapping["draft_category_id"], []).append(row)
+    for owner, articles in pending.items():
+        articles.sort(
+            key=lambda row: (
+                topics[row["draft_topic_id"]]["sort_order"],
+                row["draft_topic_id"],
+                row["draft_topic_order"] or 0,
+                row["id"],
+            )
+        )
+        # Old per-topic draft positions must follow the complete flattened category sequence.
+        for index, row in enumerate(articles, len(grouped.get(owner, [])) + 1):
+            mappings[row["id"]]["draft_category_order"] = index
     candidates = {}
     revisions = {}
     for row in rows["listening_candidates"]:
