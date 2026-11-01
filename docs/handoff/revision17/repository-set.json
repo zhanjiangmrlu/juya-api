@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "purpose": "整合06修订17本地三端开发；未合并/推送/部署/远程迁移",
+  "purpose": "整合06修订17三端已推送test并部署测试环境；小程序已上传，体验版由用户手动切换",
   "minimum_schema": "0024",
   "code_contract": 3,
   "repositories": {
@@ -8,17 +8,23 @@
       "branch": "codex/revision17-integration06",
       "implementation_commit": "ca951462d21fb09cd60c7909cf60e9399c412d27",
       "worktree_relative_path": ".worktrees/revision17-integration06/juya-api",
-      "commit_reference": "本清单所在文档提交包含最终交付证据；implementation_commit为功能修复提交"
+      "commit_reference": "本清单所在文档提交包含最终交付证据；implementation_commit为功能修复提交",
+      "remote_branch": "test",
+      "test_release_commit": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87"
     },
     "juya-admin": {
       "branch": "codex/revision17-integration06",
       "implementation_commit": "c1357ff333e6456a2dd3230b4a59d91059682b84",
-      "worktree_relative_path": ".worktrees/revision17-integration06/juya-admin"
+      "worktree_relative_path": ".worktrees/revision17-integration06/juya-admin",
+      "remote_branch": "test",
+      "test_release_commit": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e"
     },
     "juya-miniapp": {
       "branch": "codex/revision17-integration06",
       "implementation_commit": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a",
-      "worktree_relative_path": ".worktrees/revision17-integration06/juya-miniapp"
+      "worktree_relative_path": ".worktrees/revision17-integration06/juya-miniapp",
+      "remote_branch": "test",
+      "test_release_commit": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
     }
   },
   "previous_reference": {
@@ -68,5 +74,16 @@
         }
       }
     }
+  },
+  "test_release": {
+    "date": "2026-11-01",
+    "record": "docs/verification/integration06-test-release-20261101.md",
+    "commits": {
+      "juya-api": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87",
+      "juya-admin": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e",
+      "juya-miniapp": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
+    },
+    "mini_version": "1.5.0-r17.06.1101",
+    "experience_switched": false
   }
 }

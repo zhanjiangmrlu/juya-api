@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-01",
+  "environment": "test",
+  "source_branch": "test",
+  "deployed_commits": {
+    "juya-api": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87",
+    "juya-admin": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e",
+    "juya-miniapp": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
+  },
+  "api_ci": {
+    "id": 41268378520,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/41268378520",
+    "conclusion": "success",
+    "test_summary": {
+      "passed": 579,
+      "skipped": 3
+    }
+  },
+  "schema": "0024",
+  "code_contract": 3,
+  "backup": {
+    "bytes": 6367672,
+    "sha256": "6fef2fdd064c8e55f22d9ad5c0b7981160a2cd3afe102a0e1ccd1a26f2d2f3a3"
+  },
+  "migration": {
+    "schema": "0024",
+    "contract": 3,
+    "all_existing_row_counts_preserved": true,
+    "all_existing_primary_identities_preserved": true,
+    "free_sets_preserved": true,
+    "free_counts": {
+      "scene": 10,
+      "listening": 0
+    },
+    "article_categories_assigned": true
+  },
+  "public_verification": {
+    "admin_ready": true,
+    "admin_role_isolation": true,
+    "mini_ready": true,
+    "mini_role_isolation": true,
+    "listening_categories_read": true,
+    "listening_articles_read": true,
+    "listening_free-policy_read": true,
+    "admin_authenticated_read": true,
+    "verification_session_closed": true,
+    "admin_openapi_exact": true,
+    "mini_openapi_exact": true,
+    "healthy_services": 7,
+    "protected_production_and_infrastructure_unchanged": true,
+    "schema": "0024",
+    "contract": 3,
+    "free_counts": {
+      "scene": 10,
+      "listening": 0
+    },
+    "status": "verified"
+  },
+  "ui_verification": {
+    "status": "verified",
+    "checks": [
+      {
+        "width": 1440,
+        "path": "/cards",
+        "verified": true
+      },
+      {
+        "width": 1440,
+        "path": "/listening",
+        "verified": true
+      },
+      {
+        "width": 960,
+        "path": "/cards",
+        "verified": true
+      },
+      {
+        "width": 960,
+        "path": "/listening",
+        "verified": true
+      }
+    ]
+  },
+  "mini_version": "1.5.0-r17.06.1101",
+  "mini_uploaded": true,
+  "experience_switched": false,
+  "mini_size": {
+    "total": 1327242,
+    "packages": [
+      {
+        "name": "TOTAL",
+        "size": 1327242
+      },
+      {
+        "name": "main",
+        "size": 1039107
+      },
+      {
+        "name": "/sub-packages/account/",
+        "size": 54389
+      },
+      {
+        "name": "/sub-packages/feedback/",
+        "size": 46698
+      },
+      {
+        "name": "/sub-packages/listening/",
+        "size": 46466
+      },
+      {
+        "name": "/sub-packages/records/",
+        "size": 24542
+      },
+      {
+        "name": "/sub-packages/scenes/",
+        "size": 116040
+      }
+    ]
+  },
+  "storage_preparation": {
+    "verified_redundant_test_transport_archives_removed": 2,
+    "bytes": 499157457,
+    "installed_releases_backups_and_media_preserved": true
+  }
+}
