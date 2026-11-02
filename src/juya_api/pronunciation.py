@@ -100,37 +100,87 @@ def status(db, cache_key):
     }
 
 
-def request(db, settings, actor, role, word, reading, config, cache_key, now):
+def request(db, settings, actor, role, word, reading, config, cache_key, now, *, prewarm=None):
     """Reserve one global cache row so different learners share the same pending task."""
-    insert_once(
-        db,
-        Pronunciation,
-        {
-            "cache_key": cache_key,
-            "spelling": word["english"],
-            "reading": reading,
-            "configuration": config,
-            "created_at": now,
-        },
-        ["cache_key"],
-    )
-    cache = db.scalar(
-        select(Pronunciation)
-        .where(Pronunciation.cache_key == cache_key)
-        .with_for_update()
-        .execution_options(populate_existing=True)
-    )
-    previous = db.get(Job, cache.job_id) if cache.job_id else None
-    if previous and previous.state != "failed":
+    # Serialize cache-pointer writers before reading the job, never take a cache
+    # lock and subsequently wait for its old job (finish locks in reverse order).
+    name = fingerprint({"tts_cache_lock": cache_key})
+    insert_once(db, SettingCounter, {"name": name, "value": 0}, ["name"])
+    db.scalar(select(SettingCounter).where(SettingCounter.name == name).with_for_update())
+    for _ in range(3):
+        snapshot = db.scalar(
+            select(Pronunciation)
+            .where(Pronunciation.cache_key == cache_key)
+            .execution_options(populate_existing=True)
+        )
+        previous_id = snapshot.job_id if snapshot else None
+        previous = (
+            db.scalar(
+                select(Job)
+                .where(Job.id == previous_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            if previous_id
+            else None
+        )
+        if not snapshot:
+            insert_once(
+                db,
+                Pronunciation,
+                {
+                    "cache_key": cache_key,
+                    "spelling": word["english"],
+                    "reading": reading,
+                    "configuration": config,
+                    "created_at": now,
+                },
+                ["cache_key"],
+            )
+        cache = db.scalar(
+            select(Pronunciation)
+            .where(Pronunciation.cache_key == cache_key)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if cache.job_id != previous_id:
+            continue
+        promote = (
+            not prewarm
+            and previous
+            and previous.kind == "tts.prewarm"
+            and previous.state in {"queued", "retry"}
+        )
+        if (
+            previous
+            and previous.state != "failed"
+            and not promote
+            and not (previous.state == "succeeded" and (previous.result or {}).get("skipped"))
+        ):
+            return status(db, cache_key)
+        if (
+            previous
+            and previous.state == "failed"
+            and now < previous.updated_at + timedelta(seconds=60)
+        ):
+            raise DomainError(429, "tts_cooldown", "发音暂不可用，请稍后重试")
+        if promote and previous:
+            previous.state, previous.updated_at = "succeeded", now
+            previous.result = {"skipped": "foreground_promoted"}
+            previous.error_code, previous.lease, previous.lease_expires_at = None, None, None
+        job = enqueue(
+            db,
+            "tts.prewarm" if prewarm else "tts.synthesize",
+            role,
+            actor.id,
+            {"cache_key": cache_key, **(prewarm or {})},
+            now,
+            settings=settings,
+        )
+        cache.job_id, cache.media_id = job.id, None
+        db.flush()
         return status(db, cache_key)
-    if previous and now < previous.updated_at + timedelta(seconds=60):
-        raise DomainError(429, "tts_cooldown", "发音暂不可用，请稍后重试")
-    job = enqueue(
-        db, "tts.synthesize", role, actor.id, {"cache_key": cache_key}, now, settings=settings
-    )
-    cache.job_id, cache.media_id = job.id, None
-    db.flush()
-    return status(db, cache_key)
+    raise DomainError(409, "tts_changed", "发音任务已更新，请重试")
 
 
 def reserve_budget(db, settings, now):
@@ -197,13 +247,17 @@ def prepare(settings, sessions, job, now, provider=None):
     """Synthesize outside transactions, then publish validated audio only under a current lease."""
     from .media_api import decoded_audio
 
-    provider = provider or TencentSpeech(settings)
+    if job["kind"] == "tts.prewarm":
+        with sessions() as db:
+            if not prewarm_current(db, settings, job["payload"]):
+                return {"skipped": "publication_or_configuration_changed"}, None
     cache_key = job["payload"]["cache_key"]
     with sessions() as db:
         cache = db.get(Pronunciation, cache_key)
         if not cache or cache.job_id != job["id"]:
             raise DomainError(409, "tts_changed", "发音任务已更新")
         reading, config = cache.reading, cache.configuration
+    provider = provider or TencentSpeech(settings)
     with sessions.begin() as db:
         reserve_budget(db, settings, now)
     data = provider.synthesize(reading, config, job["id"])
@@ -213,8 +267,19 @@ def prepare(settings, sessions, job, now, provider=None):
     storage_key = f"{settings.environment}/pronunciation/{media_id}/{checksum}"
     ObjectStorage(settings).put(storage_key, data, content_type)
 
+    result = {"cache_key": cache_key}
+
     def apply(db, row):
-        cache = db.get(Pronunciation, cache_key)
+        if job["kind"] == "tts.prewarm" and not prewarm_current(db, settings, job["payload"]):
+            result.clear()
+            result["skipped"] = "publication_or_configuration_changed"
+            return
+        cache = db.scalar(
+            select(Pronunciation)
+            .where(Pronunciation.cache_key == cache_key)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
         if not cache or cache.job_id != row.id:
             raise DomainError(409, "tts_changed", "发音任务已更新")
         if not db.get(Media, media_id):
@@ -236,4 +301,119 @@ def prepare(settings, sessions, job, now, provider=None):
             db.flush()
         cache.media_id = media_id
 
-    return {"cache_key": cache_key}, apply
+    return result, apply
+
+
+def enqueue_prewarm(db, settings, card_id, version_id, admin_id, now, *, offset=0, revive=False):
+    """Accept one deterministic batch per publication/configuration in its transaction."""
+    from .security import encrypt
+
+    config = configuration(settings)
+    payload = {
+        "card_id": card_id,
+        "version_id": version_id,
+        "configuration": config,
+        "offset": offset,
+    }
+    job_id = str(uuid5(NAMESPACE_URL, "juya-prewarm:" + fingerprint(payload)))
+    insert_once(
+        db,
+        Job,
+        {
+            "id": job_id,
+            "kind": "pronunciation.prewarm",
+            "owner_kind": "admin",
+            "owner_id": admin_id,
+            "payload": encrypt(settings, json.dumps(payload)),
+            "state": "queued",
+            "attempts": 0,
+            "max_attempts": 3,
+            "available_at": now,
+            "dispatch_after": now,
+            "created_at": now,
+            "updated_at": now,
+        },
+        ["id"],
+    )
+    row = db.scalar(
+        select(Job)
+        .where(Job.id == job_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    skipped = row.state == "succeeded" and isinstance((row.result or {}).get("skipped"), str)
+    if row.state == "failed" or skipped or (revive and row.state == "succeeded"):
+        row.state, row.attempts, row.result = "queued", 0, None
+        row.available_at, row.dispatch_after, row.updated_at = now, now, now
+        row.error_code, row.lease, row.lease_expires_at = None, None, None
+    return job_id
+
+
+def prewarm_current(db, settings, payload):
+    """Background speech must still belong to the current live publication and voice."""
+    from .content_models import Card
+
+    card = db.scalar(
+        select(Card).where(Card.id == payload["card_id"]).execution_options(populate_existing=True)
+    )
+    return bool(
+        card
+        and card.deleted_at is None
+        and card.status == "published"
+        and card.current_version_id == payload["version_id"]
+        and configuration(settings) == payload["configuration"]
+    )
+
+
+def prepare_prewarm(settings, sessions, job, now):
+    """Expand at most 32 exact body references; each controlled word fails independently."""
+    from types import SimpleNamespace
+
+    from .content_models import CardVersion
+    from .dictionary import body_references, controlled_target
+
+    result: dict = {"accepted": 0, "skipped": 0}
+
+    def apply(db, row):
+        payload = job["payload"]
+        if not prewarm_current(db, settings, payload):
+            result["skipped"] = "publication_or_configuration_changed"
+            return
+        version = db.get(CardVersion, payload["version_id"])
+        refs = body_references(version.payload, version.id)
+        offset = payload.get("offset", 0)
+        for ref in refs[offset : offset + 32]:
+            try:
+                target = controlled_target(db, settings, payload["card_id"], ref)
+                if not target.reading:
+                    result["skipped"] += 1
+                    continue
+                with db.begin_nested():
+                    request(
+                        db,
+                        settings,
+                        SimpleNamespace(id=job["owner_id"]),
+                        "admin",
+                        {"english": target.word},
+                        target.reading,
+                        target.config,
+                        target.cache_key,
+                        now,
+                        prewarm={k: payload[k] for k in ("card_id", "version_id", "configuration")},
+                    )
+                result["accepted"] += 1
+            except DomainError:
+                result["skipped"] += 1
+        if offset + 32 < len(refs):
+            enqueue_prewarm(
+                db,
+                settings,
+                payload["card_id"],
+                payload["version_id"],
+                job["owner_id"],
+                now,
+                offset=offset + 32,
+                revive=True,
+            )
+
+    return result, apply

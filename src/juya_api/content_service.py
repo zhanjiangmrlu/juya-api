@@ -256,7 +256,9 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
     return draft, content_hash
 
 
-def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: str, now):
+def publish_version(
+    db, card: Card, admin_id: str, revision: int, preview_id: str, now, *, settings=None
+):
     """Activate exactly the candidate that was previewed; keep old publications immutable."""
     catalog_lock(db)
     db.refresh(card)
@@ -293,6 +295,17 @@ def publish_version(db, card: Card, admin_id: str, revision: int, preview_id: st
         )
         card.sort_order = (first if first is not None else 1) - 1
         advance_catalog(db)
+    from .pronunciation import enqueue_prewarm
+
+    enqueue_prewarm(
+        db,
+        settings or db.info["settings"],
+        card.id,
+        card.current_version_id,
+        admin_id,
+        now,
+        revive=not was_published,
+    )
     db.add(Audit(admin_id=admin_id, action="card.publish", object_id=card.id, occurred_at=now))
     db.flush()
     return card_view(db, card)

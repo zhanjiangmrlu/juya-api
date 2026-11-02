@@ -165,10 +165,14 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
             from .import_service import prepare_save
 
             result, apply = prepare_save(settings, sessions, job, now())
-        elif job["kind"] == "tts.synthesize":
+        elif job["kind"] in {"tts.synthesize", "tts.prewarm"}:
             from .pronunciation import prepare
 
             result, apply = prepare(settings, sessions, job, now(), tts)
+        elif job["kind"] == "pronunciation.prewarm":
+            from .pronunciation import prepare_prewarm
+
+            result, apply = prepare_prewarm(settings, sessions, job, now())
         elif job["kind"] == "card.action":
             result = {"card_id": job["payload"]["card_id"]}
 
@@ -212,6 +216,7 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
                     payload["revision"],
                     payload["preview_id"],
                     now(),
+                    settings=settings,
                 )
         else:
             raise DomainError(422, "task_kind_invalid", "任务类型不可用")

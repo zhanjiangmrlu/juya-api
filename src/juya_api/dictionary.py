@@ -178,6 +178,31 @@ class TokenTarget:
     cache_key: str
 
 
+def body_references(content, version_id):
+    """Enumerate only complete tokens, preserving exact UTF-16 body positions."""
+    references = []
+    for line in content["dialogue"]:
+        text = line["english"]
+        for match in TOKENS.finditer(text):
+            # An unaddressable token must not prevent the rest of a publication from warming.
+            if len(match.group()) > 300:
+                continue
+            if (match.start() and ASCII_NEIGHBOR.fullmatch(text[match.start() - 1])) or (
+                match.end() < len(text) and ASCII_NEIGHBOR.fullmatch(text[match.end()])
+            ):
+                continue
+            references.append(
+                DictionaryReference(
+                    version_id=version_id,
+                    line_id=line["id"],
+                    word=match.group(),
+                    start=len(text[: match.start()].encode("utf-16-le")) // 2,
+                    end=len(text[: match.end()].encode("utf-16-le")) // 2,
+                )
+            )
+    return references
+
+
 def controlled_target(db, settings, card_id: str, ref: DictionaryReference) -> TokenTarget:
     """Require one whole token at the exact UTF-16 position in the current publication."""
     _, version = published_card(db, card_id, ref.version_id)
