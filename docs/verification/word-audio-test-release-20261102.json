@@ -1,0 +1,147 @@
+{
+  "date": "2026-11-02",
+  "environment": "test",
+  "source_commits": {
+    "juya-api": "c690358d12e876db24683980416f6363bb79504a",
+    "juya-miniapp": "3d127526ee825806928add94b06afde8950d78c7",
+    "juya-admin": "336d5b2b13048f1b699a3873e27ddc20c2afe827",
+    "juya-cli": "244bb49b992b3e896e26a958d52ae208e2f3fe37"
+  },
+  "ci": {
+    "run_id": 41447624703,
+    "job_id": 125284556520,
+    "passed": 596,
+    "skipped": 3,
+    "seconds": 895.95,
+    "conclusion": "success"
+  },
+  "release_ids": [
+    {
+      "project": "juya-admin-api",
+      "release_id": "20261102T131628-c690358d12e8-135aaf"
+    },
+    {
+      "project": "juya-miniapp-api",
+      "release_id": "20261102T131650-c690358d12e8-ce0148"
+    },
+    {
+      "project": "juya-admin",
+      "release_id": "20261102T125257-336d5b2b1304-ba82e1",
+      "public_hashes_match": true
+    }
+  ],
+  "services": [
+    {
+      "service": "admin-api",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "admin-dispatcher",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "admin-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "listening-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "mini-api",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "mini-dispatcher",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "mini-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "runtime_source_hashes_match": true,
+  "http": {
+    "admin": {
+      "ready": true,
+      "anonymous_private_status": 401
+    },
+    "mini": {
+      "ready": true,
+      "anonymous_private_status": 401
+    }
+  },
+  "schema": "0024",
+  "contract": 3,
+  "migration": false,
+  "production_untouched": true,
+  "word_cache": {
+    "car": [
+      "ready"
+    ],
+    "police": [
+      "ready"
+    ]
+  },
+  "miniapp": {
+    "version": "1.5.0-r17.06.1102.3",
+    "uploaded": true,
+    "experience_version_changed": false,
+    "size": {
+      "total": 1353655,
+      "packages": [
+        {
+          "name": "TOTAL",
+          "size": 1353655
+        },
+        {
+          "name": "main",
+          "size": 1059596
+        },
+        {
+          "name": "/sub-packages/account/",
+          "size": 54389
+        },
+        {
+          "name": "/sub-packages/feedback/",
+          "size": 46698
+        },
+        {
+          "name": "/sub-packages/listening/",
+          "size": 46762
+        },
+        {
+          "name": "/sub-packages/records/",
+          "size": 24542
+        },
+        {
+          "name": "/sub-packages/scenes/",
+          "size": 121668
+        }
+      ]
+    }
+  },
+  "true_device_latency_verified": false,
+  "existing_content_bulk_prewarm_executed": false
+}
