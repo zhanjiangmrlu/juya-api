@@ -1,0 +1,98 @@
+{
+  "application_deployment": "complete",
+  "production_oss_acceptance": "blocked_by_existing_credentials",
+  "commits": {
+    "juya-api": "32f240144136f09bb251760cadefca40335f3aaf",
+    "juya-admin": "8e09bd1cdf429a5f6f9cfae3ed0b6225718d2174",
+    "juya-miniapp": "f1179caebec490f74d4909b91e570a29578b39fe",
+    "juya-cli": "355830325a29384f8eb0d086860838d527c560b1"
+  },
+  "api_releases": [
+    {
+      "project": "juya-admin-api",
+      "release_id": "20261102T152510-32f240144136-edf05d"
+    },
+    {
+      "project": "juya-miniapp-api",
+      "release_id": "20261102T152533-32f240144136-37f786"
+    },
+    {
+      "project": "juya-admin",
+      "release_id": "20261102T145710-8e09bd1cdf42-c89df8",
+      "public_hashes_match": true
+    }
+  ],
+  "database": {
+    "schema": "0024",
+    "contract": 3,
+    "administrators": 1,
+    "users": 0,
+    "cards": 0,
+    "listening_articles": 0
+  },
+  "backup": {
+    "sha256": "55a7f5a285cc864df27298526e28180e4409c6d83f79396c619fed867f5234b4",
+    "bytes": 46673,
+    "restore_rehearsed": true
+  },
+  "miniapp": {
+    "commit": "f1179caebec490f74d4909b91e570a29578b39fe",
+    "version": "1.5.0-prod.1102.1",
+    "environment": "production",
+    "uploaded": true,
+    "exit_code": 0,
+    "experience_version_changed": false
+  },
+  "static_assets": {
+    "base_url": "https://api.juyayingyu.com/miniapp/static",
+    "files_verified": 11
+  },
+  "ci_url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/41466534407",
+  "dictionary_live_probe": true,
+  "test_and_infrastructure_identity_preserved": true,
+  "public_acceptance": {
+    "readiness": {
+      "admin": {
+        "status": 200,
+        "environment": "production"
+      },
+      "mini": {
+        "status": 200,
+        "environment": "production"
+      },
+      "test-admin": {
+        "status": 200,
+        "environment": "test"
+      },
+      "test-mini": {
+        "status": 200,
+        "environment": "test"
+      }
+    },
+    "authenticated_api": {
+      "/api/admin/v1/auth/session": 200,
+      "/api/admin/v1/listening/categories": 200,
+      "/api/admin/v1/listening/articles": 200,
+      "/api/admin/v1/users": 200
+    },
+    "role_isolation": {
+      "mini_rejects_admin_login": 404,
+      "admin_rejects_mini_login": 404
+    },
+    "unauthenticated_session_rejected": 401,
+    "administrator_login": {
+      "status": 200,
+      "secure_http_only_cookie": true
+    },
+    "production_admin_cors": {
+      "status": 200,
+      "credentials_allowed": true
+    },
+    "https://admin.juyayingyu.com": {
+      "status": 200
+    },
+    "https://cli.juyayingyu.com": {
+      "status": 200
+    }
+  }
+}

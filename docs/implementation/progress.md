@@ -373,3 +373,11 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 
 
 用户随后授权将所有应用服务部署测试并上传小程序；现已完成。API固定c690358、后台336d5b2、小程序3d12752；7服务healthy、双公网ready及源码哈希核验通过，微信1.5.0-r17.06.1102.3官方上传成功，体验版未切换。CI真实MySQL/Redis596通过/3跳过，schema仍0024/contract3、无迁移、生产容器保持。详见docs/verification/word-audio-test-release-20261102.md。
+
+
+## 2026-11-02 生产应用发布
+
+- 用户授权test合并release与生产部署，生产双API/各自Worker及dispatcher/独立听读Worker共7服务健康，后台公网文件哈希一致，CLI修复已部署
+- 生产备份恢复核验及0018→0024/contract3迁移完成，原业务记录保留；微信生产包1.5.0-prod.1102.1上传，体验版未切换
+- 固定公开素材改用生产API域名，11文件公网200且哈希一致；生产OSS读写验收仍因凭据权限被拒绝，待用户补齐，不标为完成
+- 证据：[生产发布与剩余前提](../verification/production-release-20261102.md)及同名JSON
