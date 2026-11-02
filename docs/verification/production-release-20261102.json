@@ -1,6 +1,6 @@
 {
   "application_deployment": "complete",
-  "production_oss_acceptance": "blocked_by_existing_credentials",
+  "production_oss_acceptance": "read_write_verified_on_2026-11-03",
   "commits": {
     "juya-api": "32f240144136f09bb251760cadefca40335f3aaf",
     "juya-admin": "8e09bd1cdf429a5f6f9cfae3ed0b6225718d2174",
@@ -94,5 +94,7 @@
     "https://cli.juyayingyu.com": {
       "status": 200
     }
-  }
+  },
+  "production_oss_followup": "production-oss-verification-20261103.md",
+  "production_oss_delete_probe": "denied_by_existing_bucket_policy"
 }

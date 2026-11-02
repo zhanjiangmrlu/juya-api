@@ -1,0 +1,171 @@
+{
+  "status": "read_write_and_static_upload_verified",
+  "date": "2026-11-03",
+  "bucket": "juya",
+  "endpoint": "https://oss-cn-shenzhen.aliyuncs.com",
+  "live_api_storage_adapters_verified": {
+    "juya-rebuild-production-admin-admin-api-1": {
+      "production": true,
+      "actual_storage_adapter_put_get_verified": true,
+      "endpoint": "https://oss-cn-shenzhen.aliyuncs.com"
+    },
+    "juya-rebuild-production-mini-mini-api-1": {
+      "production": true,
+      "actual_storage_adapter_put_get_verified": true,
+      "endpoint": "https://oss-cn-shenzhen.aliyuncs.com"
+    }
+  },
+  "static_resources": [
+    {
+      "key": "miniapp/static/backgrounds/listening-vase.png",
+      "sha256": "4832be3a3967e6777953cf004a98acb48a15df4711f25b778f84d1e16407243a",
+      "bytes": 1842298,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/backgrounds/paper-texture.png",
+      "sha256": "cb9ba6f80603048c50881d9a07f62d55bf00273cf9bcad4afada6fed0946a8f5",
+      "bytes": 1596109,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/backgrounds/profile-basket.png",
+      "sha256": "c59860f3ba0b937ac4645f465943fb9d856ff518c6de9e9c50a347129be79696",
+      "bytes": 1948023,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/backgrounds/reading-window.png",
+      "sha256": "e5874874bc04bf673733d211ab72cbae124b9a46acc1794f13508626ddf680be",
+      "bytes": 1830751,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/backgrounds/records-journal.png",
+      "sha256": "ed185dbaccd5a2b205b57bfe7a9dbd9e7d3c04910ba7ea14257fe9aa47cc43e3",
+      "bytes": 1927103,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/backgrounds/scene-window.png",
+      "sha256": "2c6ba77f4c13678225df0988f3dd86be595b5cbf41601febadc85a141eedd70d",
+      "bytes": 1890726,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/brand/u00-botanical-watercolor@3x.png",
+      "sha256": "bbab68ffff925bab6e8b3cbe2ccb6e0c0a5d6a8eaa582dc00c65007d933c06d0",
+      "bytes": 894101,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/fonts/dm-sans-19b2ba846548.woff",
+      "sha256": "19b2ba846548029c4fe0bb423de90d84a90473aae241db54296638b35720fc0a",
+      "bytes": 47924,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/fonts/fraunces-italic-0e42d420e3d2.woff",
+      "sha256": "0e42d420e3d2e1f55aac75f2ffb3d4b4732b4637c80422959d9982a4c9edda2f",
+      "bytes": 12640,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/fonts/fraunces-regular-1a07e715bff9.woff",
+      "sha256": "1a07e715bff9af0269c13d8cd49226c50c8c649d39ba6f3477d0b0d2136e9000",
+      "bytes": 88448,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    },
+    {
+      "key": "miniapp/static/fonts/juya-ui-chinese-2de0b76bda1d.woff",
+      "sha256": "2de0b76bda1d0a672e6eea56ab31daf06a08b67db6bd076d5501d3b7cf4115ed",
+      "bytes": 157260,
+      "authenticated_readback_verified": true,
+      "object_acl": "private",
+      "previous_object_existed": false
+    }
+  ],
+  "production_resource_delivery": {
+    "base_url": "https://api.juyayingyu.com/miniapp/static",
+    "files_verified": 11
+  },
+  "miniapp": {
+    "version": "1.5.0-prod.1102.1",
+    "commit": "f1179caebec490f74d4909b91e570a29578b39fe",
+    "files_intact": true,
+    "production_resource_domain_verified": true,
+    "rebuild_required": false,
+    "experience_version_changed": false
+  },
+  "production_services": 7,
+  "all_healthy": true,
+  "test_and_infrastructure_identity_preserved": true,
+  "public_object_acl": "prohibited_by_existing_bucket_policy",
+  "delete_probe": "denied_by_existing_bucket_policy",
+  "private_operational_probe_objects_remain": 2,
+  "public_acceptance": {
+    "readiness": {
+      "admin": {
+        "status": 200,
+        "environment": "production"
+      },
+      "mini": {
+        "status": 200,
+        "environment": "production"
+      },
+      "test-admin": {
+        "status": 200,
+        "environment": "test"
+      },
+      "test-mini": {
+        "status": 200,
+        "environment": "test"
+      }
+    },
+    "authenticated_api": {
+      "/api/admin/v1/auth/session": 200,
+      "/api/admin/v1/listening/categories": 200,
+      "/api/admin/v1/listening/articles": 200,
+      "/api/admin/v1/users": 200
+    },
+    "role_isolation": {
+      "mini_rejects_admin_login": 404,
+      "admin_rejects_mini_login": 404
+    },
+    "unauthenticated_session_rejected": 401,
+    "administrator_login": {
+      "status": 200,
+      "secure_http_only_cookie": true
+    },
+    "production_admin_cors": {
+      "status": 200,
+      "credentials_allowed": true
+    },
+    "https://admin.juyayingyu.com": {
+      "status": 200
+    },
+    "https://cli.juyayingyu.com": {
+      "status": 200
+    }
+  }
+}
