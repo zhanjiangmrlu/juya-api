@@ -966,7 +966,7 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
-        """Page articles using direct category ownership."""
+        """Page free articles first within their direct category, preserving manual ranks."""
         owner = service.require_topic(db, topic_id)
         query = (
             select(Article)
@@ -975,7 +975,7 @@ def mini_routes():
                 Article.status == "published",
                 Article.deleted_at.is_(None),
             )
-            .order_by(Article.category_order, Article.id)
+            .order_by(Article.is_free.desc(), Article.category_order, Article.id)
         )
         return page_view(
             db,
@@ -994,7 +994,7 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
-        """Page publications directly in configured category and article order."""
+        """Page free publications first, preserving category and article ranks in each group."""
         query = (
             select(Article)
             .join(Category, Article.category_id == Category.id)
@@ -1010,7 +1010,13 @@ def mini_routes():
             query = query.where(Article.category_id == category_id)
         return page_view(
             db,
-            query.order_by(Category.sort_order, Category.id, Article.category_order, Article.id),
+            query.order_by(
+                Article.is_free.desc(),
+                Category.sort_order,
+                Category.id,
+                Article.category_order,
+                Article.id,
+            ),
             page,
             limit,
             lambda row: service.summary(db, row, user.id, request.app.state.clock()),

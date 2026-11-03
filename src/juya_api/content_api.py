@@ -311,7 +311,7 @@ def mini_routes():
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
-        """先按本人完成记录过滤再分页，并独立返回当前发布总数"""
+        """先过滤本人完成记录，免费优先且组内保留人工顺序，再分页"""
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
         published_total = db.scalar(select(func.count()).select_from(query.subquery()))
         query = query.where(
@@ -319,7 +319,9 @@ def mini_routes():
         )
         total = db.scalar(select(func.count()).select_from(query.subquery()))
         rows = db.scalars(
-            query.order_by(Card.sort_order, Card.id).offset((page - 1) * limit).limit(limit)
+            query.order_by(Card.is_free.desc(), Card.sort_order, Card.id)
+            .offset((page - 1) * limit)
+            .limit(limit)
         ).all()
         ids = [card.id for card in rows]
         versions = {

@@ -57,7 +57,7 @@ class QueuePage(BaseModel):
 
 
 def source_ids(db, user_id, body):
-    """按来源列表原有排序读取ID，参数为本人及已校验来源条件"""
+    """按来源列表读取ID，学习列表免费优先；db 为会话，user_id 为本人，body 为来源条件"""
     if body.source == "learning":
         completed = select(Completion.card_id).where(Completion.user_id == user_id)
         # 当前卡可能刚在其他设备完成，保留它以便重查状态后继续后续队列
@@ -68,7 +68,7 @@ def source_ids(db, user_id, body):
                 Card.deleted_at.is_(None),
                 or_(Card.id.not_in(completed), Card.id == body.card_id),
             )
-            .order_by(Card.sort_order, Card.id)
+            .order_by(Card.is_free.desc(), Card.sort_order, Card.id)
         )
     elif body.source == "favorites":
         query = (

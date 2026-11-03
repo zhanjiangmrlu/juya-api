@@ -1,6 +1,7 @@
 """Listening content, one current authorization decision, and transactional learning facts."""
 
 import re
+from copy import deepcopy
 from datetime import timedelta
 
 from sqlalchemy import func, select
@@ -39,7 +40,7 @@ from .listening_models import (
     ListeningVersion as Version,
 )
 from .listening_timeline import body_tokens, ensure_timeline, timeline_view
-from .listening_vocabulary import content_equal, vocabulary_errors
+from .listening_vocabulary import content_equal, resolve_vocabulary_sources, vocabulary_errors
 from .models import Audit
 from .persistence import insert_once
 from .security import fingerprint
@@ -227,8 +228,9 @@ def validate_payload(db, payload, *, resource_owner=None, resource_ids=None):
 
 
 def publication_errors(db, article):
-    """Collect mandatory publication fields and current vocabulary source errors."""
-    payload = article.payload
+    """纯校验发布必填项及可自动对应的词汇；db 为事务会话，article 为当前草稿"""
+    payload = deepcopy(article.payload)
+    resolve_vocabulary_sources(payload)
     errors = vocabulary_errors(payload)
     require_category(db, article.draft_category_id or article.category_id)
     for field in ["title_zh", "title_en", "body_en", "translation_zh"]:
@@ -355,7 +357,13 @@ def category_name(db, category_id):
 
 
 def create_article(db, category_id, payload, now, *, batch_id=None, source_hash=None, owners=None):
-    """Create an explicitly owned, nonfree draft without manufacturing a topic."""
+    """创建直接归属分类的草稿并补齐词汇来源
+
+    db 为事务会话，category_id 为分类编号，payload 为导入或手填资料，now 为创建时间
+    batch_id 为导入批次，source_hash 为原导入身份，owners 为允许复用素材的归属集合
+    """
+    payload = deepcopy(payload)
+    resolve_vocabulary_sources(payload)
     catalog_lock(db)
     require_category(db, category_id)
     validate_payload(db, payload, resource_owner=owners or set())
@@ -409,11 +417,17 @@ def imported_media_ids(db, row):
 
 
 def update_article(db, row, body, now, *, imported_ids=None):
-    """Keep published ownership until publication and independently validate current sources."""
+    """更新草稿并保存同一份已匹配来源的资料，发布前保留原发布归属
+
+    db 为事务会话，row 为当前文章，body 为带版本号的修改请求，now 为当前时间
+    imported_ids 为本批次允许复用的素材编号
+    """
     require_category(db, body.category_id)
+    payload = body.payload.model_dump()
+    resolve_vocabulary_sources(payload)
     validate_payload(
         db,
-        body.payload.model_dump(),
+        payload,
         resource_owner={row.id, row.batch_id},
         resource_ids=imported_media_ids(db, row) | (imported_ids or set()),
     )
@@ -434,7 +448,7 @@ def update_article(db, row, body, now, *, imported_ids=None):
         else:
             row.category_id, row.category_order = body.category_id, new_order
         changed(db)
-    row.payload = body.payload.model_dump()
+    row.payload = payload
     from .listening_imports import source_hash
 
     row.canonical_hash = source_hash(db, row.payload)
@@ -460,7 +474,11 @@ def preview_article(db, settings, admin_id, row, now):
 
 
 def publish_article(db, settings, admin_id, row, body, now):
-    """Publish an explicit version-checked draft; optional old preview tokens stay validated."""
+    """按已检查版本发布并自动补齐旧草稿的词汇来源
+
+    db 为事务会话，settings 为签发配置，admin_id 为管理员编号，row 为当前文章
+    body 为含版本与可选预览令牌的发布请求，now 为发布时间
+    """
     if body.preview_token is not None:
         data = read_preview(settings, body.preview_token, admin_id, "listening.publish", now)
         if (
@@ -472,6 +490,14 @@ def publish_article(db, settings, admin_id, row, body, now):
     errors = publication_errors(db, row)
     if errors:
         raise DomainError(422, "listening_publish_invalid", "请补齐发布资料", errors)
+    # 先验证原草稿的预览令牌，再在真正发布事务中保存补齐的位置，读取预览不改草稿
+    payload = deepcopy(row.payload)
+    resolve_vocabulary_sources(payload)
+    if payload != row.payload:
+        from .listening_imports import source_hash
+
+        row.payload = payload
+        row.canonical_hash = source_hash(db, payload)
     current = db.get(Version, row.version_id) if row.version_id else None
     same_content = current is not None and content_equal(current.payload, row.payload)
     if row.status == "published" and same_content and not row.draft_category_id:
@@ -617,15 +643,24 @@ def topics(db, user_id, now, category_id=None):
     return result
 
 
-def next_row(db, user_id, current, now, *, snapshot=None, uncompleted=False):
-    """Choose the next accessible article after the current one in the same category."""
-    rows = list(
+def category_queue_rows(db, category_id):
+    """按学习列表顺序读取分类队列：db 为当前会话，category_id 为文章所属分类"""
+    return list(
         db.scalars(
             select(Article)
-            .where(Article.category_id == current.category_id, Article.deleted_at.is_(None))
-            .order_by(Article.category_order, Article.id)
+            .where(Article.category_id == category_id, Article.deleted_at.is_(None))
+            .order_by(Article.is_free.desc(), Article.category_order, Article.id)
         )
     )
+
+
+def next_row(db, user_id, current, now, *, snapshot=None, uncompleted=False):
+    """按分类队列选取下一篇并逐篇复核当前权限
+
+    db 为当前数据库会话，user_id 为学习账号，current 为当前文章，now 为服务端时间
+    snapshot 为进入时冻结顺序，uncompleted 为是否只选择未完成文章
+    """
+    rows = category_queue_rows(db, current.category_id)
     ids = snapshot or [a.id for a in rows]
     if current.id not in ids:
         return None
@@ -742,7 +777,11 @@ def thumbnail_version(db, article_id, version_id):
 
 
 def queue_token(db, settings, user_id, row, now):
-    """Bind the next-article snapshot to one category and ordered stable IDs."""
+    """为当前用户和分类封存免费优先队列，后续请求仍逐篇复核实时权限
+
+    db 为当前数据库会话，settings 提供签发密钥，user_id 为学习账号
+    row 为当前文章，now 为服务端签发时间
+    """
     return preview_token(
         settings,
         user_id,
@@ -750,7 +789,7 @@ def queue_token(db, settings, user_id, row, now):
         {
             "article_id": row.id,
             "category_id": row.category_id,
-            "ids": order_view(db, "category", row.category_id)["article_ids"],
+            "ids": [article.id for article in category_queue_rows(db, row.category_id)],
         },
         now + timedelta(days=1),
     )

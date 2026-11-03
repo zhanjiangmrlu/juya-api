@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+from copy import deepcopy
 from pathlib import PurePosixPath
 from typing import Literal
 
@@ -29,7 +30,7 @@ from .listening_models import (
 )
 from .listening_template import template_document
 from .listening_timeline import ensure_timeline, timeline_view
-from .listening_vocabulary import canonical_payload, sentence_spans, vocabulary_errors
+from .listening_vocabulary import canonical_payload, resolve_vocabulary_sources, vocabulary_errors
 from .models import identifier
 from .response_contracts import Page
 from .security import fingerprint
@@ -445,32 +446,7 @@ def parse_docx(data):
     for word in payload["vocabulary"]:
         quote = word.pop("_quote")
         word["source_hint"] = quote
-        sources = [
-            (start, end, sentence)
-            for start, end, sentence in sentence_spans(payload["body_en"])
-            if sentence == quote
-        ]
-        if len(sources) == 1:
-            start, end, sentence = sources[0]
-            matches = list(
-                re.finditer(r"\b" + re.escape(word["english"]) + r"\b", sentence, re.IGNORECASE)
-            )
-            all_matches = list(
-                re.finditer(
-                    r"\b" + re.escape(word["english"]) + r"\b", payload["body_en"], re.IGNORECASE
-                )
-            )
-            if len(matches) == 1 and len(all_matches) == 1:
-                match = matches[0]
-                word["source"] = {
-                    "start": start,
-                    "end": end,
-                    "quote": sentence,
-                    "word_start": start + match.start(),
-                    "word_end": start + match.end(),
-                    "word": match.group(),
-                    "confirmed": False,
-                }
+    resolve_vocabulary_sources(payload)
     try:
         return C.ListeningPayload.model_validate(payload).model_dump(), hints
     except ValueError:
@@ -502,10 +478,12 @@ def source_hash(db, payload):
 
 
 def classify(db, candidate):
-    """Classify the candidate against live articles and unsaved, active staging only."""
+    """校验候选完整度及重复身份；db 为事务会话，candidate 为待分类候选，检查不改资料正文"""
     if candidate.state == "unreadable" or candidate.removed or candidate.article_id:
         return
-    candidate.canonical_hash = source_hash(db, candidate.payload)
+    checked_payload = deepcopy(candidate.payload)
+    resolve_vocabulary_sources(checked_payload)
+    candidate.canonical_hash = source_hash(db, checked_payload)
     if not candidate.source_hash:
         candidate.source_hash = candidate.canonical_hash
     explicit_update = bool(target_binding(candidate)["target_article_id"])
@@ -549,7 +527,7 @@ def classify(db, candidate):
         candidate.errors = []
         return
     candidate.duplicate_of = None
-    errors = vocabulary_errors(candidate.payload)
+    errors = vocabulary_errors(checked_payload)
     for field in ["title_zh", "title_en", "body_en", "translation_zh"]:
         if not candidate.payload[field].strip():
             errors.append(field + ":required_for_publish")
@@ -947,18 +925,29 @@ def routes():
         admin=Depends(administrator),
         db: Session = Depends(database, scope="function"),
     ):
-        """Recheck this owner's skipped candidates when their duplicate source changes."""
+        """重核本人的重复候选及旧来源确认问题，不改写候选正文
+
+        batch_id 为批次编号，request 提供当前时间，admin 为已鉴权管理员，db 为事务会话
+        """
         service.catalog_lock(db)
         batch = owned(db, batch_id, admin.id)
         changed = False
         for row in candidates(db, batch):
-            if row.state != "duplicate" or row.removed:
+            legacy_source_issue = row.state == "incomplete" and any(
+                error.startswith("vocabulary:") or "source_confirmation_required" in error
+                for error in row.errors
+            )
+            if (
+                row.removed
+                or row.article_id
+                or (row.state != "duplicate" and not legacy_source_issue)
+            ):
                 continue
-            before = (row.state, row.duplicate_of)
+            before = (row.state, row.duplicate_of, list(row.errors))
             classify(db, row)
-            if row.state in {"complete", "incomplete"}:
+            if before[0] == "duplicate" and row.state in {"complete", "incomplete"}:
                 ensure_timeline(db, row.payload, request.app.state.clock())
-            changed = changed or before != (row.state, row.duplicate_of)
+            changed = changed or before != (row.state, row.duplicate_of, row.errors)
         if changed:
             batch.revision += 1
             batch.status = "review"
@@ -1080,7 +1069,7 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         def execute():
-            """Apply the checked revision change under the existing transaction locks."""
+            """按已检查版本保存候选，并持久化自动对应的真实原句位置"""
             service.catalog_lock(db)
             batch = owned(db, batch_id, admin.id, body.revision)
             row = selected(db, batch, [candidate_id])[0]
@@ -1104,9 +1093,11 @@ def routes():
                 if binding["target_article_id"]
                 else None
             )
-            validate_candidate_payload(db, batch, row, body.payload.model_dump(), target)
+            payload = body.payload.model_dump()
+            resolve_vocabulary_sources(payload)
+            validate_candidate_payload(db, batch, row, payload, target)
             row.resources = {**row.resources, "_metadata": binding}
-            row.payload, row.category_id = body.payload.model_dump(), body.category_id
+            row.payload, row.category_id = payload, body.category_id
             classify(db, row)
             ensure_timeline(db, row.payload, request.app.state.clock())
             batch.revision += 1
@@ -1241,7 +1232,7 @@ def routes():
         now = request.app.state.clock()
 
         def execute():
-            """Apply the checked revision change under the existing transaction locks."""
+            """按已核对指纹保存或发布候选，当前资料身份按落库内容重新计算"""
             service.catalog_lock(db)
             data = read_preview(
                 request.app.state.settings,
@@ -1336,7 +1327,7 @@ def routes():
                                     db, target, update, now, imported_ids=imported_ids
                                 )
                             article = target
-                            article.canonical_hash = row.canonical_hash
+                            article.canonical_hash = source_hash(db, article.payload)
                         else:
                             article = service.create_article(
                                 db,
@@ -1347,7 +1338,7 @@ def routes():
                                 source_hash=row.source_hash,
                                 owners={batch.id},
                             )
-                        article.canonical_hash = row.canonical_hash
+                        article.canonical_hash = source_hash(db, article.payload)
                         published_version_id = None
                         if body.submit_action == "publish":
                             publication = service.publish_article(

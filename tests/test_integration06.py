@@ -338,7 +338,7 @@ def test_new_scene_is_nonfree_until_explicit_flag_and_draft_revision_is_independ
 
 
 def test_template_word_table_resolves_unique_quote_and_keeps_ambiguous_senses_separate():
-    """Old no-word input stays valid; exact current quote identifies each unique source."""
+    """模板原句自动对应真实位置，相同句子的独立义项仍分别保留"""
     import io
 
     from docx import Document
@@ -364,7 +364,8 @@ def test_template_word_table_resolves_unique_quote_and_keeps_ambiguous_senses_se
     ambiguous, _ = parse_docx(stream.getvalue())
     words = ambiguous["vocabulary"]
     assert len(words) == 2 and words[0]["id"] != words[1]["id"]
-    assert all(word["source"] is None for word in words)
+    assert all(word["source"]["quote"] == "Take a break." for word in words)
+    assert all(word["source"]["word_start"] == 7 for word in words)
 
 
 def test_unconfirmed_docx_source_hint_is_retained_and_distinguishes_staging_identity():
@@ -421,3 +422,262 @@ def test_listening_speech_references_cannot_omit_or_mix_version_fences(admin, mi
     batch = admin.post(A + "/imports", json={"mode": "zip"}, headers=key()).json()
     staged = A + f"/imports/{batch['id']}/candidates/unknown/words/rest-one/pronunciation"
     assert admin.post(staged, json={}, headers=key()).status_code == 422
+
+
+def test_docx_source_matches_context_instead_of_requiring_a_globally_unique_word():
+    """文档原句准确区分重复词，并为变形词保存真实位置"""
+    import io
+
+    from docx import Document
+
+    from juya_api.listening_imports import parse_docx
+    from juya_api.listening_template import template_document
+    from juya_api.listening_vocabulary import vocabulary_errors
+
+    doc = Document(io.BytesIO(template_document()))
+    for paragraph in doc.paragraphs:
+        if paragraph.text.startswith("Take a break and drink"):
+            paragraph.text = "😀 He goes. She goes."
+    for cell, value in zip(
+        doc.tables[0].rows[1].cells, ["go", "去", "", "She   goes."], strict=True
+    ):
+        cell.text = value
+    stream = io.BytesIO()
+    doc.save(stream)
+    payload, _ = parse_docx(stream.getvalue())
+    assert payload["vocabulary"][0]["source"] == {
+        "start": 11,
+        "end": 20,
+        "quote": "She goes.",
+        "word_start": 15,
+        "word_end": 19,
+        "word": "goes",
+        "confirmed": True,
+    }
+    assert vocabulary_errors(payload) == []
+
+
+def test_located_inflection_does_not_require_a_manual_confirmation_flag():
+    """精确来源及变形词通过发布词汇校验，不再要求管理员勾选确认"""
+    from juya_api.listening_vocabulary import vocabulary_errors
+
+    words = vocabulary()
+    words[0]["source"] = {
+        "start": 9,
+        "end": 19,
+        "quote": "We rested.",
+        "word_start": 12,
+        "word_end": 18,
+        "word": "rested",
+        "confirmed": False,
+    }
+    assert vocabulary_errors({"body_en": "We rest. We rested.", "vocabulary": words}) == []
+
+
+def test_saved_hint_is_resolved_without_manual_source_selection(admin):
+    """保存已有文档原句时自动写入真实位置"""
+    words = vocabulary()
+    words[0].update(source=None, source_hint="We rested.")
+    owner = category(admin)
+    result = admin.post(
+        A + "/articles",
+        json={
+            "category_id": owner["id"],
+            "payload": {
+                "body_en": "We rest. We rested.",
+                "vocabulary": words,
+            },
+        },
+        headers=key(),
+    )
+    assert result.status_code == 200, result.text
+    assert result.json()["payload"]["vocabulary"][0]["source"] == {
+        "start": 9,
+        "end": 19,
+        "quote": "We rested.",
+        "word_start": 12,
+        "word_end": 18,
+        "word": "rested",
+        "confirmed": True,
+    }
+
+
+def test_existing_hint_draft_can_preview_and_publish_without_manual_review(admin, system):
+    """旧草稿仅有原句提示也可发布；预览不改草稿，发布保留版本与幂等保护"""
+    from juya_api.listening_imports import source_hash
+    from juya_api.listening_models import ListeningArticle, ListeningVersion
+
+    owner = category(admin)
+    row = article(admin, owner["id"], vocabulary())
+    with system["sessions"].begin() as db:
+        stored = db.get(ListeningArticle, row["id"])
+        words = [{**stored.payload["vocabulary"][0], "source": None, "source_hint": "We rested."}]
+        stored.payload = {**stored.payload, "vocabulary": words}
+        stored.canonical_hash = source_hash(db, stored.payload)
+        stored.source_hash = "original-import-identity"
+    preview = admin.post(
+        A + f"/articles/{row['id']}/preview", json={"revision": row["revision"]}, headers=key()
+    )
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["errors"] == []
+    with system["sessions"]() as db:
+        assert db.get(ListeningArticle, row["id"]).payload["vocabulary"][0]["source"] is None
+    payload = {"revision": row["revision"], "preview_token": preview.json()["preview_token"]}
+    headers = key()
+    live = admin.post(A + f"/articles/{row['id']}/publish", json=payload, headers=headers)
+    assert live.status_code == 200, live.text
+    assert live.json()["payload"]["vocabulary"][0]["source"]["word_start"] == 12
+    replay = admin.post(A + f"/articles/{row['id']}/publish", json=payload, headers=headers)
+    assert replay.json() == live.json()
+    with system["sessions"]() as db:
+        stored = db.get(ListeningArticle, row["id"])
+        assert stored.canonical_hash == source_hash(db, stored.payload)
+        assert stored.source_hash == "original-import-identity"
+        assert db.get(ListeningVersion, live.json()["version_id"]).payload == stored.payload
+
+
+def test_update_hint_saves_the_same_normalized_payload_that_was_validated(admin):
+    """更新草稿需持久化已补齐的原句位置，不能丢弃校验时的临时副本"""
+    owner = category(admin)
+    row = admin.post(
+        A + "/articles", json={"category_id": owner["id"], "payload": {}}, headers=key()
+    ).json()
+    word = {**vocabulary()[0], "source": None, "source_hint": "We rested."}
+    updated = admin.put(
+        A + f"/articles/{row['id']}",
+        json={
+            "category_id": owner["id"],
+            "revision": row["revision"],
+            "payload": {
+                "body_en": "We rest. We rested.",
+                "vocabulary": [word],
+            },
+        },
+        headers=key(),
+    )
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["payload"]["vocabulary"][0]["source"] is not None
+    assert (
+        admin.get(A + f"/articles/{row['id']}").json()["payload"]["vocabulary"][0]["source"]["word"]
+        == "rested"
+    )
+
+
+def test_legacy_hint_candidate_classification_and_direct_publication_preserve_preview_identity(
+    admin, system
+):
+    """旧批次仅原句提示也可直接发布，分类检查不改预览指纹，落库保存真实来源"""
+    from juya_api.listening_imports import source_hash
+    from juya_api.listening_models import ListeningArticle, ListeningCandidate
+    from tests.test_listening_imports import assign, package, upload
+
+    owner = category(admin)
+    batch = admin.post(A + "/imports", json={"mode": "zip"}, headers=key()).json()
+    batch = upload(admin, batch, package())
+    candidate_id = batch["candidates"][0]["id"]
+    batch = assign(admin, batch, candidate_id, owner["id"])
+    with system["sessions"].begin() as db:
+        candidate = db.get(ListeningCandidate, candidate_id)
+        word = {**vocabulary()[0], "source": None, "source_hint": "We rest."}
+        candidate.payload = {**candidate.payload, "vocabulary": [word]}
+        candidate.state = "incomplete"
+        candidate.errors = ["vocabulary:rest-one:source_confirmation_required"]
+    old_preview = admin.post(
+        A + f"/imports/{batch['id']}/preview",
+        json={
+            "revision": batch["revision"],
+            "candidate_ids": [candidate_id],
+            "submit_action": "publish",
+        },
+        headers=key(),
+    )
+    assert old_preview.status_code == 200, old_preview.text
+    refreshed = admin.get(A + f"/imports/{batch['id']}")
+    assert refreshed.status_code == 200, refreshed.text
+    refreshed = refreshed.json()
+    assert refreshed["revision"] == batch["revision"] + 1
+    assert refreshed["candidates"][0]["state"] == "complete"
+    assert refreshed["candidates"][0]["errors"] == []
+    assert refreshed["candidates"][0]["payload"]["vocabulary"][0]["source"] is None
+    assert admin.get(A + f"/imports/{batch['id']}").json()["revision"] == refreshed["revision"]
+    stale = admin.post(
+        A + f"/imports/{batch['id']}/save",
+        json={"preview_token": old_preview.json()["preview_token"], "submit_action": "publish"},
+        headers=key(),
+    )
+    assert stale.status_code == 409, stale.text
+    batch = refreshed
+    preview = admin.post(
+        A + f"/imports/{batch['id']}/preview",
+        json={
+            "revision": batch["revision"],
+            "candidate_ids": [candidate_id],
+            "submit_action": "publish",
+        },
+        headers=key(),
+    )
+    assert preview.status_code == 200, preview.text
+    result = admin.post(
+        A + f"/imports/{batch['id']}/save",
+        json={
+            "preview_token": preview.json()["preview_token"],
+            "submit_action": "publish",
+        },
+        headers=key(),
+    )
+    assert result.status_code == 200, result.text
+    assert result.json()["items"][0]["status"] == "success", result.text
+    article_id = result.json()["items"][0]["article_id"]
+    article = admin.get(A + f"/articles/{article_id}").json()
+    assert article["status"] == "published"
+    assert article["payload"]["vocabulary"][0]["source"]["word_start"] == 3
+    with system["sessions"]() as db:
+        stored = db.get(ListeningArticle, article_id)
+        assert stored.canonical_hash == source_hash(db, stored.payload)
+
+
+def test_candidate_edit_persists_automatically_matched_hint(admin):
+    """批次候选编辑保存时持久化同一份自动对应的资料"""
+    from tests.test_listening_imports import assign, package, upload
+
+    owner = category(admin)
+    batch = admin.post(A + "/imports", json={"mode": "zip"}, headers=key()).json()
+    batch = upload(admin, batch, package())
+    candidate = batch["candidates"][0]
+    candidate["payload"]["vocabulary"] = [
+        {**vocabulary()[0], "source": None, "source_hint": "We rest."}
+    ]
+    result = assign(admin, batch, candidate["id"], owner["id"])
+    assert result["candidates"][0]["payload"]["vocabulary"][0]["source"] is not None
+
+
+def test_legacy_hint_reclassification_preserves_other_missing_fields(admin, system):
+    """旧原句已匹配时只清除来源问题，其他必填缺失仍阻止直接发布，二次读取保持版本稳定"""
+    from juya_api.listening_models import ListeningCandidate
+    from tests.test_listening_imports import assign, package, upload
+
+    owner = category(admin)
+    batch = admin.post(A + "/imports", json={"mode": "zip"}, headers=key()).json()
+    batch = upload(admin, batch, package())
+    candidate_id = batch["candidates"][0]["id"]
+    batch = assign(admin, batch, candidate_id, owner["id"])
+    with system["sessions"].begin() as db:
+        candidate = db.get(ListeningCandidate, candidate_id)
+        candidate.payload = {
+            **candidate.payload,
+            "title_zh": "",
+            "vocabulary": [
+                {**vocabulary()[0], "source": None, "source_hint": "We rest."},
+            ],
+        }
+        candidate.state = "incomplete"
+        candidate.errors = [
+            "vocabulary:rest-one:source_confirmation_required",
+            "title_zh:required_for_publish",
+        ]
+    refreshed = admin.get(A + f"/imports/{batch['id']}").json()
+    assert refreshed["revision"] == batch["revision"] + 1
+    assert refreshed["candidates"][0]["state"] == "incomplete"
+    assert refreshed["candidates"][0]["errors"] == ["title_zh:required_for_publish"]
+    assert refreshed["candidates"][0]["payload"]["vocabulary"][0]["source"] is None
+    assert admin.get(A + f"/imports/{batch['id']}").json()["revision"] == refreshed["revision"]
