@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from . import listening_contracts as C
 from . import listening_media as media
 from . import listening_service as service
-from .access_service import authorization, read_preview
+from .access_service import read_preview
 from .content_models import Media
 from .database import timestamp
 from .dependencies import administrator, database, learner, operation_key
@@ -42,7 +42,7 @@ from .listening_models import (
     ListeningTopic as Topic,
 )
 from .listening_timeline import body_tokens, timeline_view, validate_words
-from .media_api import deliver
+from .media_api import deliver, deliver_thumbnail
 from .models import User
 from .pronunciation import configuration, status
 from .pronunciation import request as request_speech
@@ -71,11 +71,16 @@ def row_view(row):
     }
 
 
-def page_view(db, query, page, limit, render):
+def page_view(db, query, page, limit, render=None, *, render_batch=None):
     total = db.scalar(select(func.count()).select_from(query.order_by(None).subquery())) or 0
     page = min(page, max(1, (total + limit - 1) // limit))
     rows = db.scalars(query.offset((page - 1) * limit).limit(limit)).all()
-    return {"items": [render(row) for row in rows], "total": total, "page": page, "limit": limit}
+    return {
+        "items": render_batch(rows) if render_batch else [render(row) for row in rows],
+        "total": total,
+        "page": page,
+        "limit": limit,
+    }
 
 
 def admin_routes():
@@ -825,19 +830,27 @@ def personal_page(db, user_id, kind, now, page, limit, *, include_deleted=False)
         else query.order_by(Completion.last_completed_at.desc(), Completion.article_id)
     )
 
-    def render(record):
-        row = db.get(Article, record.article_id)
-        result = service.summary(db, row, user_id, now)
-        if kind == "favorites":
-            result["favorited_at"] = timestamp(record.created_at)
-        if kind != "favorites":
-            result.update(
-                first_completed_at=timestamp(record.first_completed_at),
-                last_completed_at=timestamp(record.last_completed_at),
+    def render_batch(records):
+        articles = {
+            row.id: row
+            for row in db.scalars(
+                select(Article).where(Article.id.in_([record.article_id for record in records]))
             )
-        return result
+        }
+        results = service.summaries(
+            db, [articles[record.article_id] for record in records], user_id, now
+        )
+        for record, result in zip(records, results, strict=True):
+            if kind == "favorites":
+                result["favorited_at"] = timestamp(record.created_at)
+            else:
+                result.update(
+                    first_completed_at=timestamp(record.first_completed_at),
+                    last_completed_at=timestamp(record.last_completed_at),
+                )
+        return results
 
-    return page_view(db, query, page, limit, render)
+    return page_view(db, query, page, limit, render_batch=render_batch)
 
 
 def mixed_day(db, user_id, day, now):
@@ -850,13 +863,15 @@ def mixed_day(db, user_id, day, now):
             .order_by(Daily.accepted_at.desc(), Daily.article_id)
         )
     )
-    articles = [
-        {
-            **service.summary(db, db.get(Article, row.article_id), user_id, now),
-            "completed_at": timestamp(row.accepted_at),
-        }
-        for row in rows
-    ]
+    by_id = {
+        article.id: article
+        for article in db.scalars(
+            select(Article).where(Article.id.in_([row.article_id for row in rows]))
+        )
+    }
+    articles = service.summaries(db, [by_id[row.article_id] for row in rows], user_id, now)
+    for row, item in zip(rows, articles, strict=True):
+        item["completed_at"] = timestamp(row.accepted_at)
     from .learning_models import DailyLearning
 
     return {
@@ -927,24 +942,27 @@ def mini_routes():
     ):
         """Return category progress and an independent continuation target."""
         now = request.app.state.clock()
-        from .access_service import free_ids, policy
+        from .access_service import policy
 
+        snapshot = service.access_snapshot(db, user.id, now)
         scene_policy = policy(db)
         listening_policy = service.policy_view(db)
-        categories = service.categories_progress(db, user.id, now)
-        target = service.continue_row(db, user.id, now)
+        categories = service.categories_progress(db, user.id, now, snapshot=snapshot)
+        target = service.continue_row(db, user.id, now, snapshot=snapshot)
         return {
             "categories": categories,
             "topics": [],
-            "continue_learning": service.summary(db, target, user.id, now, include_progress=True)
+            "continue_learning": service.summary(
+                db, target, user.id, now, include_progress=True, snapshot=snapshot
+            )
             if target
             else None,
-            "configured": service.policy_view(db)["configured"],
-            "authorization": authorization(db, user.id, now),
+            "configured": listening_policy["configured"],
+            "authorization": snapshot[0],
             "free_count": listening_policy["free_count"],
             "actual_free_count": len(listening_policy["article_ids"]),
             "scene_free_count": scene_policy["free_count"],
-            "scene_actual_free_count": len(free_ids(db, scene_policy["free_count"])),
+            "scene_actual_free_count": scene_policy["free_count"],
             "statistics": statistics(db, user.id, now),
         }
 
@@ -982,7 +1000,9 @@ def mini_routes():
             query,
             page,
             limit,
-            lambda r: service.summary(db, r, user.id, request.app.state.clock()),
+            render_batch=lambda rows: service.summaries(
+                db, rows, user.id, request.app.state.clock()
+            ),
         )
 
     @router.get("/articles", response_model=Page[C.Summary])
@@ -1019,7 +1039,9 @@ def mini_routes():
             ),
             page,
             limit,
-            lambda row: service.summary(db, row, user.id, request.app.state.clock()),
+            render_batch=lambda rows: service.summaries(
+                db, rows, user.id, request.app.state.clock()
+            ),
         )
 
     @router.get("/favorites", response_model=Page[C.Summary])
@@ -1286,7 +1308,9 @@ def mini_routes():
         db: Session = Depends(database, scope="function"),
     ):
         version = service.thumbnail_version(db, article_id, version_id)
-        return deliver(media.controlled_media(db, version.payload, "", thumbnail=True), request)
+        return deliver_thumbnail(
+            media.controlled_media(db, version.payload, "", thumbnail=True), request
+        )
 
     @router.get("/articles/{article_id}/thumbnail-ticket", response_model=C.TicketResult)
     def thumbnail_ticket(
@@ -1339,7 +1363,9 @@ def mini_routes():
             return deliver(medium, request)
         if data["purpose"] == "listening:thumbnail":
             version = service.thumbnail_version(db, data["article_id"], data["version_id"])
-            return deliver(media.controlled_media(db, version.payload, "", thumbnail=True), request)
+            return deliver_thumbnail(
+                media.controlled_media(db, version.payload, "", thumbnail=True), request
+            )
         _, version = service.published(
             db, data["user_id"], data["article_id"], request.app.state.clock(), data["version_id"]
         )

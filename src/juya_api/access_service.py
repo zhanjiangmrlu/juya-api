@@ -55,16 +55,23 @@ def free_ids(db, count=None):
     )
 
 
-def learning_access(db, user_id, card_id, now):
+def learning_access_snapshot(db, user_id, now):
+    """Keep shared catalog access inputs in the current read operation only."""
+    counter = db.get(SettingCounter, "catalog_revision")
+    return authorization(db, user_id, now), counter.value if counter else 0
+
+
+def learning_access(db, user_id, card_id, now, *, snapshot=None, card=None):
     """Require live publication and either an explicit free flag or active grant."""
-    grant = authorization(db, user_id, now)
-    card = db.get(Card, card_id)
+    grant, catalog_revision = (
+        snapshot if snapshot is not None else learning_access_snapshot(db, user_id, now)
+    )
+    card = card if card is not None else db.get(Card, card_id)
     published = bool(
         card and not card.deleted_at and card.status == "published" and card.current_version_id
     )
     free = bool(published and card.is_free)
     learn = published and (free or grant["status"] == "active")
-    counter = db.get(SettingCounter, "catalog_revision")
     return {
         "can_learn": bool(learn),
         "can_lookup": bool(published and grant["status"] == "active"),
@@ -74,7 +81,7 @@ def learning_access(db, user_id, card_id, now):
         else ("learning_authorization_required" if published else "content_unavailable"),
         "version": (
             f"{card.free_revision if card else 0}:{grant['revision']}:"
-            f"{counter.value if counter else 0}:{grant['status']}"
+            f"{catalog_revision}:{grant['status']}"
         ),
         "server_now": timestamp(now),
         "expires_at": grant["expires_at"],

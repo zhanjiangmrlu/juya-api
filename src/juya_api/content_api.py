@@ -5,10 +5,10 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from .access_service import (
-    access_context,
     free_ids,
     free_uncompleted,
     learning_access,
+    learning_access_snapshot,
     policy,
     require_access,
 )
@@ -312,6 +312,8 @@ def mini_routes():
         db: Session = Depends(database, scope="function"),
     ):
         """先过滤本人完成记录，免费优先且组内保留人工顺序，再分页"""
+        now = request.app.state.clock()
+        access_snapshot = learning_access_snapshot(db, user.id, now)
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
         published_total = db.scalar(select(func.count()).select_from(query.subquery()))
         query = query.where(
@@ -378,7 +380,9 @@ def mini_routes():
             items.append(
                 {
                     "id": card.id,
-                    "access": learning_access(db, user.id, card.id, request.app.state.clock()),
+                    "access": learning_access(
+                        db, user.id, card.id, now, snapshot=access_snapshot, card=card
+                    ),
                     "name": version.payload["name"],
                     "title_en": version.payload.get("title_en", ""),
                     "version_id": version.id,
@@ -400,7 +404,11 @@ def mini_routes():
             "page": page,
             "limit": limit,
             "published_total": published_total,
-            "learning_access": access_context(db, user.id, request.app.state.clock()),
+            "learning_access": {
+                **policy(db),
+                "authorization": access_snapshot[0],
+                "server_now": timestamp(now),
+            },
             "free_uncompleted_total": free_uncompleted(db, user.id),
         }
 

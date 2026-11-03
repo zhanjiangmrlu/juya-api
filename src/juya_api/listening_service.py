@@ -4,7 +4,7 @@ import re
 from copy import deepcopy
 from datetime import timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, case, func, select
 
 from .access_service import authorization, preview_token, read_preview
 from .content_models import Media
@@ -112,7 +112,18 @@ def published_rows(db):
 def policy_view(db):
     """Read the full effective explicit free set; legacy count is informational only."""
     row = db.get(Policy, 1)
-    ids = [article.id for article in published_rows(db) if article.is_free]
+    ids = list(
+        db.scalars(
+            select(Article.id)
+            .where(
+                Article.status == "published",
+                Article.deleted_at.is_(None),
+                Article.version_id.is_not(None),
+                Article.is_free.is_(True),
+            )
+            .order_by(Article.global_order, Article.id)
+        )
+    )
     return {
         "configured": True,
         "free_count": len(ids),
@@ -121,15 +132,22 @@ def policy_view(db):
     }
 
 
-def access(db, user_id, article, now):
+def access_snapshot(db, user_id, now):
+    """Hold authorization and catalog revision only for this read operation."""
+    catalog = db.get(Policy, 1)
+    return authorization(db, user_id, now), catalog.catalog_revision if catalog else 0
+
+
+def access(db, user_id, article, now, *, snapshot=None):
     """Compute current publication and explicit free or active-grant permissions."""
-    grant = authorization(db, user_id, now)
+    grant, catalog_revision = (
+        snapshot if snapshot is not None else access_snapshot(db, user_id, now)
+    )
     available = bool(
         article and article.status == "published" and article.version_id and not article.deleted_at
     )
     free = bool(available and article.is_free)
     can_learn = bool(available and (free or grant["status"] == "active"))
-    catalog = db.get(Policy, 1)
     return {
         "can_learn": can_learn,
         "can_lookup": bool(can_learn and grant["status"] == "active"),
@@ -139,7 +157,7 @@ def access(db, user_id, article, now):
         else ("content_unavailable" if not available else "learning_authorization_required"),
         "version": (
             f"{article.free_revision if article else 0}:"
-            f"{catalog.catalog_revision if catalog else 0}:"
+            f"{catalog_revision}:"
             f"{grant['revision']}:{grant['status']}"
         ),
         "server_now": timestamp(now),
@@ -314,13 +332,75 @@ def reading_paragraph(body, progress):
     return len(spans) or None
 
 
-def summary(db, row, user_id, now, *, include_progress=False):
+def summaries(db, rows, user_id, now, *, include_progress=False, snapshot=None):
+    """Fetch all publication dependencies and personal flags once for this batch."""
+    if not rows:
+        return []
+    ids = [row.id for row in rows]
+    versions = {
+        v.id: v
+        for v in db.scalars(
+            select(Version).where(
+                Version.id.in_([row.version_id for row in rows if row.version_id])
+            )
+        )
+    }
+    payloads = [
+        versions[row.version_id].payload if row.version_id in versions else row.payload
+        for row in rows
+    ]
+    media_ids = {payload.get(kind) for payload in payloads for kind in ("image_id", "audio_id")}
+    media = {m.id: m for m in db.scalars(select(Media).where(Media.id.in_(media_ids - {None})))}
+    categories = {
+        c.id: c.name
+        for c in db.scalars(
+            select(Category).where(Category.id.in_({row.category_id for row in rows}))
+        )
+    }
+    flags = {}
+    for name, model in (
+        ("favorite", Favorite),
+        ("completed", Completion),
+        ("today_completed", Daily),
+    ):
+        query = select(model.article_id).where(model.user_id == user_id, model.article_id.in_(ids))
+        if model is Daily:
+            query = query.where(Daily.date == business_date(now))
+        flags[name] = set(db.scalars(query))
+    snapshot = snapshot if snapshot is not None else access_snapshot(db, user_id, now)
+    return [
+        _summary(
+            db,
+            row,
+            user_id,
+            now,
+            versions,
+            media,
+            categories,
+            flags,
+            snapshot,
+            include_progress=include_progress,
+        )
+        for row in rows
+    ]
+
+
+def summary(db, row, user_id, now, *, include_progress=False, snapshot=None):
+    """Render one item using the same batch path as catalog pages."""
+    return summaries(db, [row], user_id, now, include_progress=include_progress, snapshot=snapshot)[
+        0
+    ]
+
+
+def _summary(
+    db, row, user_id, now, versions, media, categories, flags, snapshot, *, include_progress=False
+):
     """Render published category labels and optional personal reading progress."""
-    version = db.get(Version, row.version_id) if row.version_id else None
+    version = versions.get(row.version_id)
     payload = version.payload if version else row.payload
     available = row.status == "published" and not row.deleted_at and version is not None
-    image = db.get(Media, payload["image_id"]) if payload.get("image_id") else None
-    audio = db.get(Media, payload["audio_id"]) if available and payload.get("audio_id") else None
+    image = media.get(payload.get("image_id"))
+    audio = media.get(payload.get("audio_id")) if available else None
     progress = progress_view(db, user_id, row) if include_progress and available else None
     # Thumbnail route resolves only the small derivative, never the protected original.
     thumbnail = (
@@ -333,7 +413,7 @@ def summary(db, row, user_id, now, *, include_progress=False):
         "content_type": "listening",
         "topic_id": row.topic_id,
         "category_id": row.category_id,
-        "category_name": category_name(db, row.category_id),
+        "category_name": categories.get(row.category_id, ""),
         "category_order": row.category_order,
         "title_zh": payload["title_zh"],
         "title_en": payload["title_en"],
@@ -345,8 +425,8 @@ def summary(db, row, user_id, now, *, include_progress=False):
         "audio_duration_seconds": audio.duration if audio and audio.state == "ready" else None,
         "progress": progress,
         "reading_paragraph": reading_paragraph(payload["body_en"], progress),
-        "access": access(db, user_id, row, now),
-        "state": state(db, user_id, row.id, now),
+        "access": access(db, user_id, row, now, snapshot=snapshot),
+        "state": {name: row.id in values for name, values in flags.items()},
     }
 
 
@@ -677,25 +757,58 @@ def next_row(db, user_id, current, now, *, snapshot=None, uncompleted=False):
     return None
 
 
-def continue_row(db, user_id, now):
-    history = db.scalars(
-        select(Progress)
-        .where(Progress.user_id == user_id)
-        .order_by(Progress.updated_at.desc(), Progress.article_id)
-    ).all()
+def continue_row(db, user_id, now, *, snapshot=None):
+    """Resolve continuation from batched history, category queues and completion facts."""
+    history = list(
+        db.scalars(
+            select(Article)
+            .join(Progress, Progress.article_id == Article.id)
+            .where(Progress.user_id == user_id)
+            .order_by(Progress.updated_at.desc(), Progress.article_id)
+        )
+    )
+    if not history:
+        return None
+    snapshot = snapshot if snapshot is not None else access_snapshot(db, user_id, now)
+    rows = list(
+        db.scalars(
+            select(Article)
+            .where(
+                Article.category_id.in_({row.category_id for row in history}),
+                Article.deleted_at.is_(None),
+            )
+            .order_by(Article.is_free.desc(), Article.category_order, Article.id)
+        )
+    )
+    completed = set(
+        db.scalars(
+            select(Completion.article_id).where(
+                Completion.user_id == user_id, Completion.article_id.in_([row.id for row in rows])
+            )
+        )
+    )
+    queues: dict[str, list[Article]] = {}
+    for row in rows:
+        queues.setdefault(row.category_id, []).append(row)
     visited = set()
-    for progress in history:
-        if progress.article_id in visited:
+    for row in history:
+        if row.id in visited:
             continue
-        visited.add(progress.article_id)
-        row = db.get(Article, progress.article_id)
-        if not row or not access(db, user_id, row, now)["can_learn"]:
+        visited.add(row.id)
+        if not access(db, user_id, row, now, snapshot=snapshot)["can_learn"]:
             continue
-        if not db.get(Completion, (user_id, row.id)):
+        if row.id not in completed:
             return row
-        following = next_row(db, user_id, row, now, uncompleted=True)
-        if following:
-            return following
+        following = False
+        for candidate in queues.get(row.category_id, []):
+            if candidate.id == row.id:
+                following = True
+            elif (
+                following
+                and candidate.id not in completed
+                and access(db, user_id, candidate, now, snapshot=snapshot)["can_learn"]
+            ):
+                return candidate
     return None
 
 
@@ -795,33 +908,65 @@ def queue_token(db, settings, user_id, row, now):
     )
 
 
-def categories_progress(db, user_id, now):
-    """Build full category progress and restriction counts independently of the active filter."""
-    rows = published_rows(db)
-    completed = set(db.scalars(select(Completion.article_id).where(Completion.user_id == user_id)))
-    result = []
-    for owner in db.scalars(
-        select(Category)
-        .where(Category.deleted_at.is_(None))
-        .order_by(Category.sort_order, Category.id)
-    ):
-        children = [row for row in rows if row.category_id == owner.id]
-        if not children:
-            continue
-        thumbnails = (summary(db, row, user_id, now)["thumbnail_url"] for row in children)
-        result.append(
-            {
-                "id": owner.id,
-                "name": owner.name,
-                "name_en": owner.name_en,
-                "sort_order": owner.sort_order,
-                "revision": owner.revision,
-                "total_articles": len(children),
-                "completed_articles": len({row.id for row in children} & completed),
-                "restricted_articles": sum(
-                    not access(db, user_id, row, now)["can_learn"] for row in children
-                ),
-                "thumbnail_url": next((url for url in thumbnails if url), None),
-            }
+def categories_progress(db, user_id, now, *, snapshot=None):
+    """Aggregate category counts and the first safe thumbnail without per-article reads."""
+    grant, _ = snapshot if snapshot is not None else access_snapshot(db, user_id, now)
+    live = (
+        Article.status == "published",
+        Article.deleted_at.is_(None),
+        Article.version_id.is_not(None),
+    )
+    counts = (
+        select(
+            Article.category_id.label("category_id"),
+            func.count().label("total"),
+            func.count(Completion.article_id).label("completed"),
+            func.sum(case((Article.is_free.is_(False), 1), else_=0)).label("restricted"),
         )
-    return result
+        .outerjoin(
+            Completion, and_(Completion.article_id == Article.id, Completion.user_id == user_id)
+        )
+        .where(*live)
+        .group_by(Article.category_id)
+        .subquery()
+    )
+    # Only the first available thumbnail is returned; image JSON stays in the database.
+    ranked = (
+        select(
+            Article.category_id.label("category_id"),
+            Article.id.label("article_id"),
+            Version.id.label("version_id"),
+            func.row_number()
+            .over(partition_by=Article.category_id, order_by=(Article.global_order, Article.id))
+            .label("rank"),
+        )
+        .join(Version, Version.id == Article.version_id)
+        .join(Media, Media.id == Version.payload["image_id"].as_string())
+        .where(*live, Media.thumbnail_id.is_not(None))
+        .subquery()
+    )
+    thumbnails = {
+        row.category_id: (
+            f"/api/mini/v1/listening/articles/{row.article_id}/thumbnail?version_id={row.version_id}"
+        )
+        for row in db.execute(select(ranked).where(ranked.c.rank == 1))
+    }
+    return [
+        {
+            "id": owner.id,
+            "name": owner.name,
+            "name_en": owner.name_en,
+            "sort_order": owner.sort_order,
+            "revision": owner.revision,
+            "total_articles": total,
+            "completed_articles": completed,
+            "restricted_articles": 0 if grant["status"] == "active" else restricted,
+            "thumbnail_url": thumbnails.get(owner.id),
+        }
+        for owner, total, completed, restricted in db.execute(
+            select(Category, counts.c.total, counts.c.completed, counts.c.restricted)
+            .join(counts, counts.c.category_id == Category.id)
+            .where(Category.deleted_at.is_(None))
+            .order_by(Category.sort_order, Category.id)
+        )
+    ]
