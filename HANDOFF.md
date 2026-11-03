@@ -1,3 +1,11 @@
+# 最新列表性能测试 API 发布（2026-11-04，北京时间）
+
+11-03 批次的测试 mini 三服务已于北京时间 **2026-11-04 00:05:34**（UTC 11-03 16:05:34）完成原生发布，固定源码 `00a4c1101b6413dd9a8d230f9cf82c8610464c45`，三容器 healthy。官方 CI 完整真实 MySQL/Redis **621通过/3跳过**，契约与镜像校验通过；公网 ready200、匿名听读列表401、mini域名admin auth路径404。测试库仍0024/contract3，无迁移，当前及上一版c690保留。
+
+本次仅更新 `mini-api/mini-worker/mini-dispatcher`；测试 admin 三服务、独立 listening-worker、生产及其余16个容器ID/启动时间等保持。真实学习身份的首屏与音频端到端真机延迟仍待验。接续先读[发布及无秘密证据](docs/verification/loading-performance-test-release-20261103.md)和[三轮CI记录](docs/verification/listening-performance-test-ci-20261103.json)，下方“未部署”等实施阶段文字属于历史状态。
+
+---
+
 # 最新版本保留与服务器清理（2026-11-03）
 
 按用户要求，测试/生产现用6个发布目标均只保留当前版及1个历史版，数据库/配置备份49份哈希不变，19容器未重启、14应用容器健康。发布CLI规则同步至`45ff9c0`，工作台已更新并改从release运行Actions。磁盘可用由约1GiB提升至12GiB，使用率69%。详见[清理记录](docs/verification/release-retention-20261103.md)。

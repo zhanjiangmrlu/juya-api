@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-03",
+  "repository": "zhanjiangmrlu/juya-api",
+  "branch": "test",
+  "target_commit": "00a4c1101b6413dd9a8d230f9cf82c8610464c45",
+  "credential_handling": "GitHub token remained on ECS; authenticated API redirect handled separately from unauthenticated signed-download requests; complete logs retained privately",
+  "attempts": [
+    {
+      "commit": "7c6c2e2e7324ef95792a022329b6e083f8ae7bfc",
+      "run_id": 41657221574,
+      "run_url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/41657221574",
+      "conclusion": "cancelled",
+      "quality_job_id": 125990640035,
+      "quality_annotation": "The job has exceeded the maximum execution time of 20m0s",
+      "pytest_started_at": "2026-11-03T14:49:18Z",
+      "pytest_completed_at": "2026-11-03T15:08:05Z",
+      "pytest_elapsed_seconds": 1127,
+      "last_reported_progress": {
+        "at": "2026-11-03T15:07:10Z",
+        "percent": 92,
+        "output": "success dots"
+      },
+      "assertion_failure_reported_before_cancellation": false,
+      "full_test_result_available": false,
+      "artifacts_available": false,
+      "resolution": "Increase only the quality job timeout from 20 to 30 minutes; keep the complete real MySQL/Redis suite"
+    },
+    {
+      "commit": "95496403cad219f05b10d33c2693d81602456ae2",
+      "run_id": 41661104046,
+      "run_url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/41661104046",
+      "conclusion": "failure",
+      "quality_job_id": 126004210801,
+      "pytest": {
+        "passed": 621,
+        "skipped": 3,
+        "failed": 0,
+        "elapsed_seconds": 1206.13
+      },
+      "failure_step": "uv run python scripts/export-openapi.py && git diff --exit-code -- openapi",
+      "failure_scope": "Four endpoint description strings in the generated admin/mini OpenAPI snapshots; no schema, path, parameter or response changes",
+      "artifacts_available": false,
+      "resolution": "Regenerate the two OpenAPI snapshots and move their idempotence check before pytest; keep the full real MySQL/Redis suite and 30-minute budget"
+    },
+    {
+      "commit": "00a4c1101b6413dd9a8d230f9cf82c8610464c45",
+      "run_id": 41665251214,
+      "run_url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/41665251214",
+      "conclusion": "success",
+      "quality_job_id": 126018704382,
+      "quality_conclusion": "success",
+      "openapi_export_and_idempotence": "success",
+      "ruff_and_mypy": "success",
+      "pytest": {
+        "passed": 621,
+        "skipped": 3,
+        "failed": 0,
+        "elapsed_seconds": 1140.18,
+        "services": [
+          "MySQL 8.4",
+          "Redis 7.4"
+        ]
+      },
+      "image_jobs": [
+        {
+          "job_id": 126031109642,
+          "name": "images (mini, juya-miniapp-api)",
+          "conclusion": "success"
+        },
+        {
+          "job_id": 126031109062,
+          "name": "images (admin, juya-admin-api)",
+          "conclusion": "success"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": 13247596150,
+          "name": "juya-miniapp-api-00a4c1101b6413dd9a8d230f9cf82c8610464c45",
+          "size_in_bytes": 249810272,
+          "expired": false,
+          "digest": "sha256:780b3261b7ac5618e890198234d4b7074eafa654b644a444563921112930310f",
+          "selected_for_test_deployment": true
+        },
+        {
+          "id": 13246144238,
+          "name": "juya-admin-api-00a4c1101b6413dd9a8d230f9cf82c8610464c45",
+          "size_in_bytes": 249802547,
+          "expired": false,
+          "digest": "sha256:ca2adf9a080d3f4e7787dd0460db7185d7c8169e09fb4ad76d514de3a59194f3",
+          "selected_for_test_deployment": false
+        }
+      ]
+    }
+  ],
+  "deployment_scope": [
+    "test mini-api",
+    "test mini-worker",
+    "test mini-dispatcher"
+  ],
+  "deployment_result": "Recorded separately after the native publisher completes",
+  "production_changes": false
+}

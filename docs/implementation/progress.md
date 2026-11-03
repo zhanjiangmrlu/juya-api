@@ -418,3 +418,10 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 最终完整临时SQLite测试为**581通过/43项MySQL或Redis环境依赖跳过**（158.09秒）；新增性能回归单独**10通过**；听读/下一篇/授权边界/媒体组合专项**72通过**（含新增文件早期7项，不能与完整结果相加）。`ruff check .`、287文件`ruff format --check .`、`mypy src`81源文件和`git diff --check`通过。两条分类SQL额外通过MySQL方言编译检查，未连接数据库。独立只读复查未发现确定P1/P2。
 
 本轮未提交、推送、部署、远程迁移或读取/写入真实业务库；生产现状保持。SQL次数证据来自隔离SQLite，并不代表真实MySQL执行计划、真实云存储耗时或微信设备端性能；这些验收仍待后续明确授权与实际环境验证。
+
+
+## 2026-11-04 列表性能测试 mini API 发布（11-03 批次）
+
+用户按计划执行授权后，本轮mini三服务于北京时间2026-11-04 00:05:34（UTC11-03 16:05:34）通过既有原生CLI发布固定源码`00a4c11`。先将quality时限20→30分钟，保留真MySQL/Redis完整门禁；再补齐父提交e6b393b遗留的四处OpenAPI description并前置契约检查，无路径/参数/响应/schema变化。最终官方CI契约、质量、双角色镜像全绿，真实MySQL/Redis**621通过/3跳过**（1140.18秒），仅下载并发布mini官方产物。
+
+原生bundle/镜像/source/环境/词典/健康闸门与失败恢复保持，公网ready200、匿名听读列表401、mini域名admin auth路径404，三容器healthy且重启0；原生finalize保留当前00a4c11及上一版c690。schema前后0024/contract3无迁移，测试其余四应用服务、生产及其他16容器完整元数据不变，无ACL或业务资料变更。真实学习身份首屏及音频端到端真机延迟仍待验。详细身份、实际时间、保留版本及无秘密前后快照见[发布记录](../verification/loading-performance-test-release-20261103.md)，三轮CI证据另见[CI回执](../verification/listening-performance-test-ci-20261103.json)。
