@@ -12,7 +12,8 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # Full MySQL/Redis checks take 15–17 minutes; allow room for added regressions.
+    timeout-minutes: 30
     services:
       mysql:
         image: mysql:8.4
