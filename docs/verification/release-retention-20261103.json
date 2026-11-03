@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-03",
+  "authorization": "测试与生产当前版本及一个历史版本；清理部署缓存和旧构建，保留数据库备份",
+  "cli_commit": "45ff9c0c8f0cf4d41cf9365b31b9d35d9e38f68f",
+  "before_free_bytes": 1060810752,
+  "after_free_bytes": 12768387072,
+  "reclaimed_bytes": 11707576320,
+  "disk_usage_percent": 69,
+  "modern": [
+    {
+      "environment": "production",
+      "project": "juya-admin-api",
+      "keep": [
+        "20261025T063411-aff9a1d62b2b-29cf39",
+        "20261102T152510-32f240144136-edf05d"
+      ],
+      "delete": []
+    },
+    {
+      "environment": "production",
+      "project": "juya-admin",
+      "keep": [
+        "20261025T064758-1e86b6ebafa8-b04445",
+        "20261102T145710-8e09bd1cdf42-c89df8"
+      ],
+      "delete": []
+    },
+    {
+      "environment": "production",
+      "project": "juya-miniapp-api",
+      "keep": [
+        "20261025T063827-aff9a1d62b2b-8d917a",
+        "20261102T152533-32f240144136-37f786"
+      ],
+      "delete": []
+    },
+    {
+      "environment": "test",
+      "project": "juya-admin-api",
+      "keep": [
+        "20261101T034235-f46f2d4ab3f1-e7e8bb",
+        "20261102T131628-c690358d12e8-135aaf"
+      ],
+      "delete": []
+    },
+    {
+      "environment": "test",
+      "project": "juya-admin",
+      "keep": [
+        "20261102T125257-336d5b2b1304-ba82e1",
+        "20261102T140824-31fb296823be-c294f0"
+      ],
+      "delete": []
+    },
+    {
+      "environment": "test",
+      "project": "juya-miniapp-api",
+      "keep": [
+        "20261101T034259-f46f2d4ab3f1-4196d5",
+        "20261102T131650-c690358d12e8-ce0148"
+      ],
+      "delete": []
+    }
+  ],
+  "backup_files_preserved": 49,
+  "backup_sha256_unchanged": true,
+  "container_identity_unchanged": 19,
+  "healthy_application_containers": 14,
+  "public_health": {
+    "production-admin": {
+      "status": 200,
+      "environment": "production"
+    },
+    "production-mini": {
+      "status": 200,
+      "environment": "production"
+    },
+    "test-admin": {
+      "status": 200,
+      "environment": "test"
+    },
+    "test-mini": {
+      "status": 200,
+      "environment": "test"
+    },
+    "production-web": {
+      "status": 200
+    },
+    "test-web": {
+      "status": 200
+    },
+    "cli": {
+      "status": 200
+    }
+  },
+  "cli": {
+    "commit": "45ff9c0c8f0cf4d41cf9365b31b9d35d9e38f68f",
+    "current": "/opt/juya-cli-web/releases/release-20261103-45ff9c0c8f0c",
+    "previous": "/opt/juya-cli-web/releases/release-20261102-355830325a29",
+    "workflowRef": "release",
+    "other_configuration_preserved": true,
+    "jobs_preserved": true,
+    "local_public_health": true
+  },
+  "cleanup": {
+    "obsolete_current_pipeline_releases": 10,
+    "obsolete_legacy_and_cli_directories": 15,
+    "verified_duplicate_archives": 20,
+    "additional_unreferenced_image_tags": [
+      "juya-admin-api:4ba194f6b7eb0aefd0569fcfe5ad7477cb45ed89",
+      "juya-miniapp-api:c699a25c8b0b043204767b94b8330b7618876081",
+      "juya-admin-api:ecs-2gb"
+    ]
+  },
+  "limitations": [
+    "未执行应用或数据库回滚；数据库仍为0024/contract3，历史应用回滚须继续通过兼容性检查",
+    "未修改用户数据、数据库卷或备份；不能确认归属的归档保守保留",
+    "小程序包和微信体验版未调整"
+  ]
+}
