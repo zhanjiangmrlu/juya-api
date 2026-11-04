@@ -39,7 +39,7 @@ class LearningAuthorization(Base):
         Date, comment="授权开始的北京时间自然日；空表示尚无授权"
     )
     expires_on: Mapped[date | None] = mapped_column(
-        Date, index=True, comment="授权到期的北京时间自然日，当天结束后失效；空表示无到期日"
+        Date, index=True, comment="授权到期的北京时间自然日，当天结束后失效；空表示无有效授权"
     )
     revoked_at: Mapped[datetime | None] = mapped_column(
         UTCDateTime, comment="授权撤销时间（UTC）；空表示未撤销"
