@@ -425,3 +425,8 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 用户按计划执行授权后，本轮mini三服务于北京时间2026-11-04 00:05:34（UTC11-03 16:05:34）通过既有原生CLI发布固定源码`00a4c11`。先将quality时限20→30分钟，保留真MySQL/Redis完整门禁；再补齐父提交e6b393b遗留的四处OpenAPI description并前置契约检查，无路径/参数/响应/schema变化。最终官方CI契约、质量、双角色镜像全绿，真实MySQL/Redis**621通过/3跳过**（1140.18秒），仅下载并发布mini官方产物。
 
 原生bundle/镜像/source/环境/词典/健康闸门与失败恢复保持，公网ready200、匿名听读列表401、mini域名admin auth路径404，三容器healthy且重启0；原生finalize保留当前00a4c11及上一版c690。schema前后0024/contract3无迁移，测试其余四应用服务、生产及其他16容器完整元数据不变，无ACL或业务资料变更。真实学习身份首屏及音频端到端真机延迟仍待验。详细身份、实际时间、保留版本及无秘密前后快照见[发布记录](../verification/loading-performance-test-release-20261103.md)，三轮CI证据另见[CI回执](../verification/listening-performance-test-ci-20261103.json)。
+
+
+## 2026-11-04 生产发布与微信1.0.0
+
+用户授权四仓test合并release并发布生产。双API及7个生产服务、管理后台已部署，CLI线上与release一致；数据库保持0024/contract3、无迁移，测试/基础设施12容器未变。微信生产包1.0.0/100已构建及官方CLI上传，体验版由用户切换。后台实际Chrome登录及用户/统计/反馈/听读页面真实API200、无JS错误；生产静态压缩资源、公网与文件哈希通过。自动化结果、CI不可变镜像、保留版本、完整证据及真机未验边界见[发布记录](../verification/production-release-20261104.md)和[回执](../verification/production-release-20261104.json)。

@@ -1,0 +1,960 @@
+{
+  "completed_at_beijing": "2026-11-04T08:52:36.391029+08:00",
+  "repository_heads_before_record": {
+    "juya-api": "f8ea65625320387adea63c87a8b35201cd2129e4",
+    "juya-admin": "351c862ac0dd94acd5ebc5e43e24f66492db2f15",
+    "juya-miniapp": "90aca3a1ac786f2ff7f15edaef0915fe076b78d5",
+    "juya-cli": "45ff9c0c8f0cf4d41cf9365b31b9d35d9e38f68f"
+  },
+  "deployment": {
+    "phase": "production-ready",
+    "status": "complete",
+    "time": 1793753556.3910294,
+    "completed": [
+      {
+        "project": "juya-admin-api",
+        "release_id": "20261104T004712-00a4c1101b64-c327b3",
+        "commit": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "project": "juya-miniapp-api",
+        "release_id": "20261104T004732-00a4c1101b64-1604fc",
+        "commit": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "project": "juya-admin",
+        "release_id": "20261104T004454-351c862ac0dd-c7a63f",
+        "commit": "351c862ac0dd94acd5ebc5e43e24f66492db2f15",
+        "public_hashes_match": true
+      }
+    ],
+    "services": [
+      {
+        "name": "/juya-rebuild-production-admin-admin-api-1",
+        "id": "49b434de66e85ab506ed546c8aabf7620f291cf7fd65d253e77ede09582cf9db",
+        "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+        "started_at": "2026-11-04T00:49:28.683304158Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-api",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "name": "/juya-rebuild-production-admin-admin-dispatcher-1",
+        "id": "a96e8e6b7b038496f127d3340bc2c4753a881f3083a8abd8c8a0a40867131801",
+        "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+        "started_at": "2026-11-04T00:49:46.028816255Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-dispatcher",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "name": "/juya-rebuild-production-admin-admin-worker-1",
+        "id": "723f7ddae7704bea494cb0e83de583eb9439f8cb4975385e8ff24f0c2a9f6971",
+        "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+        "started_at": "2026-11-04T00:49:45.754489789Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-worker",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "name": "/juya-rebuild-production-listening-listening-worker-1",
+        "id": "304cb1eb0521ca10808b46274bd139872e1483ceb69571f57adb0400113721b0",
+        "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+        "started_at": "2026-11-04T00:52:23.20066405Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-listening",
+        "service": "listening-worker",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "name": "/juya-rebuild-production-mini-mini-api-1",
+        "id": "2cbe69da772841c510d2d13a30f0a68f9b576215ddd1ec4a6d85534426c9eb11",
+        "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+        "started_at": "2026-11-04T00:51:15.290634658Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-api",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "name": "/juya-rebuild-production-mini-mini-dispatcher-1",
+        "id": "c4e13b4d5706b5ca83742dd218dc4ca1560e4198ae1cf8524d7804ba36bc1595",
+        "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+        "started_at": "2026-11-04T00:51:32.30619739Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-dispatcher",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      },
+      {
+        "name": "/juya-rebuild-production-mini-mini-worker-1",
+        "id": "f655abd1565d4bbc04e1a5efb67eebcb886b3e7eb9896b7436c4f223718c436f",
+        "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+        "started_at": "2026-11-04T00:51:32.01784592Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-worker",
+        "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+      }
+    ],
+    "schema": "0024",
+    "contract": 3,
+    "migration": false,
+    "test_and_infrastructure_unchanged": true,
+    "cli_already_current": true
+  },
+  "public_acceptance": {
+    "readiness": {
+      "admin": {
+        "status": 200,
+        "environment": "production"
+      },
+      "mini": {
+        "status": 200,
+        "environment": "production"
+      },
+      "test-admin": {
+        "status": 200,
+        "environment": "test"
+      },
+      "test-mini": {
+        "status": 200,
+        "environment": "test"
+      }
+    },
+    "authenticated_api": {
+      "/api/admin/v1/auth/session": 200,
+      "/api/admin/v1/listening/categories": 200,
+      "/api/admin/v1/listening/articles": 200,
+      "/api/admin/v1/users": 200,
+      "/api/admin/v1/statistics": 200,
+      "/api/admin/v1/feedback": 200
+    },
+    "role_isolation": {
+      "mini_rejects_admin_login": 404,
+      "admin_rejects_mini_login": 404
+    },
+    "unauthenticated_session_rejected": 401,
+    "administrator_login": {
+      "status": 200,
+      "secure_http_only_cookie": true
+    },
+    "production_admin_cors": {
+      "status": 200,
+      "credentials_allowed": true
+    },
+    "https://admin.juyayingyu.com": {
+      "status": 200
+    },
+    "https://cli.juyayingyu.com": {
+      "status": 200
+    },
+    "verification_session_closed": true
+  },
+  "browser_smoke": {
+    "login": true,
+    "pages": [
+      {
+        "route": "/users",
+        "heading_visible": true,
+        "api_status": 200
+      },
+      {
+        "route": "/statistics",
+        "heading_visible": true,
+        "api_status": 200
+      },
+      {
+        "route": "/feedback",
+        "heading_visible": true,
+        "api_status": 200
+      },
+      {
+        "route": "/listening",
+        "heading_visible": true,
+        "api_status": 200
+      }
+    ],
+    "javascript_errors": 0,
+    "status": "passed"
+  },
+  "miniapp": {
+    "status": "complete",
+    "version": "1.0.0",
+    "environment": "production",
+    "commit": "90aca3a1ac786f2ff7f15edaef0915fe076b78d5",
+    "api_base": "https://api.juyayingyu.com",
+    "asset_base": "https://api.juyayingyu.com/miniapp/static",
+    "manifest_version_name": "1.0.0",
+    "manifest_version_code": "100",
+    "official_cli_upload_complete": true,
+    "official_size": {
+      "total": 1760551,
+      "packages": [
+        {
+          "name": "TOTAL",
+          "size": 1760551
+        },
+        {
+          "name": "main",
+          "size": 1465869
+        },
+        {
+          "name": "/sub-packages/account/",
+          "size": 54389
+        },
+        {
+          "name": "/sub-packages/feedback/",
+          "size": 46698
+        },
+        {
+          "name": "/sub-packages/listening/",
+          "size": 47104
+        },
+        {
+          "name": "/sub-packages/records/",
+          "size": 24542
+        },
+        {
+          "name": "/sub-packages/scenes/",
+          "size": 121949
+        }
+      ]
+    },
+    "package_sha256": "8ae8f2c034067a1b4bd2387bb8e18feccf85cf7d9ad6a5cde3d0bbfeebe10003",
+    "experience_version_changed": false,
+    "wechat_review_submitted": false,
+    "production_wechat_published": false
+  },
+  "static_resources": {
+    "status": "complete",
+    "files": [
+      {
+        "file": "listening-vase-5b20483e3922.webp",
+        "sha256": "5b20483e39229a7406c09c9bce2f78a51656de4b7b4eefe7790ad7e4f351281c",
+        "bytes": 53292,
+        "status": 200,
+        "mime": "image/webp",
+        "immutable_cache": true
+      },
+      {
+        "file": "paper-texture-ee39e121f9c3.jpg",
+        "sha256": "ee39e121f9c36349676f4164affdc7456e380c6beb5715046a3237aae8e8d6ec",
+        "bytes": 50966,
+        "status": 200,
+        "mime": "image/jpeg",
+        "immutable_cache": true
+      },
+      {
+        "file": "profile-basket-e91cc518433d.webp",
+        "sha256": "e91cc518433d004e9939892059d4c15555b2b81f1d9dfc4e3795bfc812e040c9",
+        "bytes": 69636,
+        "status": 200,
+        "mime": "image/webp",
+        "immutable_cache": true
+      },
+      {
+        "file": "reading-window-71ae33bab6f5.webp",
+        "sha256": "71ae33bab6f53143130fcba489092dfc81fc325f1b2825cd099178eff7bf22ce",
+        "bytes": 44184,
+        "status": 200,
+        "mime": "image/webp",
+        "immutable_cache": true
+      },
+      {
+        "file": "records-journal-78658fff8368.webp",
+        "sha256": "78658fff8368a4f16736434b17bcb4e58b810111923e09ce8f69c7634ef1d1e7",
+        "bytes": 54758,
+        "status": 200,
+        "mime": "image/webp",
+        "immutable_cache": true
+      },
+      {
+        "file": "scene-window-1816629a6ee2.webp",
+        "sha256": "1816629a6ee24fca73474c85283be35a5df9d71c52132fb638ec8162e2c63dba",
+        "bytes": 55798,
+        "status": 200,
+        "mime": "image/webp",
+        "immutable_cache": true
+      }
+    ],
+    "original_resources_preserved": true,
+    "test_nginx_unchanged": true
+  },
+  "retention": {
+    "juya-admin-api": {
+      "retained": [
+        "20261102T152510-32f240144136-edf05d",
+        "20261104T004712-00a4c1101b64-c327b3"
+      ],
+      "removed": [
+        "20261025T063411-aff9a1d62b2b-29cf39"
+      ]
+    },
+    "juya-miniapp-api": {
+      "retained": [
+        "20261102T152533-32f240144136-37f786",
+        "20261104T004732-00a4c1101b64-1604fc"
+      ],
+      "removed": [
+        "20261025T063827-aff9a1d62b2b-8d917a"
+      ]
+    },
+    "juya-admin": {
+      "retained": [
+        "20261102T145710-8e09bd1cdf42-c89df8",
+        "20261104T004454-351c862ac0dd-c7a63f"
+      ],
+      "removed": [
+        "20261025T064758-1e86b6ebafa8-b04445"
+      ]
+    }
+  },
+  "schema_before": {
+    "revision": [
+      "0024"
+    ],
+    "contract": 3
+  },
+  "schema_after": {
+    "revision": [
+      "0024"
+    ],
+    "contract": 3
+  },
+  "protected_container_count": 12,
+  "protected_containers_unchanged": true,
+  "before_containers": [
+    {
+      "name": "/juya-rebuild-infra-mysql-1",
+      "id": "e14bba01092bf201e439cf1dca3589a257f513317de9feb0a459f6ce24668ded",
+      "image": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "started_at": "2026-10-17T09:19:47.351876659Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-infra",
+      "service": "mysql",
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-infra-redis-production-1",
+      "id": "7c43f23bf66e58d4ae88ba32c19884cd8ec8bf844ce98345032c3a6361ba8e39",
+      "image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "started_at": "2026-10-17T09:19:47.059895136Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-infra",
+      "service": "redis-production",
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-infra-redis-test-1",
+      "id": "cd7c067ddef59304619fd627f84934dc63e4a772ceeac7602c4cad115a33408e",
+      "image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "started_at": "2026-10-17T09:19:46.660800632Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-infra",
+      "service": "redis-test",
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-mysql-verify",
+      "id": "3a1b26ac82384d9dbf90c3b7b5271098954785938e48238f0ea0e375de01d058",
+      "image": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "started_at": "2026-10-17T04:18:07.806800241Z",
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "oom": false,
+      "project": "",
+      "service": null,
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-api-1",
+      "id": "b6db46a0b24864b39756c4df9dde972b0e622d471f9f321aff6259b0180e1d01",
+      "image": "sha256:d6e8ba275158054f2f9787f8955e0a06eaa78d664e899d87ae99f3a7a2290461",
+      "started_at": "2026-11-03T03:05:40.319629667Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 1,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-api",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-dispatcher-1",
+      "id": "1d6d4c27823a3e5913d0831520f0a49d54a17044399fc394c8d024e5a057a5ed",
+      "image": "sha256:d6e8ba275158054f2f9787f8955e0a06eaa78d664e899d87ae99f3a7a2290461",
+      "started_at": "2026-11-02T16:02:20.88876377Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-dispatcher",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-worker-1",
+      "id": "8acc247cef5aab7e093e81226a72da4bb5f4cbebcdc616cd3adea1c4bdcf55bf",
+      "image": "sha256:d6e8ba275158054f2f9787f8955e0a06eaa78d664e899d87ae99f3a7a2290461",
+      "started_at": "2026-11-02T16:02:21.295773032Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-worker",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-production-listening-listening-worker-1",
+      "id": "10633a168686264a2de4e5996efe5f594759b4eca37b6019bb22a5105004781c",
+      "image": "sha256:d6e8ba275158054f2f9787f8955e0a06eaa78d664e899d87ae99f3a7a2290461",
+      "started_at": "2026-11-02T16:03:56.585287119Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-listening",
+      "service": "listening-worker",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-api-1",
+      "id": "00713957535ca1856e4e5ff9ea2b4519ccb55e2e1c4080fdcb47d3491571af17",
+      "image": "sha256:efa0df954bfb83990791365617893809da3a39d125db9c621457803d0865b744",
+      "started_at": "2026-11-02T16:03:04.265884351Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-api",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-dispatcher-1",
+      "id": "e0d28edfd54cfd75c6a80f352403c3fe46e864b3d1854d7c4a6526437701435c",
+      "image": "sha256:efa0df954bfb83990791365617893809da3a39d125db9c621457803d0865b744",
+      "started_at": "2026-11-02T16:03:20.718443992Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-dispatcher",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-worker-1",
+      "id": "c195913ad03b065406ffc21da482e915d04ab87ab1cc19b7d9ba6b16f3a4811d",
+      "image": "sha256:efa0df954bfb83990791365617893809da3a39d125db9c621457803d0865b744",
+      "started_at": "2026-11-02T16:03:21.170938496Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-worker",
+      "revision": "32f240144136f09bb251760cadefca40335f3aaf"
+    },
+    {
+      "name": "/juya-rebuild-redis-verify",
+      "id": "dcf8010e84d1dd807413a50042742dd50b856ace335f8cf29335218078bb3307",
+      "image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "started_at": "2026-10-17T07:14:22.451493712Z",
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "oom": false,
+      "project": "",
+      "service": null,
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "id": "98f79c6f52c62f41355d3d21bbf94b5061fbca68817c9844a0670cd20f00319f",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:21:12.41881641Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "id": "f05c70b574222dcafd0862eb753c28a6c90b6ae30985333dac09e558ee9ee955",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:21:29.816843033Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "id": "65a575ecb9b457389dceb6eee744d921d803aed7bc5cbecd21d6c3ed05c5ef12",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:21:29.561825174Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "id": "4f40735677cc741163ca95960fb059caef46bcbafb8d88bc9d270d9add670f94",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:24:23.807981477Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "id": "35afa26d1a7a3d78e1237e42be3456ed15246d29eebdbaa1776d23962862618e",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-03T16:04:43.666783047Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "id": "7a5fa3322ec837dcf7cb421f793a74aa95607b149cc9afdcb11412c22220658c",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-03T16:05:00.608425088Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "id": "47c0c14cdfd5e8872a501c31373a2348ae5a3e84a263a98a3f96d2e330cb1b00",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-03T16:05:00.300291126Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    }
+  ],
+  "after_containers": [
+    {
+      "name": "/juya-rebuild-infra-mysql-1",
+      "id": "e14bba01092bf201e439cf1dca3589a257f513317de9feb0a459f6ce24668ded",
+      "image": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "started_at": "2026-10-17T09:19:47.351876659Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-infra",
+      "service": "mysql",
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-infra-redis-production-1",
+      "id": "7c43f23bf66e58d4ae88ba32c19884cd8ec8bf844ce98345032c3a6361ba8e39",
+      "image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "started_at": "2026-10-17T09:19:47.059895136Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-infra",
+      "service": "redis-production",
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-infra-redis-test-1",
+      "id": "cd7c067ddef59304619fd627f84934dc63e4a772ceeac7602c4cad115a33408e",
+      "image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "started_at": "2026-10-17T09:19:46.660800632Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-infra",
+      "service": "redis-test",
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-mysql-verify",
+      "id": "3a1b26ac82384d9dbf90c3b7b5271098954785938e48238f0ea0e375de01d058",
+      "image": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "started_at": "2026-10-17T04:18:07.806800241Z",
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "oom": false,
+      "project": "",
+      "service": null,
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-api-1",
+      "id": "49b434de66e85ab506ed546c8aabf7620f291cf7fd65d253e77ede09582cf9db",
+      "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+      "started_at": "2026-11-04T00:49:28.683304158Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-api",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-dispatcher-1",
+      "id": "a96e8e6b7b038496f127d3340bc2c4753a881f3083a8abd8c8a0a40867131801",
+      "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+      "started_at": "2026-11-04T00:49:46.028816255Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-dispatcher",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-worker-1",
+      "id": "723f7ddae7704bea494cb0e83de583eb9439f8cb4975385e8ff24f0c2a9f6971",
+      "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+      "started_at": "2026-11-04T00:49:45.754489789Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-worker",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-production-listening-listening-worker-1",
+      "id": "304cb1eb0521ca10808b46274bd139872e1483ceb69571f57adb0400113721b0",
+      "image": "sha256:359ea077725f0f5ae74a051462e9fa2cb7976656a3d318d867a6b0ba23762303",
+      "started_at": "2026-11-04T00:52:23.20066405Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-listening",
+      "service": "listening-worker",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-api-1",
+      "id": "2cbe69da772841c510d2d13a30f0a68f9b576215ddd1ec4a6d85534426c9eb11",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-04T00:51:15.290634658Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-api",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-dispatcher-1",
+      "id": "c4e13b4d5706b5ca83742dd218dc4ca1560e4198ae1cf8524d7804ba36bc1595",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-04T00:51:32.30619739Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-dispatcher",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-worker-1",
+      "id": "f655abd1565d4bbc04e1a5efb67eebcb886b3e7eb9896b7436c4f223718c436f",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-04T00:51:32.01784592Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-worker",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-redis-verify",
+      "id": "dcf8010e84d1dd807413a50042742dd50b856ace335f8cf29335218078bb3307",
+      "image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "started_at": "2026-10-17T07:14:22.451493712Z",
+      "status": "running",
+      "health": null,
+      "restarts": 0,
+      "oom": false,
+      "project": "",
+      "service": null,
+      "revision": null
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "id": "98f79c6f52c62f41355d3d21bbf94b5061fbca68817c9844a0670cd20f00319f",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:21:12.41881641Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "id": "f05c70b574222dcafd0862eb753c28a6c90b6ae30985333dac09e558ee9ee955",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:21:29.816843033Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "id": "65a575ecb9b457389dceb6eee744d921d803aed7bc5cbecd21d6c3ed05c5ef12",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:21:29.561825174Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "id": "4f40735677cc741163ca95960fb059caef46bcbafb8d88bc9d270d9add670f94",
+      "image": "sha256:8a405e3e003d97fcd49f6aeb73d2bffd93b99a9fe650497381049bbab7e1ccb4",
+      "started_at": "2026-11-02T13:24:23.807981477Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "revision": "c690358d12e876db24683980416f6363bb79504a"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "id": "35afa26d1a7a3d78e1237e42be3456ed15246d29eebdbaa1776d23962862618e",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-03T16:04:43.666783047Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "id": "7a5fa3322ec837dcf7cb421f793a74aa95607b149cc9afdcb11412c22220658c",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-03T16:05:00.608425088Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "id": "47c0c14cdfd5e8872a501c31373a2348ae5a3e84a263a98a3f96d2e330cb1b00",
+      "image": "sha256:f1e9be944b81d113ada2fa222244759da11509daecb3586cdfa2e4b50be0c535",
+      "started_at": "2026-11-03T16:05:00.300291126Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "revision": "00a4c1101b6413dd9a8d230f9cf82c8610464c45"
+    }
+  ],
+  "local_checks": {
+    "juya-api": {
+      "status": "passed",
+      "results": [
+        {
+          "command": [
+            ".venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "."
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            ".venv/bin/python",
+            "-m",
+            "ruff",
+            "format",
+            "--check",
+            "."
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            ".venv/bin/python",
+            "-m",
+            "mypy",
+            "src"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            ".venv/bin/python",
+            "-m",
+            "pytest",
+            "-q"
+          ],
+          "exit_code": 0
+        }
+      ]
+    },
+    "juya-admin": {
+      "status": "passed",
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "check"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pnpm",
+            "test"
+          ],
+          "exit_code": 0
+        }
+      ]
+    },
+    "juya-miniapp": {
+      "status": "passed",
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "check"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pnpm",
+            "test",
+            "--maxWorkers=2"
+          ],
+          "exit_code": 0
+        }
+      ]
+    },
+    "juya-cli": {
+      "status": "passed",
+      "results": [
+        {
+          "command": [
+            "pnpm",
+            "test"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pnpm",
+            "check:engine"
+          ],
+          "exit_code": 0
+        },
+        {
+          "command": [
+            "pnpm",
+            "test:engine"
+          ],
+          "exit_code": 0
+        }
+      ]
+    }
+  }
+}
