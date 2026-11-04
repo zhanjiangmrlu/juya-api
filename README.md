@@ -27,6 +27,10 @@ uv run pytest -q
 
 文档的接口分组、操作说明、请求参数、请求/响应字段和状态码说明统一使用中文。中文元数据维护于 `src/juya_api/openapi_*docs.py`，由 `openapi_chinese.py` 同时应用到在线文档与导出契约；新增字段或接口时同步补充说明。字段名、接口路径、operationId、枚举值及验证约束保持程序调用原值，第三方 Swagger UI 的内置按钮保留其原有文案。
 
+Swagger 将公共状态码与错误返回格式集中在顶部，每个操作只展示成功响应。`/openapi.json` 继续提供完整错误契约，实际错误处理不变。页面每次加载均读取实时契约，不维护静态 JSON 副本；本地 FastAPI 和测试 Nginx 使用同一个 `swagger_docs.py` 页面生成器。
+
+测试站点文档页面可独立发布：使用 `uv run python deploy/export-swagger-docs.py --output <暂存目录>` 生成 `admin.html`、`mini.html`，上传到 `/opt/juya/rebuild/test/api-docs/releases/<版本>/` 并原子切换 `current` 符号链接。两个测试域名的 `/docs` 精确映射到各自 HTML，`/openapi.json` 和 `/docs/oauth2-redirect` 仍由 API 提供。首次启用先备份测试 Nginx 配置并暂存完整页面，再执行 `nginx -t` 和平滑加载；文档展示更新无需替换业务容器。生产配置不开放这些入口。
+
 后台管理员登录会话默认固定有效30天，服务端会话和浏览器Cookie使用同一到期时长，不随访问自动续期。`JUYA_ADMIN_SESSION_HOURS`以小时为单位，默认720；调整后重新登录才会获得新的有效期，既有会话保留签发时的到期时间。主动退出立即撤销会话。
 
 固定用户编号要求迁移至0019：已有用户按注册时间、UUID升序补号，新注册事务分配后续编号，后台显示Juya001且保留UUID关联。新版本双API及Worker就绪检查均要求0019；该迁移要求停止旧注册写进程后执行，具体顺序见[用户编号迁移说明](docs/operations/user-number-migration.md)。

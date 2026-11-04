@@ -19,6 +19,7 @@ from .errors import install_errors
 from .openapi_chinese import install_chinese_openapi
 from .response_contracts import ErrorResponse
 from .schema import require_compatible_schema
+from .swagger_docs import install_swagger_docs
 
 
 def application(role: str, settings: Settings, sessions=None, clock=None) -> FastAPI:
@@ -32,9 +33,10 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
             for code in [400, 401, 403, 404, 409, 410, 422, 429, 500, 503]
         },
         version="1.5.0",
-        docs_url="/docs" if settings.environment != "production" else None,
+        docs_url=None,
     )
     install_chinese_openapi(app, role)
+    install_swagger_docs(app, settings.environment)
     if sessions is None:
         _, sessions = make_database(settings)
     app.state.settings, app.state.sessions = settings, sessions
