@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pytest
 from alembic import command
+from alembic.script import ScriptDirectory
 from sqlalchemy import MetaData, Table, create_engine, inspect, select, text
 
 from tests.test_import_recovery_migrations import migration_config
@@ -104,7 +105,9 @@ def test_known_sets_and_category_order_are_frozen_without_rewriting_versions(mig
             )
     command.upgrade(config, "head")
     with engine.connect() as db:
-        assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0024"
+        assert db.scalar(text("SELECT version_num FROM alembic_version")) == (
+            ScriptDirectory.from_config(config).get_current_head()
+        )
     command.upgrade(config, "head")
     with engine.connect() as db:
         assert db.execute(text("SELECT id,is_free,free_revision FROM cards ORDER BY id")).all() == [

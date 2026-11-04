@@ -5,6 +5,7 @@ from io import StringIO
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import MetaData, create_engine, inspect, select, text
 from sqlalchemy.orm import Session
 
@@ -101,7 +102,9 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
         assert columns["updated_at"]["nullable"] is True
         assert columns["updated_at"]["default"] is None
         with engine.begin() as db:
-            assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0024"
+            assert db.scalar(text("SELECT version_num FROM alembic_version")) == (
+                ScriptDirectory.from_config(config).get_current_head()
+            )
             assert db.scalar(text("SELECT count(*) FROM import_batches")) == 0
             db.execute(
                 text(
