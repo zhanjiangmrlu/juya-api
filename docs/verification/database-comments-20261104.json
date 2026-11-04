@@ -1,0 +1,155 @@
+{
+  "source_commit": "a9e271b3eb0db7480a23a6d57afd80ac17a30e0e",
+  "ci": {
+    "run_id": 41848737797,
+    "conclusion": "success",
+    "passed": 626,
+    "skipped": 3
+  },
+  "local_sqlite": {
+    "environment": "local",
+    "database": "integration06/browser.db",
+    "dialect": "sqlite",
+    "revision": "0025",
+    "business_row_counts_preserved": true,
+    "physical_comments_supported": false,
+    "backup_sha256": "135cb8785f8e917e2a636d8544c62599caa1671f90681bde17c059da5ae7cdd4",
+    "legacy_ui_database": "0023 retained; outside comment-only migration baseline"
+  },
+  "environments": {
+    "test": {
+      "receipt": {
+        "status": "complete",
+        "revision": "0025",
+        "contract": 3,
+        "tables": 56,
+        "columns": 390,
+        "exact_comments_match": true,
+        "noncomment_metadata_unchanged": true,
+        "all_containers_unchanged": true,
+        "application_pointers_unchanged": true,
+        "database_target_verified": true,
+        "backup": {
+          "bytes": 10549027,
+          "sha256": "c003abda9f00657e0b92cb5410b5b8473844cf6a7f8f40b980b665f26d15cc64",
+          "consistent_dump": true,
+          "dump_tables": 56,
+          "complete_trailer": true
+        },
+        "native": {
+          "project": "juya-admin-api",
+          "environment": "test",
+          "action": "migrate",
+          "status": "migrated",
+          "release_id": "20261104T151323-a9e271b3eb0d-8b57cc",
+          "database_downgraded": false
+        },
+        "commit": "a9e271b3eb0db7480a23a6d57afd80ac17a30e0e",
+        "run_id": 41848737797,
+        "image_id": "sha256:75f236fa472f00a5d4f9bb851c0497fb0a0b474fbb3235f074fdd5b36451bd7d",
+        "artifact_digest": "sha256:cc1b67f5ee04875b080d02b9860f01167117b150487124968947da60a260b996"
+      },
+      "existing_containers_preserved": 19,
+      "backup_hash_reverified": true,
+      "users_comment_lines": [
+        "`id` varchar(36) NOT NULL COMMENT '用户内部标识（UUID）',",
+        "`app_id` varchar(64) NOT NULL COMMENT '所属微信小程序AppID',",
+        "`openid_digest` varchar(64) NOT NULL COMMENT '微信OpenID的带密钥HMAC-SHA256查找摘要，不保存OpenID原文',",
+        "`nickname` varchar(80) NOT NULL COMMENT '用户昵称',",
+        "`avatar_id` varchar(36) DEFAULT NULL COMMENT '头像媒体标识；空表示使用默认头像',",
+        "`phone_cipher` text COMMENT '手机号Fernet密文；空表示未填写',",
+        "`phone_digest` varchar(64) DEFAULT NULL COMMENT '手机号带密钥HMAC-SHA256查找摘要；空表示未填写',",
+        "`phone_source` varchar(32) DEFAULT NULL COMMENT '手机号来源：user_entered_unverified表示用户自行填写且未经验证',",
+        "`wechat_cipher` text COMMENT '用户填写的微信号Fernet密文；空表示未填写',",
+        "`wechat_digest` varchar(64) DEFAULT NULL COMMENT '微信号带密钥HMAC-SHA256查找摘要；空表示未填写',",
+        "`wechat_source` varchar(32) DEFAULT NULL COMMENT '微信号来源：user_entered_unverified表示用户自行填写且未经验证',",
+        "`profile_version` int NOT NULL COMMENT '昵称和头像资料的并发修改版本号',",
+        "`contact_version` int NOT NULL COMMENT '联系方式的并发修改版本号',",
+        "`registered_at` datetime(6) NOT NULL COMMENT '注册时间（UTC，微秒精度）',",
+        "`last_login_at` datetime(6) NOT NULL COMMENT '最近登录时间（UTC，微秒精度）',",
+        "`profile_updated_at` datetime(6) DEFAULT NULL COMMENT '最近修改昵称或头像时间（UTC）；空表示尚未修改',",
+        "`contact_updated_at` datetime(6) DEFAULT NULL COMMENT '最近修改联系方式时间（UTC）；空表示尚未修改',",
+        "`user_number` int NOT NULL COMMENT '用户展示编号的持久正整数序号，用于生成Juya编号',",
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='小程序用户及加密联系方式'"
+      ]
+    },
+    "production": {
+      "receipt": {
+        "status": "complete",
+        "revision": "0025",
+        "contract": 3,
+        "tables": 56,
+        "columns": 390,
+        "exact_comments_match": true,
+        "noncomment_metadata_unchanged": true,
+        "all_containers_unchanged": true,
+        "application_pointers_unchanged": true,
+        "database_target_verified": true,
+        "backup": {
+          "bytes": 27174384,
+          "sha256": "349cfcce249c7cb9a5c3252bc40e597c62c821a33640e529742842b7a12d0dbe",
+          "consistent_dump": true,
+          "dump_tables": 56,
+          "complete_trailer": true
+        },
+        "native": {
+          "project": "juya-admin-api",
+          "environment": "production",
+          "action": "migrate",
+          "status": "migrated",
+          "release_id": "20261104T151337-a9e271b3eb0d-252d0f",
+          "database_downgraded": false
+        },
+        "commit": "a9e271b3eb0db7480a23a6d57afd80ac17a30e0e",
+        "run_id": 41848737797,
+        "image_id": "sha256:75f236fa472f00a5d4f9bb851c0497fb0a0b474fbb3235f074fdd5b36451bd7d",
+        "artifact_digest": "sha256:cc1b67f5ee04875b080d02b9860f01167117b150487124968947da60a260b996"
+      },
+      "existing_containers_preserved": 19,
+      "backup_hash_reverified": true,
+      "users_comment_lines": [
+        "`id` varchar(36) NOT NULL COMMENT '用户内部标识（UUID）',",
+        "`app_id` varchar(64) NOT NULL COMMENT '所属微信小程序AppID',",
+        "`openid_digest` varchar(64) NOT NULL COMMENT '微信OpenID的带密钥HMAC-SHA256查找摘要，不保存OpenID原文',",
+        "`nickname` varchar(80) NOT NULL COMMENT '用户昵称',",
+        "`avatar_id` varchar(36) DEFAULT NULL COMMENT '头像媒体标识；空表示使用默认头像',",
+        "`phone_cipher` text COMMENT '手机号Fernet密文；空表示未填写',",
+        "`phone_digest` varchar(64) DEFAULT NULL COMMENT '手机号带密钥HMAC-SHA256查找摘要；空表示未填写',",
+        "`phone_source` varchar(32) DEFAULT NULL COMMENT '手机号来源：user_entered_unverified表示用户自行填写且未经验证',",
+        "`wechat_cipher` text COMMENT '用户填写的微信号Fernet密文；空表示未填写',",
+        "`wechat_digest` varchar(64) DEFAULT NULL COMMENT '微信号带密钥HMAC-SHA256查找摘要；空表示未填写',",
+        "`wechat_source` varchar(32) DEFAULT NULL COMMENT '微信号来源：user_entered_unverified表示用户自行填写且未经验证',",
+        "`profile_version` int NOT NULL COMMENT '昵称和头像资料的并发修改版本号',",
+        "`contact_version` int NOT NULL COMMENT '联系方式的并发修改版本号',",
+        "`registered_at` datetime(6) NOT NULL COMMENT '注册时间（UTC，微秒精度）',",
+        "`last_login_at` datetime(6) NOT NULL COMMENT '最近登录时间（UTC，微秒精度）',",
+        "`profile_updated_at` datetime(6) DEFAULT NULL COMMENT '最近修改昵称或头像时间（UTC）；空表示尚未修改',",
+        "`contact_updated_at` datetime(6) DEFAULT NULL COMMENT '最近修改联系方式时间（UTC）；空表示尚未修改',",
+        "`user_number` int NOT NULL COMMENT '用户展示编号的持久正整数序号，用于生成Juya编号',",
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='小程序用户及加密联系方式'"
+      ]
+    }
+  },
+  "public_health": {
+    "test_admin": {
+      "http_status": 200,
+      "environment": "test",
+      "status": "ready"
+    },
+    "test_mini": {
+      "http_status": 200,
+      "environment": "test",
+      "status": "ready"
+    },
+    "production_admin": {
+      "http_status": 200,
+      "environment": "production",
+      "status": "ready"
+    },
+    "production_mini": {
+      "http_status": 200,
+      "environment": "production",
+      "status": "ready"
+    }
+  }
+}
