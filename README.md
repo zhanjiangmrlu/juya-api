@@ -23,6 +23,10 @@ uv run pytest -q
 
 独立接口契约位于 `openapi/admin.json`、`openapi/mini.json`，通过 `uv run python scripts/export-openapi.py` 生成。两个前端各自生成TypeScript类型。
 
+测试环境 Swagger：[管理 API](https://test-admin-api.juyayingyu.com/docs)、[小程序 API](https://test-api.juyayingyu.com/docs)。对应域名的 `/openapi.json` 提供实时接口契约；文档位于根路径 `/docs`，无需添加业务接口前缀。Nginx 仅在测试环境开放文档、OpenAPI 及 Swagger OAuth 回调的精确路径，业务接口仍使用原有鉴权，生产配置不开放这些路径。
+
+文档的接口分组、操作说明、请求参数、请求/响应字段和状态码说明统一使用中文。中文元数据维护于 `src/juya_api/openapi_*docs.py`，由 `openapi_chinese.py` 同时应用到在线文档与导出契约；新增字段或接口时同步补充说明。字段名、接口路径、operationId、枚举值及验证约束保持程序调用原值，第三方 Swagger UI 的内置按钮保留其原有文案。
+
 后台管理员登录会话默认固定有效30天，服务端会话和浏览器Cookie使用同一到期时长，不随访问自动续期。`JUYA_ADMIN_SESSION_HOURS`以小时为单位，默认720；调整后重新登录才会获得新的有效期，既有会话保留签发时的到期时间。主动退出立即撤销会话。
 
 固定用户编号要求迁移至0019：已有用户按注册时间、UUID升序补号，新注册事务分配后续编号，后台显示Juya001且保留UUID关联。新版本双API及Worker就绪检查均要求0019；该迁移要求停止旧注册写进程后执行，具体顺序见[用户编号迁移说明](docs/operations/user-number-migration.md)。

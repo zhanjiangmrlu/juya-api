@@ -16,6 +16,7 @@ from . import (
 from .config import Settings
 from .database import make_database, naive_utc
 from .errors import install_errors
+from .openapi_chinese import install_chinese_openapi
 from .response_contracts import ErrorResponse
 from .schema import require_compatible_schema
 
@@ -25,7 +26,7 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
     if settings.image_role and settings.image_role != role:
         raise ValueError("API role must match the image role")
     app = FastAPI(
-        title=f"Juya {role} API",
+        title=f"句芽英语{'管理后台' if role == 'admin' else '小程序'}接口",
         responses={
             code: {"model": ErrorResponse}
             for code in [400, 401, 403, 404, 409, 410, 422, 429, 500, 503]
@@ -33,6 +34,7 @@ def application(role: str, settings: Settings, sessions=None, clock=None) -> Fas
         version="1.5.0",
         docs_url="/docs" if settings.environment != "production" else None,
     )
+    install_chinese_openapi(app, role)
     if sessions is None:
         _, sessions = make_database(settings)
     app.state.settings, app.state.sessions = settings, sessions
