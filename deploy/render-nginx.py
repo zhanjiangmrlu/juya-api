@@ -85,6 +85,18 @@ def render(environment, certificate, key, includes="/etc/nginx/juya-rebuild"):
 """
     ]
     for role, domain, port in [("admin", domains[1], base + 1), ("mini", domains[2], base + 2)]:
+        docs = ""
+        if environment == "test":
+            docs = f"""    location = /docs {{
+        alias /opt/juya/rebuild/test/api-docs/current/{role}.html;
+        default_type text/html;
+        charset utf-8;
+        expires -1;
+        etag on;
+    }}
+"""
+            for path in ("/openapi.json", "/docs/oauth2-redirect"):
+                docs += f"    location = {path} {{ proxy_pass http://127.0.0.1:{port}; }}\n"
         blocks.append(f"""server {{
     server_name {domain};
 {tls}
@@ -93,7 +105,7 @@ def render(environment, certificate, key, includes="/etc/nginx/juya-rebuild"):
     include {includes}/proxy.conf;
     location ~ ^/health/(live|ready)$ {{ proxy_pass http://127.0.0.1:{port}; }}
     location ^~ /api/{role}/v1/ {{ proxy_pass http://127.0.0.1:{port}; }}
-    location / {{ return 404; }}
+{docs}    location / {{ return 404; }}
 }}
 """)
     api = "https://" + domains[1]
