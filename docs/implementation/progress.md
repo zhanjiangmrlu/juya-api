@@ -443,3 +443,8 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 - 固定a9e271b，官方CI41848737797真实MySQL/Redis626通过/3跳过，双角色镜像通过；本地固定源码全量同为626/3。
 - 测试及生产均完成0025/contract3，56表390字段中文注释精确一致，非注释结构和19个既有容器、当前/上一应用版本指针不变，四公网ready200；一致性备份已完成并复算SHA。
 - 本地整合06SQLite备份后升级0025；SQLite说明保存在模型，旧ui.sqlite0023保留。无应用发布或重启，完整回执见docs/verification/database-comments-20261104.md及JSON。
+
+
+## 2026-11-05 部分匹配高亮
+
+按用户要求实现匹配词高亮/遗漏词跳过及已有任务复用（源码待发布）；生产仅《银行》复用原结果恢复ready/118词，无新ASR提交。详见 `docs/verification/listening-partial-highlighting-20261105.md`。

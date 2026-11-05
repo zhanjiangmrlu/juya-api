@@ -12,7 +12,7 @@ from pathlib import Path
 from sqlalchemy import or_, select
 
 from .content_models import Media, SettingCounter
-from .database import timestamp, utc_now
+from .database import naive_utc, timestamp, utc_now
 from .errors import DomainError
 from .learning_service import business_date
 from .listening_models import (
@@ -130,7 +130,8 @@ def timeline_view(db, payload):
     }
 
 
-def validate_words(body, words, duration_ms, *, minimum_coverage=1.0, max_word_ms=10000):
+def validate_words(body, words, duration_ms, *, minimum_coverage=0.0, max_word_ms=10000):
+    """Validate matched spans without requiring timestamps for unrecognized body words."""
     tokens = {(m.start(), m.end()): m.group() for m in alignment_tokens(body)}
     previous_end = previous_character = 0
     seen = set()
@@ -157,8 +158,8 @@ def validate_words(body, words, duration_ms, *, minimum_coverage=1.0, max_word_m
     return words
 
 
-def align_words(body, recognized, duration_ms, *, minimum_coverage=1.0, max_word_ms=10000):
-    """Monotonic sequence matching preserves repeated word positions and real pauses."""
+def align_words(body, recognized, duration_ms, *, minimum_coverage=0.0, max_word_ms=10000):
+    """Keep exact monotonic matches and original times; never interpolate skipped words."""
     text = alignment_tokens(body)
     normalized = lambda word: word.casefold().replace("’", "'")  # noqa: E731
     actual = []
@@ -364,7 +365,7 @@ def recognition_copy(data, duration):
 
 def run_timeline_job(settings, sessions, job_id, *, provider=None, clock=utc_now):
     """One bounded provider action per lease; poll IDs persist across worker restarts."""
-    now, lease = clock(), identifier()
+    now, lease = naive_utc(clock()), identifier()
     with sessions.begin() as db:
         job = db.scalar(select(ListeningJob).where(ListeningJob.id == job_id).with_for_update())
         if not job or job.state not in {"pending", "processing"}:
@@ -376,6 +377,12 @@ def run_timeline_job(settings, sessions, job_id, *, provider=None, clock=utc_now
             job.state, job.updated_at = "cancelled", now
             if row and row.job_id == job.id:
                 row.state, row.error_code = "missing", "input_removed"
+            return
+        if job.provider_task_id and now - job.created_at >= timedelta(hours=24):
+            # Task IDs may be reused by the provider after 24 hours; never query an old ID.
+            job.state, row.state = "failed", "needs_attention"
+            job.error_code = row.error_code = "asr_result_expired"
+            job.lease_until, job.updated_at = None, now
             return
         if job.state == "processing" and not job.provider_task_id and job.attempts:
             # A lease expired inside a submission window. The provider may have accepted
