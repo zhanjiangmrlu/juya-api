@@ -465,3 +465,8 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 ## 2026-11-05 部分匹配高亮生产发布
 
 按用户新增授权发布13c2d4c：官方CI真实MySQL/Redis633通过/3跳过，生产管理三服务及听读Worker共4服务healthy，其余15容器保持；库0025/contract3无迁移，483任务/231日提交计数及全部词轴摘要保持。《银行》公开API仍ready/118词/revision2。无新增ASR调用、无文章重发布及小程序上传。详见 `docs/verification/listening-partial-production-release-20261105.md`。
+
+
+## 2026-11-05 管理后台与接口 test 合并 release 并上线
+
+按用户授权完成两个仓库合并、远程 release 推送及生产原生部署。后台 286 测试通过；API 官方完整 CI 644 通过 / 3 跳过、双角色镜像成功。7 生产服务健康，数据库 0025/contract3 不变，无迁移或新增 ASR；测试及其余基础设施保持。固定源码、公开边界及无密钥证据见 [发布记录](../verification/admin-api-production-release-20261105.md)。
