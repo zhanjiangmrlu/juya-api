@@ -1,6 +1,6 @@
 """Role-separated administration and learning of versioned thematic articles."""
 
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
@@ -768,10 +768,21 @@ def mutate_timeline(db, admin, payload, body, action, request):
                 raise DomainError(
                     409, "asr_result_unknown", "识别提交结果未知，请先由运维核查服务商任务"
                 )
-            job = ListeningJob(
-                input_hash=row.input_hash, state="pending", created_at=now, updated_at=now
-            )
-            db.add(job)
+            previous = db.get(ListeningJob, row.job_id) if row.job_id else None
+            # Preserve the accepted task and its original age, including after polling errors.
+            if previous and previous.input_hash == row.input_hash and previous.provider_task_id:
+                if now - previous.created_at >= timedelta(hours=24):
+                    raise DomainError(
+                        409, "asr_result_expired", "原识别结果已过期，无法复用；未重新提交识别"
+                    )
+                job = previous
+                job.state, job.error_code, job.updated_at = "pending", None, now
+                job.lease_token, job.lease_until = None, None
+            else:
+                job = ListeningJob(
+                    input_hash=row.input_hash, state="pending", created_at=now, updated_at=now
+                )
+                db.add(job)
             db.flush()
             row.job_id, row.state, row.error_code = job.id, "pending", None
     else:

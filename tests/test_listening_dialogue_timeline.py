@@ -32,24 +32,36 @@ def test_dialogue_headings_and_speakers_do_not_require_spoken_timestamps(separat
 def test_dialogue_still_requires_every_spoken_word():
     body = "Arriving and Decorating\n\nZoe: Happy birthday, Nina!\n\nNina: Thanks, Zoe."
     with pytest.raises(DomainError) as exc:
-        align_words(body, recognized("Happy", "birthday", "Thanks", "Zoe"), 2000)
+        align_words(
+            body, recognized("Happy", "birthday", "Thanks", "Zoe"), 2000, minimum_coverage=1.0
+        )
     assert exc.value.code == "timeline_coverage_low"
 
 
 def test_plain_prose_without_terminal_punctuation_is_not_a_layout_heading():
     with pytest.raises(DomainError) as exc:
-        align_words("A quiet morning\nOpen the window.", recognized("Open", "the", "window"), 2000)
+        align_words(
+            "A quiet morning\nOpen the window.",
+            recognized("Open", "the", "window"),
+            2000,
+            minimum_coverage=1.0,
+        )
     assert exc.value.code == "timeline_coverage_low"
 
 
 def test_colon_in_single_voice_prose_does_not_exempt_missing_words():
     with pytest.raises(DomainError) as exc:
-        align_words("Remember: Drink some water.", recognized("Drink", "some", "water"), 2000)
+        align_words(
+            "Remember: Drink some water.",
+            recognized("Drink", "some", "water"),
+            2000,
+            minimum_coverage=1.0,
+        )
     assert exc.value.code == "timeline_coverage_low"
 
 
 def test_dialogue_continuation_without_punctuation_is_still_required():
     body = "Zoe: Come here.\nStay with me\nNina: Yes."
     with pytest.raises(DomainError) as exc:
-        align_words(body, recognized("Come", "here", "Yes"), 2000)
+        align_words(body, recognized("Come", "here", "Yes"), 2000, minimum_coverage=1.0)
     assert exc.value.code == "timeline_coverage_low"

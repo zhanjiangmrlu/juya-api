@@ -158,10 +158,22 @@ def test_persistent_asr_task_resumes_without_resubmit_and_review_is_optional(adm
     row = article(admin)
     provider = Recognizer(recognized(row["payload"]["body_en"]))
     job_id = row["timeline"]["job_id"]
-    run_timeline_job(system["settings"], system["sessions"], job_id, provider=provider)
+    run_timeline_job(
+        system["settings"],
+        system["sessions"],
+        job_id,
+        provider=provider,
+        clock=lambda: system["time"][0],
+    )
     with system["sessions"]() as db:
         assert db.get(ListeningJob, job_id).provider_task_id == "accepted-task"
-    run_timeline_job(system["settings"], system["sessions"], job_id, provider=provider)
+    run_timeline_job(
+        system["settings"],
+        system["sessions"],
+        job_id,
+        provider=provider,
+        clock=lambda: system["time"][0],
+    )
     assert provider.submits == 1
     row = admin.get(A + f"/articles/{row['id']}").json()
     assert row["timeline"]["state"] == "ready"
@@ -183,14 +195,18 @@ def test_deleted_article_task_does_not_apply_late_result(admin, system):
     post(admin, A + f"/articles/{row['id']}/delete", {"revision": row["revision"]})
     provider = Recognizer(recognized(row["payload"]["body_en"]))
     run_timeline_job(
-        system["settings"], system["sessions"], row["timeline"]["job_id"], provider=provider
+        system["settings"],
+        system["sessions"],
+        row["timeline"]["job_id"],
+        provider=provider,
+        clock=lambda: system["time"][0],
     )
     assert provider.submits == 0
     with system["sessions"]() as db:
         assert db.get(ListeningJob, row["timeline"]["job_id"]).state == "cancelled"
 
 
-def test_default_alignment_rejects_one_missing_body_word():
+def test_explicit_full_alignment_rejects_one_missing_body_word():
     import pytest
 
     from juya_api.errors import DomainError
@@ -198,7 +214,12 @@ def test_default_alignment_rejects_one_missing_body_word():
 
     words = recognized("One two three four five six seven eight nine ten.")
     with pytest.raises(DomainError):
-        align_words("One two three four five six seven eight nine ten.", words[:-1], 2000)
+        align_words(
+            "One two three four five six seven eight nine ten.",
+            words[:-1],
+            2000,
+            minimum_coverage=1.0,
+        )
 
 
 def test_uploaded_ready_timeline_does_not_requeue_on_same_draft_save(admin, system):
@@ -266,7 +287,11 @@ def test_deleted_imported_article_has_no_active_candidate_reference(admin, syste
     post(admin, A + f"/articles/{aid}/delete", {"revision": row["revision"]})
     provider = Recognizer(recognized(row["payload"]["body_en"]))
     run_timeline_job(
-        system["settings"], system["sessions"], row["timeline"]["job_id"], provider=provider
+        system["settings"],
+        system["sessions"],
+        row["timeline"]["job_id"],
+        provider=provider,
+        clock=lambda: system["time"][0],
     )
     assert provider.submits == 0
     with system["sessions"]() as db:
@@ -383,7 +408,13 @@ def test_worker_crash_during_unknown_submit_never_blindly_resubmits(admin, syste
         job.state, job.attempts = "processing", 1
         job.lease_until = datetime(2026, 10, 1) - timedelta(minutes=1)
     provider = Recognizer(recognized(row["payload"]["body_en"]))
-    run_timeline_job(system["settings"], system["sessions"], job_id, provider=provider)
+    run_timeline_job(
+        system["settings"],
+        system["sessions"],
+        job_id,
+        provider=provider,
+        clock=lambda: system["time"][0],
+    )
     assert provider.submits == 0
     with system["sessions"]() as db:
         timeline = db.get(ListeningTimeline, row["timeline"]["input_hash"])
