@@ -1,3 +1,11 @@
+# 最新听读部分匹配高亮生产发布（2026-11-05）
+
+用户授权上线后，固定源码 **13c2d4c** 的官方真实MySQL/Redis CI **633通过/3跳过** 及双镜像成功；生产管理API/配套Worker与dispatcher及独立听读Worker共4服务已原生发布且healthy。匹配词可高亮、遗漏词跳过；同输入复用已有识别任务，24小时过期结果拒绝重提。生产全部词轴、483个任务、0待执行及当日231次提交计数保持，无新增ASR提交。
+
+《银行》原发布版保持ready/118词/revision2，无需重新发布文章；小程序无需重新上传。生产库仍0025/contract3，无迁移，其余15容器未变。详见[发布验收](docs/verification/listening-partial-production-release-20261105.md)和[无密钥回执](docs/verification/listening-partial-production-release-20261105.json)。下方“未发布”属于实施阶段历史。
+
+---
+
 # 最新数据库中文用途注释（2026-11-04）
 
 测试及生产数据库已在线升级 **0025 / contract 3**：56张表390个字段中文注释完整，非注释结构保持，19个既有容器及应用版本指针不变，双环境四个公网ready200。源码a9e271b官方CI626通过/3跳过及双镜像成功；完整记录与备份摘要见[验收记录](docs/verification/database-comments-20261104.md)。最低schema仍0024，未发布或重启应用；本地SQLite的说明由模型保存，旧0023库保留。

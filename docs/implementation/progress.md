@@ -448,3 +448,8 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 ## 2026-11-05 部分匹配高亮
 
 按用户要求实现匹配词高亮/遗漏词跳过及已有任务复用（源码待发布）；生产仅《银行》复用原结果恢复ready/118词，无新ASR提交。详见 `docs/verification/listening-partial-highlighting-20261105.md`。
+
+
+## 2026-11-05 部分匹配高亮生产发布
+
+按用户新增授权发布13c2d4c：官方CI真实MySQL/Redis633通过/3跳过，生产管理三服务及听读Worker共4服务healthy，其余15容器保持；库0025/contract3无迁移，483任务/231日提交计数及全部词轴摘要保持。《银行》公开API仍ready/118词/revision2。无新增ASR调用、无文章重发布及小程序上传。详见 `docs/verification/listening-partial-production-release-20261105.md`。

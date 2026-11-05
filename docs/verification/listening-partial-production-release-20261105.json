@@ -1,0 +1,147 @@
+{
+  "status": "complete",
+  "completed_at_china": "2026-11-05T14:28:54.591952+08:00",
+  "source_commit": "13c2d4c03587549a99ba32edcdb7f211e0a7db00",
+  "release_id": "20261105T062443-13c2d4c03587-2d71b1",
+  "ci": {
+    "run_id": 41962855313,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/41962855313",
+    "summary": "633 passed, 3 skipped",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "name": "juya-admin-api-13c2d4c03587549a99ba32edcdb7f211e0a7db00",
+    "official_zip_digest": "sha256:3582217ea738d91244710384984a43994f47bce3b1953044c6873cd59c00d27b",
+    "image_metadata_id": "sha256:10434f6c45fe4cc5982c6fd2b8df78cef367170fef29dc4d0178aea47fb4b825",
+    "bundle_sha256": "18d6bb4eb23a074275d6bb9731caa9c5292f067d33abfa85c774299a9fa55c96"
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-production-admin-admin-api-1",
+      "revision": "13c2d4c03587549a99ba32edcdb7f211e0a7db00",
+      "image": "sha256:4eb76802edbc60a13176d1a1d26bd1056db73f4e1594dbf08ba244707c244b83",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-dispatcher-1",
+      "revision": "13c2d4c03587549a99ba32edcdb7f211e0a7db00",
+      "image": "sha256:4eb76802edbc60a13176d1a1d26bd1056db73f4e1594dbf08ba244707c244b83",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-worker-1",
+      "revision": "13c2d4c03587549a99ba32edcdb7f211e0a7db00",
+      "image": "sha256:4eb76802edbc60a13176d1a1d26bd1056db73f4e1594dbf08ba244707c244b83",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-listening-listening-worker-1",
+      "revision": "13c2d4c03587549a99ba32edcdb7f211e0a7db00",
+      "image": "sha256:4eb76802edbc60a13176d1a1d26bd1056db73f4e1594dbf08ba244707c244b83",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "protected_containers_unchanged": 15,
+  "database_and_timeline_before": {
+    "schema": [
+      "0025"
+    ],
+    "contract": 3,
+    "job_count": 483,
+    "pending_jobs": 0,
+    "daily_asr_attempts": 231,
+    "bank_state": "ready",
+    "bank_words": 118,
+    "timeline_digest": "4a3fb1a17ed7764ce90af6adc5d6d0bb496f2ece6e24f35155a0b445c3ad7a72"
+  },
+  "database_and_timeline_after": {
+    "schema": [
+      "0025"
+    ],
+    "contract": 3,
+    "job_count": 483,
+    "pending_jobs": 0,
+    "daily_asr_attempts": 231,
+    "bank_state": "ready",
+    "bank_words": 118,
+    "timeline_digest": "4a3fb1a17ed7764ce90af6adc5d6d0bb496f2ece6e24f35155a0b445c3ad7a72"
+  },
+  "new_asr_submissions": 0,
+  "new_asr_jobs": 0,
+  "migration": false,
+  "article_republication": false,
+  "miniapp_package_uploaded": false,
+  "runtime_rule_checks": {
+    "juya-rebuild-production-admin-admin-api-1": {
+      "partial_match_ready": true,
+      "coverage": 0.0,
+      "matched": 2,
+      "new_cloud_calls": 0
+    },
+    "juya-rebuild-production-listening-listening-worker-1": {
+      "partial_match_ready": true,
+      "coverage": 0.0,
+      "matched": 2,
+      "new_cloud_calls": 0
+    }
+  },
+  "public_verification": {
+    "public_health": [
+      {
+        "url": "https://admin-api.juyayingyu.com",
+        "status": 200,
+        "environment": "production"
+      },
+      {
+        "url": "https://api.juyayingyu.com",
+        "status": 200,
+        "environment": "production"
+      },
+      {
+        "url": "https://test-admin-api.juyayingyu.com",
+        "status": 200,
+        "environment": "test"
+      },
+      {
+        "url": "https://test-api.juyayingyu.com",
+        "status": 200,
+        "environment": "test"
+      }
+    ],
+    "authenticated_bank": {
+      "status": "published",
+      "revision": 2,
+      "timeline_state": "ready",
+      "word_count": 118,
+      "unmatched_word_skipped": true
+    },
+    "no_retry_or_recognition_requests": true,
+    "verification_session_closed": true
+  },
+  "rollback": {
+    "previous_release_id": "20261104T004712-00a4c1101b64-c327b3",
+    "previous_source": "00a4c1101b6413dd9a8d230f9cf82c8610464c45",
+    "listening_compose_snapshot": "/root/juya-rebuild/ci-images/listening-partial-release-20261105/listening-compose-before.json"
+  }
+}
