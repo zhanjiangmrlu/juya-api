@@ -26,6 +26,7 @@ from .import_service import (
     owned_batch,
     resolve,
     touch_batch,
+    validate_import_note_state,
     validate_source_media,
 )
 from .job_models import Job
@@ -34,6 +35,7 @@ from .media_api import save_media
 from .models import Audit, identifier
 from .response_contracts import FieldIssue, StudyNoteDraft
 from .storage import ObjectStorage
+from .study_notes import PDF_ERROR_MESSAGES
 from .transactions import operate
 
 
@@ -60,6 +62,7 @@ class ImportProgress(BaseModel):
 
 
 class ImportFileView(BaseModel):
+    error: str | None = None
     processing_stage: str | None = None
     id: str
     name: str
@@ -548,7 +551,11 @@ def routes():
                 raise DomainError(404, "import_file_missing", "未找到本次导入文件")
             if row.error_code:
                 raise DomainError(
-                    422, "import_file_invalid", "包内文件无法读取，请修正后重新上传资料包"
+                    422,
+                    "import_file_invalid",
+                    PDF_ERROR_MESSAGES.get(
+                        row.error_code, "包内文件无法读取，请修正后重新上传资料包"
+                    ),
                 )
             medium = db.get(Media, row.media_id) if row.media_id else None
             previous = db.get(Job, medium.job_id if medium else row.job_id)
@@ -556,7 +563,11 @@ def routes():
                 return file_view(db, row)
             if previous.error_code in INVALID_SOURCE_ERRORS:
                 raise DomainError(
-                    422, "import_file_invalid", "原文件无法读取，请按提示修正后重新上传"
+                    422,
+                    "import_file_invalid",
+                    PDF_ERROR_MESSAGES.get(
+                        previous.error_code, "原文件无法读取，请按提示修正后重新上传"
+                    ),
                 )
             if not ObjectStorage(settings).exists(row.storage_key):
                 raise DomainError(409, "import_not_resumable", "原文件已不可用，请重新选择文件上传")
@@ -637,18 +648,11 @@ def routes():
             validate_source_media(db, batch, item, content)
             from .study_notes import change_selection
 
-            if body.study_note and body.study_note.media_id:
-                validate_source_media(
-                    db,
-                    batch,
-                    item,
-                    {
-                        "image_id": None,
-                        "audio_id": None,
-                        "study_note_media_id": body.study_note.media_id,
-                    },
-                )
-            item.study_note = change_selection(db, item.study_note, body.study_note, admin.id)
+            selection = change_selection(db, item.study_note, body.study_note, admin.id)
+            validate_import_note_state(
+                db, batch, item, selection, body.target_card_id or item.saved_card_id
+            )
+            item.study_note = selection
             item.content = content
             item.selected = body.selected
             item.target_card_id = body.target_card_id

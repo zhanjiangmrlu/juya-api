@@ -21575,6 +21575,18 @@
       },
       "ImportFileView": {
         "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "错误信息",
+            "description": "操作失败的原因；成功或没有错误时可为空。"
+          },
           "processing_stage": {
             "anyOf": [
               {
@@ -24207,6 +24219,18 @@
       },
       "StudyNoteCandidate": {
         "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "错误信息",
+            "description": "操作失败的原因；成功或没有错误时可为空。"
+          },
           "file_id": {
             "type": "string",
             "title": "导入文件标识",
@@ -24295,6 +24319,20 @@
             ],
             "title": "媒体标识",
             "description": "已上传媒体的 ID，用于关联图片、音频或签发访问票据。"
+          },
+          "previous_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "有效保留笔记标识",
+            "description": "仅set或unresolved允许：原子保存尚未落盘的有效PDF与待处理替换；须为当前管理员可合法引用的ready PDF。省略沿用服务端推导，不允许null。"
           }
         },
         "additionalProperties": false,

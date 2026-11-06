@@ -8,19 +8,47 @@ from sqlalchemy import exists, func, select
 from .content_models import Card, CardStudyNoteVersion, Media
 from .errors import DomainError
 
+PDF_ERROR_MESSAGES = {
+    "study_note_format_invalid": "文件实际格式不是PDF，请选择PDF文件",
+    "study_note_invalid": "PDF文件结构损坏或内容无法读取，请更换完整PDF",
+    "study_note_encrypted": "PDF已加密且无法打开，请解除密码保护后重新上传",
+    "study_note_empty": "PDF文件为空，请重新选择",
+    "study_note_limit": "PDF文件超过当前大小限制，请压缩或更换文件",
+}
+
 
 def decoded_pdf(data, limit):
-    """Parse real page trees and content streams; a name or upload completion is insufficient."""
+    """Parse actual pages/content and report safe, distinct rejection reasons."""
     from pypdf import PdfReader
+    from pypdf.errors import FileNotDecryptedError, WrongPasswordError
 
-    if not data or len(data) > limit:
-        raise DomainError(422, "study_note_limit", "学习笔记为空或超过当前PDF大小限制")
+    def reject(code):
+        raise DomainError(422, code, PDF_ERROR_MESSAGES[code])
+
+    if not data:
+        reject("study_note_empty")
+    if len(data) > limit:
+        reject("study_note_limit")
+    if not data.startswith(b"%PDF-"):
+        reject("study_note_format_invalid")
     try:
-        if not data.startswith(b"%PDF-"):
-            raise ValueError("format")
-        reader = PdfReader(io.BytesIO(data), strict=True)
-        if reader.is_encrypted and not reader.decrypt(""):
-            raise ValueError("encrypted")
+        try:
+            reader = PdfReader(io.BytesIO(data), strict=True)
+        except NotImplementedError as error:
+            # Security-handler rejection can happen before a reader instance is returned.
+            trace = error.__traceback__
+            while trace is not None:
+                if trace.tb_frame.f_globals.get("__name__") == "pypdf._encryption":
+                    reject("study_note_encrypted")
+                trace = trace.tb_next
+            raise
+        if reader.is_encrypted:
+            try:
+                decrypted = reader.decrypt("")
+            except Exception:
+                reject("study_note_encrypted")
+            if not decrypted:
+                reject("study_note_encrypted")
         if not reader.pages:
             raise ValueError("empty pages")
         for page in reader.pages:
@@ -29,13 +57,14 @@ def decoded_pdf(data, limit):
             contents = page.get_contents()
             if contents is not None:
                 contents.get_data()
-                # Parsing operations catches corrupt operators/stream syntax too.
                 list(contents.operations)
+    except DomainError:
+        raise
+    except (FileNotDecryptedError, WrongPasswordError):
+        reject("study_note_encrypted")
     except Exception as error:
         logging.getLogger(__name__).debug("PDF validation rejected %s", type(error).__name__)
-        raise DomainError(
-            422, "study_note_invalid", "PDF格式无效、文件损坏或加密无法打开，请更换可读取的PDF"
-        ) from None
+        reject("study_note_invalid")
     return {"content_type": "application/pdf", "processing_stage": "ready"}
 
 
@@ -122,6 +151,14 @@ def change_selection(db, previous, change, admin_id, card=None):
     """Omitted changes preserve editor intent; explicit keep cancels a pending replacement."""
     if change is None:
         return previous
+    fallback_id = effective_media_id(db, previous, card)
+    if "previous_media_id" in change.model_fields_set:
+        fallback = ready_pdf(db, change.previous_media_id)
+        if not fallback or fallback.owner_id != admin_id:
+            raise DomainError(
+                422, "study_note_previous_invalid", "请选择当前管理员已校验可用的PDF作为保留附件"
+            )
+        fallback_id = fallback.id
     if change.action == "set":
         medium = db.get(Media, change.media_id)
         if (
@@ -134,7 +171,7 @@ def change_selection(db, previous, change, admin_id, card=None):
         return {
             "action": "set",
             "media_id": medium.id,
-            "previous_media_id": effective_media_id(db, previous, card),
+            "previous_media_id": fallback_id,
             "candidate_file_ids": (previous or {}).get("candidate_file_ids", []),
         }
     if change.action == "keep":
@@ -147,9 +184,7 @@ def change_selection(db, previous, change, admin_id, card=None):
         return {"action": "keep", "media_id": restored}
     return {
         "action": change.action,
-        "previous_media_id": effective_media_id(db, previous, card)
-        if change.action == "unresolved"
-        else None,
+        "previous_media_id": fallback_id if change.action == "unresolved" else None,
         "candidate_file_ids": (previous or {}).get("candidate_file_ids", []),
     }
 
@@ -160,11 +195,23 @@ def note_issues(db, selection, card=None):
     if selection["action"] == "unresolved" or (
         selection["action"] == "set" and not ready_pdf(db, selection.get("media_id"))
     ):
+        from .job_models import Job
+
+        medium = db.get(Media, selection.get("media_id")) if selection.get("media_id") else None
+        job = db.get(Job, medium.job_id) if medium and medium.job_id else None
+        message = PDF_ERROR_MESSAGES.get(job.error_code) if job and job.state == "failed" else None
+        candidates = selection.get("candidate_file_ids", [])
+        if not message and selection["action"] == "unresolved" and len(candidates) == 1:
+            from .import_models import ImportFile
+            from .import_service import file_view
+
+            source = db.get(ImportFile, candidates[0])
+            message = file_view(db, source)["error"] if source else None
         return [
             {
                 "field": "study_note",
                 "code": "study_note_not_ready",
-                "message": "请处理学习笔记PDF，或明确移除后发布",
+                "message": message or "请处理学习笔记PDF，或明确移除后发布",
             }
         ]
     selected = effective_media_id(db, selection, card)
@@ -207,6 +254,8 @@ def selection_view(db, selection, card=None):
                     "state": metadata["state"] if metadata else "failed",
                     "error_code": row.error_code
                     or (metadata["error_code"] if metadata else "study_note_invalid"),
+                    "error": PDF_ERROR_MESSAGES.get(row.error_code)
+                    or (metadata["error"] if metadata else None),
                     "parent_id": row.parent_id,
                 }
             )

@@ -4,7 +4,7 @@
 
 ## 1. 上传与管理员编辑
 
-复用 `POST /api/admin/v1/media?kind=study_note`，multipart `file`，管理员会话、CSRF与Idempotency-Key沿用现有规则。返回 `MediaMetadata`，首次通常 `state=processing`，必须轮询 `GET /api/admin/v1/media/{id}/status` 至ready。失败提供error/error_code，可使用原重试接口。真实PDF格式、页树、内容流与加密可读性由pypdf校验，上传成功不等于可用。`GET /api/admin/v1/media/configuration` 新增 `study_note_limit_bytes`（默认20971520，可配置）。空文件/超限上传为413。非PDF、损坏、加密不可读为异步failed，error_code=study_note_invalid。文件只通过认证的 `GET /api/admin/v1/media/{id}` 受控预览，支持Blob与Range，不写用户学习事实。
+复用 `POST /api/admin/v1/media?kind=study_note`，multipart `file`，管理员会话、CSRF与Idempotency-Key沿用现有规则。返回 `MediaMetadata`，首次通常 `state=processing`，必须轮询 `GET /api/admin/v1/media/{id}/status` 至ready。失败提供error/error_code，可使用原重试接口。真实PDF格式、页树、内容流与加密可读性由pypdf校验，上传成功不等于可用。`GET /api/admin/v1/media/configuration` 新增 `study_note_limit_bytes`（默认20971520，可配置）。空文件/超限上传为413。非PDF、损坏、加密不可读为异步failed，error_code分别见下表。文件只通过认证的 `GET /api/admin/v1/media/{id}` 受控预览，支持Blob与Range，不写用户学习事实。
 
 `POST /api/admin/v1/cards`、`PUT /api/admin/v1/cards/{id}` 和 `PATCH /api/admin/v1/imports/{batch_id}/items/{item_id}` 在原请求顶层增加可选 `study_note`：
 
@@ -12,7 +12,7 @@
 {"action":"set","media_id":"已上传的PDF媒体ID"}
 ```
 
-动作：`keep` 保留（并取消当前待处理替换）、`set` 选择一份PDF、`remove` 明确不添加/移除、`unresolved` 待选择。只有set携带media_id。请求省略或null表示不改当前草稿决策；不得为兼容旧包自动发送remove。旧ZIP不含PDF时保留更新目标的原草稿笔记；新卡仍为空。保存允许processing/failed/unresolved候选；预览及发布要求PDFready，或明确remove/keep取消待处理附件。
+动作：`keep` 保留（并取消当前待处理替换）、`set` 选择一份PDF、`remove` 明确不添加/移除、`unresolved` 待选择。只有set携带media_id。 `set`及`unresolved`还可选传`previous_media_id`：管理员已校验ready但尚未保存的有效B，随后选择待处理或失败C时，一个请求`{"action":"set","media_id":"C","previous_media_id":"B"}`会原子保存有效B及pending C。省略previous_media_id沿用原服务端推导；明确提供必须是非空ID、当前管理员可合法引用的ready PDF，不接受null、foreign、未就绪、失败、非PDF或不存在引用；keep/remove携带该字段一律422。ZIP同时校验当前包/目录来源；明确目标卡已合法绑定的历史附件（可来自旧包）允许保留，管理员单独上传补充允许，其他包/目录的PDF不能借fallback串入。目标清空/切换且省略笔记操作时，仍按最终目标重验完整保留状态；后台worker保存也会重验。单独上传须有明确AdminMediaSource来源证明，删除ZIP来源记录不会使其PDF变为手动上传。保存后重开仍为B＋C，取消C恢复B；当前发布附件A保持到发布确认成功。请求省略或null表示不改当前草稿决策；不得为兼容旧包自动发送remove。旧ZIP不含PDF时保留更新目标的原草稿笔记；新卡仍为空。保存允许processing/failed/unresolved候选；预览及发布要求PDFready，或明确remove/keep取消待处理附件。
 
 `CardView` 新增：
 
@@ -52,3 +52,18 @@
 ## 5. 前端接入次序
 
 从API `openapi/admin.json`、`openapi/mini.json` 同步生成类型。保留编辑revision、未知收据恢复与迟到上传取消逻辑；文件upload100%只说明上传完成。草稿预览读取candidate attachment，已发布效果读取published_study_note；用户入口使用获权详情study_note。后台不调用mini学习接口。
+
+
+## 6. Task1b兼容补足与实际失败原因
+
+本增量补足已批准的有效/待处理附件并存能力；无新route、reader、依赖或数据库迁移。请求仅新增可选previous_media_id，返回的StudyNoteDraft仍使用attachment/pending_attachment；ImportFileView与StudyNoteCandidate新增可空error，提供与媒体状态一致的安全中文原因。原error_code仍为开放字符串。
+
+| error_code | 实际原因与中文提示 |
+| --- | --- |
+| study_note_format_invalid | 文件实际格式不是PDF，请选择PDF文件 |
+| study_note_invalid | PDF文件结构损坏或内容无法读取，请更换完整PDF（保留旧损坏码） |
+| study_note_encrypted | PDF已加密且无法打开，请解除密码保护后重新上传 |
+| study_note_empty | PDF文件为空，请重新选择 |
+| study_note_limit | PDF文件超过当前大小限制，请压缩或更换文件 |
+
+手动上传空/超限在接收时返回413及对应code/message；ZIP相应文件保留failed核对状态与上述原因，仍可保存待处理草稿。媒体status、导入文件/candidate的error及导入issues使用相同具体原因；不返回解密底层异常或密钥。非法previous引用返回422 study_note_previous_invalid，跨包/目录为既有422 import_media_source，模型不允许的previous形态为422 invalid_request。

@@ -84,6 +84,7 @@ class StudyNoteMetadata(PublicModel):
 
 
 class StudyNoteCandidate(PublicModel):
+    error: str | None = None
     file_id: str
     name: str
     size: int

@@ -32,6 +32,7 @@ from .models import MiniSession, identifier
 from .response_contracts import MediaMetadata, ResourceURL, UploadConfiguration
 from .security import digest, token
 from .storage import ObjectStorage
+from .study_notes import PDF_ERROR_MESSAGES
 from .transactions import operate
 from .zip_names import import_file_name
 
@@ -77,8 +78,7 @@ def media_view(medium: Media, db=None) -> dict:
                 "audio_conversion_failed": "MP3兼容处理未通过完整性校验，请重试或更换文件",
                 "audio_conversion_unavailable": "音频转换暂不可用，请稍后重试",
                 "audio_decoder_unavailable": "音频校验服务暂不可用，请稍后重试",
-                "study_note_invalid": "PDF格式无效、文件损坏或加密无法打开，请更换可读取的PDF",
-                "study_note_limit": "学习笔记为空或超过当前PDF大小限制",
+                **PDF_ERROR_MESSAGES,
             }.get(job.error_code, "素材处理失败，请重试或重新上传")
             if failed and job
             else None
@@ -325,6 +325,8 @@ def retry_media(db, settings, actor, role, media_id, key, now):
             return media_view(medium, db)
         if not legacy and (not previous or previous.state != "failed"):
             return media_view(medium, db)
+        if previous and previous.error_code in PDF_ERROR_MESSAGES:
+            raise DomainError(422, previous.error_code, PDF_ERROR_MESSAGES[previous.error_code])
         if previous and previous.error_code in {
             "image_invalid",
             "study_note_invalid",
@@ -447,6 +449,9 @@ def admin_routes():
             * 1024
         )
         data = file.file.read(limit + 1)
+        if kind == "study_note" and (not data or len(data) > limit):
+            code = "study_note_empty" if not data else "study_note_limit"
+            raise DomainError(413, code, PDF_ERROR_MESSAGES[code])
         if not data or len(data) > limit:
             raise DomainError(413, "upload_limit", "文件为空或超过当前上传限制")
         name = PurePosixPath((file.filename or "").replace("\\", "/")).name

@@ -470,3 +470,12 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 - 最终完整SQLite：638通过/49条件跳过，204.99秒；48项需真实MySQL、1项需隔离Redis。ruff check、ruff format --check和mypy src通过。最终完整MySQL：683通过/4条件跳过，434.23秒；跳过隔离Redis集成1项和SQLite专属回归3项。完整日志分别为`.private/study-notes-sqlite.log`和`.private/study-notes-mysql-full.log`，均exit0。
 - 本Task仅本地隔离测试和源码提交；未推送、部署、业务库迁移、OSS/微信上传。真实微信文档预览、iOS/Android、真实云资源及前端交互待后续验收。其他历史授权与发布记录不扩大本Task范围。
 - 最后补验原隔离Redis条件项：使用现有redis-server binary新建127.0.0.1临时端口/目录、空DB15，真实Celery独立子进程定向验证`test_committed_upload_survives_missing_dispatch_and_duplicate_broker_delivery`，1通过（2.17秒，exit0）。自己的Redis进程和临时目录已清理；未连接既有/远程broker，未变更功能。原完整套件计数不变。私有证据`.private/study-notes-redis-verification.md`及`study-notes-redis-integration.log`。
+
+## 2026-11-06 学习笔记原子保留契约补足（Task1b）
+
+- 针对Task2跨保存复审暴露的已批准能力缺口，新增可选`StudyNoteChange.previous_media_id`：仅set/unresolved接受明确有效ID，服务端验证ready PDF与管理员归属，一次保存未落盘有效B和待处理C；省略沿用原逻辑，null及keep/remove携带拒绝。重开/取消保留B，发布A与正文/排序保持。
+- ZIP按最终目标与完整保留状态重验（包含省略note、keep、清空/切换目标），worker保存或判重前复验；合法目标历史附件例外不跨目标继承。无ImportFile不再自动视为手动上传，须有AdminMediaSource证明；删除源ZIP后不能借遗留Media串配。合法同目录、既有目标和真实单独上传正例均通过。
+- PDF错误区分非PDF、结构损坏、无法解密、空与超限；包含PdfReader构造阶段的证书加密不支持。媒体/导入文件/candidate/单一失败候选issues复用实际安全原因，不回传底层异常。契约及OpenAPI已导出，无新route、reader、依赖或数据库迁移，仍schema0026/contract3。
+- 独立定向审查原3项Important、1项Minor全部ADDRESSED，独立13项通过；修复先RED9失败/1通过，再同组GREEN10通过。受影响SQLite140通过/6条件跳过、真实MySQL67通过。
+- 冻结后一次最终完整SQLite675通过/49条件跳过（222.70秒），完整真实MySQL720通过/4条件跳过（462.22秒），均exit0。SQLite跳过48项MySQL条件及1项Redis；MySQL跳过1项Redis及3项SQLite专属。队列传输未改，沿用Task1已完成的独立Redis/Celery补验，未重复运行。日志`.private/study-notes-task1b-full-{sqlite,mysql}.log`。
+- ruff check、315文件格式检查、86源文件mypy及diff-check通过；报告`.superpowers/sdd/2026-11-06-study-notes/task-1b-report.md`。本Task仅本地源码与隔离测试，未改前端、业务库、远程环境或推送；真实UI由Task2验收，微信真机/云验证仍留待后续。

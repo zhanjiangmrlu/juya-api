@@ -27,10 +27,12 @@ from .jobs import enqueue, lock_admin_job
 from .models import Administrator
 from .security import fingerprint
 from .storage import ObjectStorage
+from .study_notes import PDF_ERROR_MESSAGES
 from .transactions import actor_lock
 from .zip_names import import_file_name, readable_zip_name
 
 INVALID_SOURCE_ERRORS = {
+    *PDF_ERROR_MESSAGES,
     "image_invalid",
     "audio_invalid",
     "audio_format_mismatch",
@@ -189,7 +191,7 @@ def source_view(db, item):
     }
 
 
-def validate_source_media(db, batch, item, content):
+def validate_source_media(db, batch, item, content, *, allowed_note_ids=()):
     """ZIP staging cannot bind attachments from another archive or card folder."""
     if batch.mode != "zip":
         return
@@ -197,7 +199,16 @@ def validate_source_media(db, batch, item, content):
     for field in ["image_id", "audio_id", "study_note_media_id"]:
         if not content.get(field):
             continue
+        if field == "study_note_media_id" and content[field] in allowed_note_ids:
+            continue  # The confirmed target already legitimately owns this historical attachment.
         attachment = db.scalar(select(ImportFile).where(ImportFile.media_id == content[field]))
+        if field == "study_note_media_id" and attachment is None:
+            from .admin_action_models import AdminMediaSource
+
+            if db.get(AdminMediaSource, content[field]) is None:
+                raise DomainError(
+                    422, "import_media_source", "无法确认此PDF为当前目录或单独上传资料，请重新上传"
+                )
         if attachment and (
             attachment.batch_id != batch.id
             or attachment.parent_id != source.parent_id
@@ -206,6 +217,44 @@ def validate_source_media(db, batch, item, content):
             raise DomainError(
                 422, "import_media_source", "请选择当前ZIP同一卡片文件夹的素材，或单独上传补充资料"
             )
+
+
+def validate_import_note_state(db, batch, item, selection, target_card_id):
+    """Revalidate retained references against the final target, including legacy staging."""
+    from .study_notes import effective_media_id, published_note, ready_pdf
+
+    if batch.mode != "zip" or not selection or selection["action"] == "remove":
+        return
+    allowed_note_ids = set()
+    target = live_card(db, target_card_id)
+    if target:
+        draft = db.get(CardDraft, target.id)
+        if draft is not None:
+            allowed_note_ids.add(effective_media_id(db, draft.study_note, target))
+        published = published_note(db, target)
+        if published:
+            allowed_note_ids.add(published.media_id)
+    references = []
+    if selection["action"] in {"set", "keep"} and selection.get("media_id"):
+        references.append((selection["media_id"], selection["action"] == "keep"))
+    if selection["action"] in {"set", "unresolved"} and selection.get("previous_media_id"):
+        references.append((selection["previous_media_id"], True))
+    for media_id, must_be_ready in references:
+        medium = db.get(Media, media_id)
+        if (
+            not medium
+            or medium.owner_kind != "admin"
+            or medium.owner_id != batch.admin_id
+            or medium.kind != "study_note"
+        ):
+            raise DomainError(422, "study_note_media_invalid", "请选择当前管理员上传的学习笔记PDF")
+        if must_be_ready and not ready_pdf(db, media_id):
+            raise DomainError(
+                422, "study_note_previous_invalid", "请选择当前管理员已校验可用的PDF作为保留附件"
+            )
+        validate_source_media(
+            db, batch, item, {"study_note_media_id": media_id}, allowed_note_ids=allowed_note_ids
+        )
 
 
 def file_view(db, row):
@@ -235,6 +284,9 @@ def file_view(db, row):
         "state": state,
         "job_id": job.id if job else None,
         "error_code": row.error_code or (job.error_code if job and job.state == "failed" else None),
+        "error": PDF_ERROR_MESSAGES.get(
+            row.error_code or (job.error_code if job and job.state == "failed" else "") or ""
+        ),
         "parent_id": row.parent_id,
         "progress": row.progress,
     }
@@ -644,7 +696,13 @@ def prepare_parse(settings, sessions, job, *, clock):
                         "size": member.file_size,
                         "sha256": "",
                         "media_id": None,
-                        "error_code": "archive_member_limit"
+                        "error_code": (
+                            "study_note_limit"
+                            if error.code == "archive_limit"
+                            else "study_note_invalid"
+                        )
+                        if kind == "study_note"
+                        else "archive_member_limit"
                         if error.code == "archive_limit"
                         else "archive_member_invalid",
                     }
@@ -837,6 +895,7 @@ def prepare_save(settings, sessions, job, now):
             if payload.get("target_card_id")
             else item.saved_draft_revision
         )
+        validate_import_note_state(db, batch, item, item.study_note, target)
         note_change = (
             StudyNoteChange(
                 action="set"
@@ -845,6 +904,12 @@ def prepare_save(settings, sessions, job, now):
                 media_id=item.study_note.get("media_id")
                 if item.study_note["action"] in {"set", "keep"}
                 else None,
+                **(
+                    {"previous_media_id": item.study_note["previous_media_id"]}
+                    if item.study_note["action"] in {"set", "unresolved"}
+                    and item.study_note.get("previous_media_id")
+                    else {}
+                ),
             )
             if item.study_note
             else None

@@ -101,8 +101,17 @@ def test_note_only_publication_keeps_content_order_progress_and_expires_old_tick
     assert mini.get("/api/mini/v1/cards?scope=published&has_study_note=true").json()["total"] == 0
 
 
-@pytest.mark.parametrize("bad", [b"not a pdf", b"%PDF-1.4\ntruncated", b"%PDF-1.4\n%%EOF"])
-def test_failed_pdf_replacement_preserves_effective_note_and_blocks_publish(admin, mini, bad):
+@pytest.mark.parametrize(
+    "bad,expected_code",
+    [
+        (b"not a pdf", "study_note_format_invalid"),
+        (b"%PDF-1.4\ntruncated", "study_note_invalid"),
+        (b"%PDF-1.4\n%%EOF", "study_note_invalid"),
+    ],
+)
+def test_failed_pdf_replacement_preserves_effective_note_and_blocks_publish(
+    admin, mini, bad, expected_code
+):
     medium = upload(admin)
     process_jobs(admin)
     card = publish(
@@ -112,7 +121,7 @@ def test_failed_pdf_replacement_preserves_effective_note_and_blocks_publish(admi
     broken = upload(admin, bad)
     process_jobs(admin)
     result = admin.get(f"/api/admin/v1/media/{broken['id']}/status").json()
-    assert result["state"] == "failed" and result["error_code"] == "study_note_invalid"
+    assert result["state"] == "failed" and result["error_code"] == expected_code
     candidate = save_note(admin, card, {"action": "set", "media_id": broken["id"]})
     assert candidate["study_note"]["attachment"]["id"] == medium["id"]
     preview = admin.post(
@@ -441,7 +450,7 @@ def test_pdf_validation_rejects_encryption_and_exposes_actual_limit(admin, syste
     process_jobs(admin)
     assert (
         admin.get(f"/api/admin/v1/media/{medium['id']}/status").json()["error_code"]
-        == "study_note_invalid"
+        == "study_note_encrypted"
     )
     system["settings"].study_note_limit_mb = 1
     assert (
