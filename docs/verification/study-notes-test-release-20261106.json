@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "environment": "test",
+  "completed_at": "2026-11-06T22:31:12.780903+08:00",
+  "deployed_commits": {
+    "juya-api": "f219a39075d9f32d0c777857a34dd0207a13dd3c",
+    "juya-admin": "97937db74d6b56a13545e1ac68a856d1e87a0cb9",
+    "juya-miniapp": "d99a12c0bf45f2cf76f63e3590f061ee8aaaccc0"
+  },
+  "ci": {
+    "run_id": 42205310557,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/42205310557",
+    "commit": "f219a39075d9f32d0c777857a34dd0207a13dd3c",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      }
+    ],
+    "quality_counts": {
+      "passed": 738,
+      "skipped": 3
+    }
+  },
+  "application_releases": [
+    {
+      "project": "juya-admin-api",
+      "release_id": "20261106T111620-f219a39075d9-c537b0",
+      "commit": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "project": "juya-miniapp-api",
+      "release_id": "20261106T112011-f219a39075d9-04e0e1",
+      "commit": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "project": "juya-admin",
+      "release_id": "20261106T102006-97937db74d6b-17328f",
+      "commit": "97937db74d6b56a13545e1ac68a856d1e87a0cb9",
+      "public_hashes_match": true
+    }
+  ],
+  "runtime_services": [
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "id": "02ba3e8229228f3986c2b86c9dddd0be67a58596e9bbd0960cfaaec7efd9d58f",
+      "image": "sha256:f931ebba3f4153f6e31b1412ebc91ba209229d020f3bd7476482b904ab357383",
+      "started_at": "2026-11-06T14:27:56.821136715Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "id": "44c3572f60e481f65e4d5fda110f318c34f9fc13610ba17c975adf99cc18186c",
+      "image": "sha256:f931ebba3f4153f6e31b1412ebc91ba209229d020f3bd7476482b904ab357383",
+      "started_at": "2026-11-06T14:28:16.090608873Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "id": "fae38726ed2712473eb2456c16d3fff858653fea40cf4d1a0077528a14eaf36d",
+      "image": "sha256:f931ebba3f4153f6e31b1412ebc91ba209229d020f3bd7476482b904ab357383",
+      "started_at": "2026-11-06T14:28:15.848747686Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "id": "070c213a1b32803f34176c42bdf97a4f1ac9772eae0803c75bfc151039bcbc6b",
+      "image": "sha256:f931ebba3f4153f6e31b1412ebc91ba209229d020f3bd7476482b904ab357383",
+      "started_at": "2026-11-06T14:30:34.334258963Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "id": "7f6df3b6cf5f39cf2033d71bac2b5d32072b1f1affbe15dfa1ce462a761d356c",
+      "image": "sha256:bdb543d17b9f5f0af67a92ed267c7301995e88864133ef97b2192ae8506d061a",
+      "started_at": "2026-11-06T14:29:46.538625936Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "id": "9521d86e6fee986f5755b789ce67c31d4e5dc2aa74496c0a49fa7fe06fc368e1",
+      "image": "sha256:bdb543d17b9f5f0af67a92ed267c7301995e88864133ef97b2192ae8506d061a",
+      "started_at": "2026-11-06T14:30:03.650266926Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "id": "1176c18f5bfdb9172007416d2a1cac8abd8693942b872713f15092c9d57a7914",
+      "image": "sha256:bdb543d17b9f5f0af67a92ed267c7301995e88864133ef97b2192ae8506d061a",
+      "started_at": "2026-11-06T14:30:04.015952523Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "revision": "f219a39075d9f32d0c777857a34dd0207a13dd3c"
+    }
+  ],
+  "database": {
+    "name": "juya_test",
+    "schema": "0026",
+    "contract": 3,
+    "backup": {
+      "database": "juya_test",
+      "bytes": 10610422,
+      "sha256": "02f85d2249c0fa7a478334c7ec235fb80cec41bf4ea302d43b40e68294cb82bf",
+      "automatic_restore": false
+    },
+    "migration": {
+      "schema_before": "0025",
+      "schema_after": "0026",
+      "contract": 3,
+      "original_data_tables": 55,
+      "all_original_column_values_preserved": true,
+      "row_counts_preserved": true,
+      "new_note_versions": 0,
+      "new_columns_null": true,
+      "database_downgraded": false
+    }
+  },
+  "public_checks": {
+    "readiness": {
+      "admin": 200,
+      "mini": 200
+    },
+    "role_isolation": {
+      "admin": true,
+      "mini": true
+    },
+    "administrator_reads": {
+      "/api/admin/v1/auth/session": 200,
+      "/api/admin/v1/cards?limit=1": 200,
+      "/api/admin/v1/users?limit=1": 200,
+      "/api/admin/v1/listening/categories": 200,
+      "/api/admin/v1/learning-access/free-policy": 200
+    },
+    "admin_cors": true,
+    "admin_pages": true,
+    "verification_session_closed": true,
+    "study_note_limit_bytes": 20971520,
+    "openapi_hashes": {
+      "admin": "6f65a891acc3a01e88f7e670b2ab10b5ec7537c6dab2de1bf0af2c3e2fd84743",
+      "mini": "ad7c8c037bd29e0583481ca1d23bb97e20c248b787e26c0d9dab474daf275c78"
+    }
+  },
+  "admin_site": {
+    "url": "https://test-admin.juyayingyu.com",
+    "release_id": "20261106T102006-97937db74d6b-17328f",
+    "archive_sha256": "c24e25ebc683163a4a559277c62dcc918735833c1808f64c72b431a77383981d",
+    "public_hashes_match": true,
+    "entry": "/assets/index-DQB38NeK.js",
+    "entry_sha256": "7af321e093c76c4845ffc34e5b7055f5ee3cff918120ae157f6f83db7358ece1",
+    "index_sha256": "24fb3aeb9a0c77f3d6527771ace178169c03f70e3f02437397818efbb92b5dae"
+  },
+  "wechat": {
+    "status": "success",
+    "version": "1.5.0-test.20261106.184331",
+    "source_commit": "d99a12c0bf45f2cf76f63e3590f061ee8aaaccc0",
+    "environment": "test",
+    "app_id": "wx55af725d6cf39d91",
+    "test_api_verified": true,
+    "private_project_config_excluded": true,
+    "experience_version_changed": false,
+    "submitted_for_review": false,
+    "oss_new": 0,
+    "oss_reused": 13,
+    "official_size": {
+      "total": 1281684,
+      "packages": [
+        {
+          "name": "TOTAL",
+          "size": 1281684
+        },
+        {
+          "name": "main",
+          "size": 803614
+        },
+        {
+          "name": "/sub-packages/account/",
+          "size": 55778
+        },
+        {
+          "name": "/sub-packages/feedback/",
+          "size": 70904
+        },
+        {
+          "name": "/sub-packages/listening/",
+          "size": 144998
+        },
+        {
+          "name": "/sub-packages/records/",
+          "size": 24978
+        },
+        {
+          "name": "/sub-packages/scenes/",
+          "size": 181412
+        }
+      ]
+    }
+  },
+  "retention": {
+    "admin_web": {
+      "retained": [
+        "20261104T055224-d2d07f0834df-af6c15",
+        "20261106T102006-97937db74d6b-17328f"
+      ],
+      "removed": [
+        "20261102T140824-31fb296823be-c294f0"
+      ]
+    },
+    "api_pointers": {
+      "juya-admin-api": {
+        "current-release": "20261106T111620-f219a39075d9-c537b0",
+        "previous-release": "20261104T145739-0698e765f28e-f2ec19"
+      },
+      "juya-miniapp-api": {
+        "current-release": "20261106T112011-f219a39075d9-04e0e1",
+        "previous-release": "20261104T145804-0698e765f28e-847035"
+      }
+    }
+  },
+  "protected_container_count": 12,
+  "production_and_infrastructure_metadata_unchanged": true,
+  "experience_version_changed": false,
+  "submitted_for_review": false,
+  "production_deployed": false
+}
