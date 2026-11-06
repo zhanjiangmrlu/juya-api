@@ -187,18 +187,6 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
             )
             batch = db.get(ImportBatch, "old-image")
             assert batch.updated_at is None
-            value = batch_view(
-                db,
-                batch,
-                Settings(
-                    environment="test",
-                    database_url=url,
-                    media_root=tmp_path / "media",
-                    field_encryption_key=Fernet.generate_key().decode(),
-                    lookup_key="synthetic-migration-lookup-key-only",
-                ),
-            )
-            assert value["updated_at"] == "2026-10-17T08:00:00.123456Z"
         before_round_trip = facts()
         command.downgrade(config, "0015")
         assert "updated_at" not in {
@@ -215,6 +203,20 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
         # Historical round trips stop before 0024's intentionally irreversible ownership change.
         command.upgrade(config, "head")
         assert facts() == before_round_trip
+        with Session(engine) as db:
+            batch = db.get(ImportBatch, "old-image")
+            value = batch_view(
+                db,
+                batch,
+                Settings(
+                    environment="test",
+                    database_url=url,
+                    media_root=tmp_path / "media",
+                    field_encryption_key=Fernet.generate_key().decode(),
+                    lookup_key="synthetic-migration-lookup-key-only",
+                ),
+            )
+            assert value["updated_at"] == "2026-10-17T08:00:00.123456Z"
         command.check(config)
     finally:
         engine.dispose()

@@ -17,6 +17,11 @@ def write_transaction(request: Request):
     request.state.database_write_intent = True
 
 
+def read_snapshot(request: Request):
+    """Keep a compound catalog read on one MySQL MVCC snapshot without locking writers."""
+    request.state.database_read_snapshot = True
+
+
 def database(request: Request):
     """Commit all business records together, or roll back the entire failed request."""
     with request.app.state.sessions.begin() as session:
@@ -30,6 +35,8 @@ def database(request: Request):
                 request.state, "database_write_intent", False
             )
             session.connection(execution_options={"sqlite_write_intent": write_intent})
+        elif getattr(request.state, "database_read_snapshot", False):
+            session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
         yield session
 
 

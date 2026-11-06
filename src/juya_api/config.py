@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     feedback_safety_enabled: bool = False
     feedback_safety_url: str = ""
     feedback_safety_token: str = Field(default="", repr=False)
+    study_note_limit_mb: int = 20
     image_limit_mb: int = 10
     audio_limit_mb: int = 50
     archive_limit_mb: int = 100

@@ -77,6 +77,8 @@ def media_view(medium: Media, db=None) -> dict:
                 "audio_conversion_failed": "MP3兼容处理未通过完整性校验，请重试或更换文件",
                 "audio_conversion_unavailable": "音频转换暂不可用，请稍后重试",
                 "audio_decoder_unavailable": "音频校验服务暂不可用，请稍后重试",
+                "study_note_invalid": "PDF格式无效、文件损坏或加密无法打开，请更换可读取的PDF",
+                "study_note_limit": "学习笔记为空或超过当前PDF大小限制",
             }.get(job.error_code, "素材处理失败，请重试或重新上传")
             if failed and job
             else None
@@ -325,6 +327,8 @@ def retry_media(db, settings, actor, role, media_id, key, now):
             return media_view(medium, db)
         if previous and previous.error_code in {
             "image_invalid",
+            "study_note_invalid",
+            "study_note_limit",
             "audio_invalid",
             "media_invalid",
             "audio_format_mismatch",
@@ -424,7 +428,7 @@ def admin_routes():
     @router.post("/media", status_code=201, response_model=MediaMetadata)
     def upload(
         request: Request,
-        kind: Literal["image", "audio"],
+        kind: Literal["image", "audio", "study_note"],
         file: UploadFile = File(...),
         admin=Depends(administrator),
         key: str = Depends(operation_key),
@@ -432,7 +436,15 @@ def admin_routes():
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
         limit = (
-            (settings.image_limit_mb if kind == "image" else settings.audio_limit_mb) * 1024 * 1024
+            (
+                settings.study_note_limit_mb
+                if kind == "study_note"
+                else settings.image_limit_mb
+                if kind == "image"
+                else settings.audio_limit_mb
+            )
+            * 1024
+            * 1024
         )
         data = file.file.read(limit + 1)
         if not data or len(data) > limit:
@@ -469,6 +481,7 @@ def admin_routes():
     def configuration(request: Request, admin=Depends(administrator)):
         settings = request.app.state.settings
         return {
+            "study_note_limit_bytes": settings.study_note_limit_mb * 1024 * 1024,
             "image_limit_bytes": settings.image_limit_mb * 1024 * 1024,
             "audio_limit_bytes": settings.audio_limit_mb * 1024 * 1024,
             "archive_limit_bytes": settings.archive_limit_mb * 1024 * 1024,
@@ -518,13 +531,20 @@ def mini_routes():
         media_id: str,
         request: Request,
         version_id: str | None = None,
-        purpose: Literal["content", "summary"] = "content",
+        purpose: Literal["content", "summary", "study_note"] = "content",
+        study_note_version_id: str | None = None,
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
         medium = db.get(Media, media_id)
         if purpose == "summary":
             version = summary_thumbnail(db, user.id, card_id, media_id, version_id)
+        elif purpose == "study_note":
+            from .study_notes import require_note
+
+            require_access(db, user.id, card_id, request.app.state.clock())
+            card, version = published_card(db, card_id)
+            require_note(db, card, media_id, study_note_version_id)
         else:
             if not version_id:
                 raise DomainError(422, "version_required", "请刷新后重新获取资源")
@@ -551,6 +571,7 @@ def mini_routes():
                 version_id=version.id,
                 media_id=medium.id,
                 purpose=purpose,
+                study_note_version_id=study_note_version_id if purpose == "study_note" else None,
                 expires_at=expires,
             )
         )
@@ -575,6 +596,12 @@ def mini_routes():
             summary_thumbnail(
                 db, ticket.user_id, ticket.card_id, ticket.media_id, ticket.version_id
             )
+        elif ticket.purpose == "study_note":
+            from .study_notes import require_note
+
+            require_access(db, ticket.user_id, ticket.card_id, now)
+            card, _ = published_card(db, ticket.card_id)
+            require_note(db, card, ticket.media_id, ticket.study_note_version_id)
         elif ticket.purpose == "content":
             require_access(db, ticket.user_id, ticket.card_id, now)
             published_card(db, ticket.card_id, ticket.version_id)

@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select, true
 from sqlalchemy.orm import Session
 
-from .content_contracts import SceneContent
+from .content_contracts import SceneContent, StudyNoteChange
 from .content_models import CardDraft, Media
 from .content_service import normalize, require_card, revision_matches
 from .dependencies import administrator, database, operation_key
@@ -32,7 +32,7 @@ from .job_models import Job
 from .jobs import enqueue
 from .media_api import save_media
 from .models import Audit, identifier
-from .response_contracts import FieldIssue
+from .response_contracts import FieldIssue, StudyNoteDraft
 from .storage import ObjectStorage
 from .transactions import operate
 
@@ -74,6 +74,7 @@ class ImportFileView(BaseModel):
 
 
 class ImportItemView(BaseModel):
+    study_note: StudyNoteDraft
     id: str
     revision: int
     content: SceneContent
@@ -119,6 +120,7 @@ class ImportConfirmation(BaseModel):
 
 
 class StageItem(BaseModel):
+    study_note: StudyNoteChange | None = None
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(ge=1)
     content: SceneContent
@@ -633,6 +635,20 @@ def routes():
                 revision_matches(db.get(CardDraft, body.target_card_id), body.target_revision)
             content = normalize(body.content)
             validate_source_media(db, batch, item, content)
+            from .study_notes import change_selection
+
+            if body.study_note and body.study_note.media_id:
+                validate_source_media(
+                    db,
+                    batch,
+                    item,
+                    {
+                        "image_id": None,
+                        "audio_id": None,
+                        "study_note_media_id": body.study_note.media_id,
+                    },
+                )
+            item.study_note = change_selection(db, item.study_note, body.study_note, admin.id)
             item.content = content
             item.selected = body.selected
             item.target_card_id = body.target_card_id

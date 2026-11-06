@@ -47,7 +47,10 @@ def prepare_media(settings, sessions, payload):
     if (
         len(data) != size
         or hashlib.sha256(data).hexdigest() != expected_hash
-        or len(data) > settings.audio_limit_mb * 1024 * 1024
+        or len(data)
+        > (settings.study_note_limit_mb if kind == "study_note" else settings.audio_limit_mb)
+        * 1024
+        * 1024
     ):
         raise DomainError(422, "media_invalid", "素材无法读取")
     thumbnail = None
@@ -74,6 +77,10 @@ def prepare_media(settings, sessions, payload):
         metadata = dict(
             content_type=content_type, width=width, height=height, thumbnail_id=thumb_id
         )
+    elif kind == "study_note":
+        from .study_notes import decoded_pdf
+
+        metadata = decoded_pdf(data, settings.study_note_limit_mb * 1024 * 1024)
     else:
         if previous_stage == "converting" and previous_duration:
             content_type, duration = previous_type, previous_duration

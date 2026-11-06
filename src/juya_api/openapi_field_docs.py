@@ -1,6 +1,30 @@
 """Chinese documentation metadata; wire names and validation rules stay unchanged."""
 
 FIELD_DOCS: dict[str, tuple[str, str]] = {
+    "filename": ("笔记文件名", "发布时学习笔记PDF的原始文件名；仅获权详情和管理员可见。"),
+    "study_note": (
+        "学习笔记",
+        "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。",
+    ),
+    "published_study_note": (
+        "已发布学习笔记",
+        "当前已发布的有效PDF元数据；与编辑候选分开读取，无笔记时为空。",
+    ),
+    "has_study_note": (
+        "含有效学习笔记",
+        "列表仅依据当前已发布有效PDF筛选，省略不限制；摘要只返回是否含笔记。",
+    ),
+    "study_note_version_id": (
+        "学习笔记独立版本",
+        "资源票据绑定的当前PDF发布版本，每次GET、HEAD及Range均重新校验。",
+    ),
+    "study_note_limit_bytes": ("学习笔记大小上限", "当前服务端实际允许的单个PDF最大字节数。"),
+    "attachment": ("有效编辑附件", "当前编辑稿的可用PDF媒体；失败替换保留原有效附件。"),
+    "pending_attachment": ("待处理替换附件", "当前选择但尚未可用的PDF，可保存草稿但不可发布。"),
+    "can_publish": (
+        "笔记是否就绪",
+        "仅表示选填PDF已就绪或已明确取消，其他正文发布必填条件仍独立校验。",
+    ),
     "access": ("学习权限", "当前用户对该内容的实时学习和点词查询权限。"),
     "access_token": ("登录令牌", "微信登录成功后返回的访问令牌，后续请求通过 Bearer 认证携带。"),
     "action": ("操作类型", "本次请求或审计记录对应的业务操作，取值以当前接口约束为准。"),
@@ -165,7 +189,7 @@ FIELD_DOCS: dict[str, tuple[str, str]] = {
     "items": ("条目列表", "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"),
     "job_id": ("异步任务标识", "处理当前资源或操作的持久异步任务 ID；未创建任务时可为空。"),
     "key": ("操作幂等键", "查询已接收写操作的幂等键，必须与原请求使用的键一致。"),
-    "kind": ("文件类型", "上传或处理的文件类别，例如 image、audio、zip、docx。"),
+    "kind": ("文件类型", "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"),
     "last_completed_at": ("最近完成时间", "当前用户最近一次完成该内容的时间。"),
     "last_login_at": ("最近登录时间", "用户最近一次成功登录的时间。"),
     "last_studied_at": ("最近学习时间", "用户最近一次有效学习完成记录的时间；暂无记录时为空。"),
@@ -234,7 +258,10 @@ FIELD_DOCS: dict[str, tuple[str, str]] = {
     "published_topic_order": ("已发布主题内顺序", "历史兼容字段：发布版本在原主题中的排序值。"),
     "published_total": ("已发布场景总数", "当前学习列表统计的已发布场景总数。"),
     "published_version_id": ("生成的发布版本标识", "本次发布或导入保存生成的不可变发布版本 ID。"),
-    "purpose": ("读取用途", "content 为正文访问，summary 为列表摘要等展示用途。"),
+    "purpose": (
+        "读取用途",
+        "content为正文，summary为列表摘要；study_note为独立版本PDF笔记，每次读取重验。",
+    ),
     "q": ("搜索关键词", "用于筛选当前资源列表的搜索文字。"),
     "queue_id": ("学习队列标识", "当前用户创建的来源学习队列 ID。"),
     "queue_token": ("听读队列凭据", "服务端签发的分类连续学习凭据，读取下一篇时按原值携带。"),
@@ -279,7 +306,10 @@ FIELD_DOCS: dict[str, tuple[str, str]] = {
     "scene_actual_free_count": ("实际免费场景数", "当前已发布且标记为免费的可用场景数量。"),
     "scene_free_count": ("免费场景数量", "统一场景权限策略当前返回的免费场景数量。"),
     "scene_items": ("场景学习记录", "所选日期完成的场景卡片及其完成时间。"),
-    "scope": ("排序范围", "category 为分类内排序，global 为全局排序，topic 为主题内排序。"),
+    "scope": (
+        "查询或排序范围",
+        "场景列表uncompleted为本人待学、published为全部已发布；排序接口category为分类、global为全局、topic为主题。",
+    ),
     "search": ("搜索关键词", "用于当前列表筛选的搜索文字。"),
     "selected": ("已选择保存", "该导入资料是否已被勾选进入本次保存范围。"),
     "sentence_id": ("正文句子标识", "时间轴词项对应的正文句子 ID，用于组织句内高亮。"),
@@ -382,6 +412,10 @@ FIELD_DOCS: dict[str, tuple[str, str]] = {
 }
 
 SCHEMA_TITLES: dict[str, str] = {
+    "StudyNoteChange": "学习笔记编辑决策",
+    "StudyNoteMetadata": "已发布学习笔记元数据",
+    "StudyNoteDraft": "学习笔记候选状态",
+    "StudyNoteCandidate": "同包同目录PDF候选",
     "AcceptSave": "确认保存导入资料",
     "AccessEvent": "学习权限变更事件",
     "AccessHistoryPage": "学习权限变更记录分页",
@@ -803,11 +837,13 @@ FIELD_OVERRIDES: dict[tuple[str, str], tuple[str, str]] = {
     ),
     ("CreateLearningQueue", "source"): (
         "学习队列来源",
-        "learning 为学习列表，favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。",
+        "learning 为待学列表，learning_notes 为含已学项的有效发布笔记列表；"
+        "favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。",
     ),
     ("QueueCreated", "source"): (
         "学习队列来源",
-        "learning 为学习列表，favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。",
+        "learning 为待学列表，learning_notes 为含已学项的有效发布笔记列表；"
+        "favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。",
     ),
     ("DictionaryResult", "source"): (
         "词义来源",

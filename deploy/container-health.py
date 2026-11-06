@@ -32,7 +32,7 @@ def main():
             engine, sessions = make_database(settings)
             try:
                 with sessions() as db:
-                    require_compatible_schema(db, minimum_revision=19)
+                    require_compatible_schema(db)
             finally:
                 engine.dispose()
         else:

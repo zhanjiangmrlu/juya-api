@@ -675,6 +675,40 @@
               "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
             },
             "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "uncompleted",
+                "published"
+              ],
+              "type": "string",
+              "default": "uncompleted",
+              "title": "查询或排序范围",
+              "description": "场景列表uncompleted为本人待学、published为全部已发布；排序接口category为分类、global为全局、topic为主题。"
+            },
+            "description": "场景列表uncompleted为本人待学、published为全部已发布；排序接口category为分类、global为全局、topic为主题。"
+          },
+          {
+            "name": "has_study_note",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "含有效学习笔记",
+              "description": "列表仅依据当前已发布有效PDF筛选，省略不限制；摘要只返回是否含笔记。"
+            },
+            "description": "列表仅依据当前已发布有效PDF筛选，省略不限制；摘要只返回是否含笔记。"
           }
         ],
         "responses": {
@@ -1011,14 +1045,33 @@
             "schema": {
               "enum": [
                 "content",
-                "summary"
+                "summary",
+                "study_note"
               ],
               "type": "string",
               "default": "content",
               "title": "读取用途",
-              "description": "content 为正文访问，summary 为列表摘要等展示用途。"
+              "description": "content为正文，summary为列表摘要；study_note为独立版本PDF笔记，每次读取重验。"
             },
-            "description": "content 为正文访问，summary 为列表摘要等展示用途。"
+            "description": "content为正文，summary为列表摘要；study_note为独立版本PDF笔记，每次读取重验。"
+          },
+          {
+            "name": "study_note_version_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "学习笔记独立版本",
+              "description": "资源票据绑定的当前PDF发布版本，每次GET、HEAD及Range均重新校验。"
+            },
+            "description": "资源票据绑定的当前PDF发布版本，每次GET、HEAD及Range均重新校验。"
           }
         ],
         "responses": {
@@ -11306,6 +11359,12 @@
       },
       "CardBrief": {
         "properties": {
+          "has_study_note": {
+            "type": "boolean",
+            "title": "含有效学习笔记",
+            "default": false,
+            "description": "列表仅依据当前已发布有效PDF筛选，省略不限制；摘要只返回是否含笔记。"
+          },
           "access": {
             "anyOf": [
               {
@@ -11739,13 +11798,14 @@
           "source": {
             "type": "string",
             "enum": [
+              "learning_notes",
               "learning",
               "favorites",
               "records",
               "day"
             ],
             "title": "学习队列来源",
-            "description": "learning 为学习列表，favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。"
+            "description": "learning 为待学列表，learning_notes 为含已学项的有效发布笔记列表；favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。"
           },
           "card_id": {
             "type": "string",
@@ -13395,7 +13455,7 @@
           "kind": {
             "type": "string",
             "title": "文件类型",
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           },
           "state": {
             "type": "string",
@@ -14163,6 +14223,18 @@
       },
       "PublishedDetail": {
         "properties": {
+          "study_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudyNoteMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
+          },
           "access": {
             "anyOf": [
               {
@@ -14264,13 +14336,14 @@
           "source": {
             "type": "string",
             "enum": [
+              "learning_notes",
               "learning",
               "favorites",
               "records",
               "day"
             ],
             "title": "学习队列来源",
-            "description": "learning 为学习列表，favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。"
+            "description": "learning 为待学列表，learning_notes 为含已学项的有效发布笔记列表；favorites 为收藏，records 为学习记录，day 为指定日期打卡记录。"
           },
           "total": {
             "type": "integer",
@@ -14759,6 +14832,45 @@
           "favorite_count"
         ],
         "title": "本人学习与打卡统计"
+      },
+      "StudyNoteMetadata": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "title": "发布版本标识",
+            "description": "绑定此次学习或操作的不可变内容发布版本 ID。"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "媒体标识",
+            "description": "已上传媒体的 ID，用于关联图片、音频或签发访问票据。"
+          },
+          "filename": {
+            "type": "string",
+            "title": "笔记文件名",
+            "description": "发布时学习笔记PDF的原始文件名；仅获权详情和管理员可见。"
+          },
+          "size": {
+            "type": "integer",
+            "title": "文件大小",
+            "description": "原始文件或返回资源的大小，单位为字节。"
+          },
+          "state": {
+            "type": "string",
+            "const": "ready",
+            "title": "当前状态",
+            "description": "当前资源处理状态或用户学习状态，具体结构以所在模型为准。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version_id",
+          "media_id",
+          "filename",
+          "size",
+          "state"
+        ],
+        "title": "已发布学习笔记元数据"
       },
       "Summary": {
         "properties": {

@@ -1,5 +1,7 @@
 """Thin role-specific scene HTTP adapters over the same publication domain."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
@@ -25,7 +27,14 @@ from .content_service import (
     save_candidate,
 )
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key, write_transaction
+from .dependencies import (
+    administrator,
+    database,
+    learner,
+    operation_key,
+    read_snapshot,
+    write_transaction,
+)
 from .discovery_models import ReadingStart
 from .import_models import ImportItem
 from .import_service import owned_batch
@@ -41,6 +50,7 @@ from .response_contracts import (
     PublishedDetail,
     PublishedPreview,
 )
+from .study_notes import note_filter, note_metadata
 from .transactions import operate
 
 
@@ -141,7 +151,7 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = create_candidate(db, body.content, admin.id, now)
+            card = create_candidate(db, body.content, admin.id, now, study_note=body.study_note)
             return card_view(db, card)
 
         return operate(
@@ -174,6 +184,7 @@ def admin_routes():
             "card_id": card.id,
             "version_id": version.id,
             "content": version.payload,
+            "study_note": note_metadata(db, card),
             "mode": "published",
         }
 
@@ -189,7 +200,9 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = save_candidate(db, card_id, body.revision, body.content, admin.id, now)
+            card = save_candidate(
+                db, card_id, body.revision, body.content, admin.id, now, study_note=body.study_note
+            )
             return card_view(db, card)
 
         return operate(
@@ -303,11 +316,13 @@ def admin_routes():
 def mini_routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["published learning content"])
 
-    @router.get("/cards", response_model=LearningCardPage)
+    @router.get("/cards", response_model=LearningCardPage, dependencies=[Depends(read_snapshot)])
     def listing(
         request: Request,
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
+        scope: Literal["uncompleted", "published"] = "uncompleted",
+        has_study_note: bool | None = None,
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
@@ -316,16 +331,21 @@ def mini_routes():
         access_snapshot = learning_access_snapshot(db, user.id, now)
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
         published_total = db.scalar(select(func.count()).select_from(query.subquery()))
-        query = query.where(
-            Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id))
-        )
+        if scope == "uncompleted":
+            query = query.where(
+                Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id))
+            )
+        if has_study_note is not None:
+            query = query.where(note_filter() if has_study_note else ~note_filter())
         total = db.scalar(select(func.count()).select_from(query.subquery()))
+        page = min(page, max(1, ((total or 0) + limit - 1) // limit))
         rows = db.scalars(
             query.order_by(Card.is_free.desc(), Card.sort_order, Card.id)
             .offset((page - 1) * limit)
             .limit(limit)
         ).all()
         ids = [card.id for card in rows]
+        noted = set(db.scalars(select(Card.id).where(Card.id.in_(ids), note_filter())))
         versions = {
             v.id: v
             for v in db.scalars(
@@ -380,6 +400,7 @@ def mini_routes():
             items.append(
                 {
                     "id": card.id,
+                    "has_study_note": card.id in noted,
                     "access": learning_access(
                         db, user.id, card.id, now, snapshot=access_snapshot, card=card
                     ),
@@ -441,6 +462,7 @@ def mini_routes():
         reading = db.get(ReadingStart, (user.id, card.id))
         return {
             "access": access,
+            "study_note": note_metadata(db, card),
             "audio_duration": audio.duration if audio else None,
             "thumbnail_id": image.thumbnail_id if image else None,
             "card_id": card.id,

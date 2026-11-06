@@ -1,5 +1,7 @@
 """Public response whitelists used by runtime serialization and generated clients."""
 
+from __future__ import annotations
+
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -73,7 +75,35 @@ class FieldIssue(PublicModel):
     message: str
 
 
+class StudyNoteMetadata(PublicModel):
+    version_id: str
+    media_id: str
+    filename: str
+    size: int
+    state: Literal["ready"]
+
+
+class StudyNoteCandidate(PublicModel):
+    file_id: str
+    name: str
+    size: int
+    media_id: str | None
+    state: str
+    error_code: str | None
+    parent_id: str
+
+
+class StudyNoteDraft(PublicModel):
+    action: Literal["keep", "set", "remove", "unresolved"]
+    attachment: MediaMetadata | None = None
+    pending_attachment: MediaMetadata | None = None
+    can_publish: bool
+    candidates: list[StudyNoteCandidate] = Field(default_factory=list)
+
+
 class CardView(PublicModel):
+    study_note: StudyNoteDraft
+    published_study_note: StudyNoteMetadata | None = None
     free_revision: int = 1
     is_free: bool = False
     id: str
@@ -97,6 +127,7 @@ class AdminCardPage(Page[CardView]):
 
 
 class CardPreview(PublicModel):
+    study_note: StudyNoteDraft
     preview_id: str
     revision: int
     content: SceneContent
@@ -112,6 +143,7 @@ class CardState(PublicModel):
 
 
 class CardBrief(PublicModel):
+    has_study_note: bool = False
     access: LearningPermission | None = None
     id: str
     name: str
@@ -137,6 +169,7 @@ class ReadingPosition(PublicModel):
 
 
 class PublishedDetail(PublicModel):
+    study_note: StudyNoteMetadata | None = None
     access: LearningPermission | None = None
     audio_duration: float | None
     thumbnail_id: str | None = None
@@ -150,6 +183,7 @@ class PublishedDetail(PublicModel):
 
 
 class PublishedPreview(PublicModel):
+    study_note: StudyNoteMetadata | None = None
     card_id: str
     version_id: str
     content: SceneContent
@@ -298,6 +332,7 @@ class ErrorResponse(PublicModel):
 
 
 class UploadConfiguration(PublicModel):
+    study_note_limit_bytes: int
     image_limit_bytes: int
     audio_limit_bytes: int
     archive_limit_bytes: int
@@ -306,3 +341,6 @@ class UploadConfiguration(PublicModel):
 
 class ClientConfiguration(PublicModel):
     avatar_limit_bytes: int
+
+
+StudyNoteDraft.model_rebuild()

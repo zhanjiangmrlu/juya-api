@@ -38,10 +38,19 @@ def test_comment_migration_is_complete_and_frozen():
     from juya_api.database import Base
 
     comments = migration().COMMENTS
-    assert set(comments) == set(Base.metadata.tables) | {"alembic_version"}
+    assert set(comments) == (set(Base.metadata.tables) - {"card_study_note_versions"}) | {
+        "alembic_version"
+    }
     for name, table in Base.metadata.tables.items():
+        if name == "card_study_note_versions":
+            continue  # New structure/comment coverage lives in migration 0026.
         assert comments[name]["table"] == table.comment
-        assert comments[name]["columns"] == {c.name: c.comment for c in table.columns}
+        assert comments[name]["columns"] == {
+            c.name: c.comment
+            for c in table.columns
+            if c.name
+            not in {"study_note", "study_note_version_id", "current_study_note_version_id"}
+        }
 
 
 def test_sqlite_comment_migration_leaves_data_untouched():
@@ -115,8 +124,8 @@ def test_mysql_upgrade_preserves_definitions_and_data_and_resumes(mysql_schema):
     ):
         module.upgrade()
     event.remove(engine, "before_cursor_execute", interrupt)
-    command.upgrade(config, "head")
-    command.upgrade(config, "head")
+    command.upgrade(config, "0025")
+    command.upgrade(config, "0025")
     with engine.connect() as db:
         assert column_attributes(db) == before
         assert db.execute(text("SELECT * FROM administrators")).all() == [
@@ -141,6 +150,7 @@ def test_mysql_upgrade_preserves_definitions_and_data_and_resumes(mysql_schema):
             )
             == 0
         )
+    command.upgrade(config, "head")
     command.check(config)
 
 

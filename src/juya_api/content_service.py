@@ -13,6 +13,16 @@ from .job_models import Job
 from .models import Audit
 from .persistence import insert_once
 from .security import fingerprint
+from .study_notes import (
+    candidate_fingerprint,
+    change_selection,
+    effective_media_id,
+    note_issues,
+    note_metadata,
+    publish_note,
+    published_note,
+    selection_view,
+)
 
 
 def source_candidates(dialogue: list[dict], english: str) -> list[dict]:
@@ -167,6 +177,8 @@ def card_view(db, card: Card) -> dict:
     display = current.payload if current and card.status != "draft" else draft.payload
     display_image = db.get(Media, display["image_id"]) if display["image_id"] else None
     return {
+        "study_note": selection_view(db, draft.study_note, card),
+        "published_study_note": note_metadata(db, card),
         "id": card.id,
         "display_name": display["name"],
         "display_title_en": display.get("title_en", ""),
@@ -181,8 +193,11 @@ def card_view(db, card: Card) -> dict:
         "sort_order": card.sort_order,
         "updated_at": timestamp(draft.updated_at),
         "has_unpublished_changes": current is None
-        or current.content_hash != fingerprint(draft.payload),
-        "issues": validate_publication(db, draft.payload),
+        or current.content_hash != fingerprint(draft.payload)
+        or effective_media_id(db, draft.study_note, card)
+        != (published_note(db, card).media_id if published_note(db, card) else None)
+        or bool(note_issues(db, draft.study_note, card)),
+        "issues": validate_publication(db, draft.payload) + note_issues(db, draft.study_note, card),
     }
 
 
@@ -240,7 +255,7 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
     assert draft is not None
     revision_matches(draft, revision)
     preview = db.get(Preview, preview_id)
-    content_hash = fingerprint(draft.payload)
+    content_hash = candidate_fingerprint(db, draft, card)
     if (
         not preview
         or preview.admin_id != admin_id
@@ -250,10 +265,10 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
         raise DomainError(409, "preview_required", "请重新预览并确认发布")
     if preview.draft_revision != draft.revision or preview.content_hash != content_hash:
         raise DomainError(409, "preview_changed", "预览资料已变化，请重新核对")
-    issues = validate_publication(db, draft.payload)
+    issues = validate_publication(db, draft.payload) + note_issues(db, draft.study_note, card)
     if issues:
         raise DomainError(422, "publication_invalid", "请先补充发布资料", issues)
-    return draft, content_hash
+    return draft, fingerprint(draft.payload)
 
 
 def publish_version(
@@ -287,6 +302,7 @@ def publish_version(
         db.add(version)
         db.flush()
         card.current_version_id, card.status = version.id, "published"
+    note_changed = publish_note(db, card, draft, now)
     if not was_published or changed:
         first = db.scalar(
             select(func.min(Card.sort_order)).where(
@@ -295,17 +311,20 @@ def publish_version(
         )
         card.sort_order = (first if first is not None else 1) - 1
         advance_catalog(db)
+    elif note_changed:
+        advance_catalog(db)
     from .pronunciation import enqueue_prewarm
 
-    enqueue_prewarm(
-        db,
-        settings or db.info["settings"],
-        card.id,
-        card.current_version_id,
-        admin_id,
-        now,
-        revive=not was_published,
-    )
+    if not was_published or changed:
+        enqueue_prewarm(
+            db,
+            settings or db.info["settings"],
+            card.id,
+            card.current_version_id,
+            admin_id,
+            now,
+            revive=not was_published,
+        )
     db.add(Audit(admin_id=admin_id, action="card.publish", object_id=card.id, occurred_at=now))
     db.flush()
     return card_view(db, card)
@@ -316,19 +335,20 @@ def make_preview(db, card: Card, admin_id: str, revision: int, now):
     draft = db.get(CardDraft, card.id)
     assert draft is not None
     revision_matches(draft, revision)
-    issues = validate_publication(db, draft.payload)
+    issues = validate_publication(db, draft.payload) + note_issues(db, draft.study_note, card)
     if issues:
         raise DomainError(422, "publication_invalid", "请先补充发布资料", issues)
     preview = Preview(
         card_id=card.id,
         admin_id=admin_id,
         draft_revision=draft.revision,
-        content_hash=fingerprint(draft.payload),
+        content_hash=candidate_fingerprint(db, draft, card),
         expires_at=now + timedelta(minutes=30),
     )
     db.add(preview)
     db.flush()
     return {
+        "study_note": selection_view(db, draft.study_note, card),
         "preview_id": preview.id,
         "revision": draft.revision,
         "content": draft.payload,
@@ -358,24 +378,59 @@ def candidate_media_ready(db, content, admin_id):
             raise DomainError(409, "media_processing", "请等待素材处理完成，再保存草稿")
 
 
-def create_candidate(db, content, admin_id, now):
+def create_candidate(db, content, admin_id, now, *, study_note=None):
     """Create a new stable card and candidate using the same rules for manual/import entry."""
     candidate_media_ready(db, content, admin_id)
     card = Card(sort_order=(db.scalar(select(func.max(Card.sort_order))) or 0) + 1, created_at=now)
     db.add(card)
     db.flush()
-    db.add(CardDraft(card_id=card.id, revision=1, payload=normalize(content), updated_at=now))
+    db.add(
+        CardDraft(
+            card_id=card.id,
+            revision=1,
+            payload=normalize(content),
+            updated_at=now,
+            study_note=change_selection(db, None, study_note, admin_id, card),
+        )
+    )
     db.add(Audit(admin_id=admin_id, action="card.create", object_id=card.id, occurred_at=now))
     db.flush()
     return card
 
 
-def save_candidate(db, card_id, revision, content, admin_id, now):
+def save_candidate(
+    db,
+    card_id,
+    revision,
+    content,
+    admin_id,
+    now,
+    *,
+    study_note=None,
+    preserve_equivalent_body=False,
+):
     """An import update can only replace the explicitly confirmed current candidate."""
+    catalog_lock(db)
     card = require_card(db, card_id)
-    draft = revision_matches(db.get(CardDraft, card.id), revision)
+    db.refresh(card)
+    draft_row = db.get(CardDraft, card.id)
+    if draft_row is not None:
+        db.refresh(draft_row)
+    draft = revision_matches(draft_row, revision)
     candidate_media_ready(db, content, admin_id)
-    draft.payload = normalize(content)
+    draft.study_note = change_selection(db, draft.study_note, study_note, admin_id, card)
+    candidate = normalize(content)
+    if preserve_equivalent_body:
+        # Reimported DOCX/media get fresh generated IDs even when every byte is unchanged.
+        # Resolve equivalence under the same version lock used to save the target.
+        from .import_service import content_hash
+
+        current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
+        for baseline in [draft.payload, *([current.payload] if current else [])]:
+            if content_hash(db, candidate) == content_hash(db, baseline):
+                candidate = baseline
+                break
+    draft.payload = candidate
     draft.revision += 1
     draft.updated_at = now
     db.add(Audit(admin_id=admin_id, action="card.save", object_id=card.id, occurred_at=now))

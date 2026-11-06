@@ -11,6 +11,36 @@ from PIL import Image, ImageDraw
 from juya_api.media_api import decoded_audio
 
 
+def study_note_pdf():
+    """Build a readable optional sample; the importer never requires this attachment."""
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=595, height=842)
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+    )
+    stream = DecodedStreamObject()
+    stream.set_data(
+        b"BT /F1 24 Tf 60 760 Td (Ordering Coffee) Tj "
+        b"/F1 14 Tf 0 -48 Td (Optional study notes - replace or remove this sample.) Tj "
+        b"0 -36 Td (Could I get a latte, please?) Tj "
+        b"0 -28 Td (Useful phrase: Could I get ... please?) Tj ET"
+    )
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio-path", required=True, type=Path)
@@ -68,6 +98,7 @@ def main():
         archive.writestr("在咖啡店点单/内容.docx", docx.getvalue())
         archive.writestr("在咖啡店点单/场景图.png", picture.getvalue())
         archive.writestr("在咖啡店点单/完整音频.wav", audio)
+        archive.writestr("在咖啡店点单/学习笔记.pdf", study_note_pdf())
         archive.writestr(
             "填写说明.txt",
             "一张卡片一个文件夹，配套一份内容DOCX、一张完整场景图及一份完整对话音频。\n"
@@ -75,7 +106,11 @@ def main():
             "独立DOCX入口允许多个一级标题，ZIP的每个文件夹只能包含一个一级标题。\n"
             "一级标题填写中文标题，紧接正文填写英文标题：Ordering Coffee；新发布需双标题完整。\n"
             "音频支持MP3、M4A、WAV、AAC；保留原件并兼容处理为MP3。\n"
-            "本句释义和音标独立选填；语块选填，不需要上传词汇音频或语块图片。\n",
+            "本句释义和音标独立选填；语块选填，不需要上传词汇音频或语块图片。\n"
+            "学习笔记PDF选填，每卡最多一份；无PDF的旧ZIP正常导入和发布。\n"
+            "同一卡片文件夹内唯一PDF自动关联；多个PDF需在核对页选一份或明确不添加。\n"
+            "待选择、无效或处理中的PDF可以保存草稿，发布前须修正或明确移除。\n"
+            "更新旧卡时未提供PDF会保留原笔记；明确移除后须发布才对用户生效。\n",
         )
     print(f"Built {target.name}; {duration:.2f}s reviewed sample audio")
 

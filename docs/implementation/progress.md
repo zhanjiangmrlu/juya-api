@@ -460,3 +460,12 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 ## 2026-11-05 部分匹配高亮
 
 按用户要求实现匹配词高亮/遗漏词跳过及已有任务复用（源码待发布）；生产仅《银行》复用原结果恢复ready/118词，无新ASR提交。详见 `docs/verification/listening-partial-highlighting-20261105.md`。
+
+## 2026-11-06 整合07学习笔记后端（Task 1）
+
+- 已在用户指定的test分支实现独立PDF笔记版本、草稿有效/待处理附件与保留/设置/移除/未决决策、0026增量迁移、实际PDF异步校验、候选/发布预览、独立版本下载票据、SQL笔记筛选与learning_notes来源队列。最低schema0026，code contract3；API与worker健康探针统一要求新schema。
+- ZIP按包实例与完整目录隔离，旧包省略PDF保留目标；去重含当前/有效回退PDF字节摘要及动作，等价正文复用原行/媒体/正文版本。PDF-only发布保持原排序、阅读位置、音频和学习事实，不生成TTS；笔记变更推进目录版本。
+- 真实MySQL列表使用同一读取快照保证total、有效页、行与has_study_note一致。资源GET/HEAD/Range仍逐次复验当前会话、卡片、免费/授权及独立笔记版本，不写学习数据。详细接入见 `study-notes-contract.md` 与已导出的两份OpenAPI。
+- 经两轮独立定向审查修复四项Important（ZIP正文漂移、内部keep、有效/待处理传递及分页快照）及同一项回退PDF重存去重；复审均通过。先RED后GREEN的专项日志保存在私有`.private/study-notes-fix-round*.log`；SQLite导入专项83通过/4条件跳过，MySQL专项33通过。
+- 最终完整SQLite：638通过/49条件跳过，204.99秒；48项需真实MySQL、1项需隔离Redis。ruff check、ruff format --check和mypy src通过。最终完整MySQL：683通过/4条件跳过，434.23秒；跳过隔离Redis集成1项和SQLite专属回归3项。完整日志分别为`.private/study-notes-sqlite.log`和`.private/study-notes-mysql-full.log`，均exit0。
+- 本Task仅本地隔离测试和源码提交；未推送、部署、业务库迁移、OSS/微信上传。真实微信文档预览、iOS/Android、真实云资源及前端交互待后续验收。其他历史授权与发布记录不扩大本Task范围。
