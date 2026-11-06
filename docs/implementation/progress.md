@@ -469,3 +469,4 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 - 经两轮独立定向审查修复四项Important（ZIP正文漂移、内部keep、有效/待处理传递及分页快照）及同一项回退PDF重存去重；复审均通过。先RED后GREEN的专项日志保存在私有`.private/study-notes-fix-round*.log`；SQLite导入专项83通过/4条件跳过，MySQL专项33通过。
 - 最终完整SQLite：638通过/49条件跳过，204.99秒；48项需真实MySQL、1项需隔离Redis。ruff check、ruff format --check和mypy src通过。最终完整MySQL：683通过/4条件跳过，434.23秒；跳过隔离Redis集成1项和SQLite专属回归3项。完整日志分别为`.private/study-notes-sqlite.log`和`.private/study-notes-mysql-full.log`，均exit0。
 - 本Task仅本地隔离测试和源码提交；未推送、部署、业务库迁移、OSS/微信上传。真实微信文档预览、iOS/Android、真实云资源及前端交互待后续验收。其他历史授权与发布记录不扩大本Task范围。
+- 最后补验原隔离Redis条件项：使用现有redis-server binary新建127.0.0.1临时端口/目录、空DB15，真实Celery独立子进程定向验证`test_committed_upload_survives_missing_dispatch_and_duplicate_broker_delivery`，1通过（2.17秒，exit0）。自己的Redis进程和临时目录已清理；未连接既有/远程broker，未变更功能。原完整套件计数不变。私有证据`.private/study-notes-redis-verification.md`及`study-notes-redis-integration.log`。
