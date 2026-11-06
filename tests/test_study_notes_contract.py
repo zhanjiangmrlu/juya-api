@@ -338,7 +338,7 @@ def test_explicit_null_previous_is_rejected_instead_of_silently_clearing_fallbac
     assert result.status_code == 422
 
 
-def historical_note_target(admin):
+def historical_note_target(admin, *, published=True):
     from .content_helpers import recording
     from .test_imports import document
 
@@ -353,7 +353,8 @@ def historical_note_target(admin):
         ],
     )
     saved = save_import(admin, batch)
-    return publish(admin, admin.get(f"/api/admin/v1/cards/{saved['saved_card_id']}").json())
+    target = admin.get(f"/api/admin/v1/cards/{saved['saved_card_id']}").json()
+    return publish(admin, target) if published else target
 
 
 def choose_historical_fallback(admin, target, *, cancel=False):
@@ -526,3 +527,53 @@ def test_certificate_encryption_is_reported_as_unreadable_encryption_not_corrupt
     status = admin.get(f"/api/admin/v1/media/{medium['id']}/status").json()
     assert status["error_code"] == "study_note_encrypted"
     assert status["error"] == "PDF已加密且无法打开，请解除密码保护后重新上传"
+
+
+def test_old_zip_review_inherits_only_current_target_note_and_keeps_omission(admin, system):
+    from juya_api.import_models import ImportItem
+
+    from .test_imports import document
+
+    original = historical_note_target(admin, published=False)
+    assert original["study_note"]["candidates"]
+    b = upload(admin)
+    c = upload(admin, b"invalid")
+    process_jobs(admin)
+    pending = save_note(admin, original, {"action": "set", "media_id": c["id"]})
+    ready = save_note(admin, draft(admin), {"action": "set", "media_id": b["id"]})
+    batch, item = import_package(admin, "old.zip", [("dir/内容.docx", document("新正文"))])
+    path = f"/api/admin/v1/imports/{batch}/items/{item['id']}"
+    for target in (pending, ready, None, pending):
+        body = {"revision": item["revision"], "content": ready["content"], "selected": True}
+        if target:
+            body.update(
+                target_card_id=target["id"],
+                target_revision=target["draft_revision"],
+                update_confirmed=True,
+            )
+        response = admin.patch(path, headers=key(), json=body)
+        assert response.status_code == 200, response.text
+        item = response.json()
+        note = item["study_note"]
+        assert note["candidates"] == []
+        if target:
+            expected = target["study_note"]
+            assert note["attachment"] == expected["attachment"]
+            assert note["pending_attachment"] == expected["pending_attachment"]
+            assert note["can_publish"] == expected["can_publish"]
+        else:
+            assert note["attachment"] is None and note["pending_attachment"] is None
+            assert note["can_publish"]
+        issues = [issue["message"] for issue in item["issues"] if issue["field"] == "study_note"]
+        expected_issues = (
+            [pending["study_note"]["pending_attachment"]["error"]] if target == pending else []
+        )
+        assert issues == expected_issues
+        assert item["state"] == ("incomplete" if issues else "ready")
+        with system["sessions"]() as db:
+            assert db.get(ImportItem, item["id"]).study_note is None
+    saved = save_import(admin, batch)
+    actual = admin.get(f"/api/admin/v1/cards/{saved['saved_card_id']}").json()["study_note"]
+    assert actual["attachment"] == note["attachment"]
+    assert actual["pending_attachment"] == note["pending_attachment"]
+    assert actual["can_publish"] == note["can_publish"]

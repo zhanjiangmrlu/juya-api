@@ -872,3 +872,52 @@ def test_resaving_pending_note_tracks_fallback_content_and_ignores_equivalent_up
     assert admin.get(f"/api/admin/v1/imports/{batch}/confirmation").json()["count"] == 0
     cancelled = save_note(admin, card, {"action": "keep"})
     assert cancelled["study_note"]["attachment"]["id"] == c["id"]
+
+
+def test_pdf_ticket_requires_issuing_bearer_on_every_read(admin, mini):
+    from .test_auth import login
+    from .test_learning_access import change as authorize
+    from .test_learning_access import user_id
+
+    medium = upload(admin)
+    process_jobs(admin)
+    card = publish(
+        admin, save_note(admin, draft(admin), {"action": "set", "media_id": medium["id"]})
+    )
+    authorize(admin, user_id(mini), "grant")
+    path = f"/api/admin/v1/cards/{card['id']}/free-access"
+    admin.put(
+        path, headers=key(), json={"is_free": False, "revision": admin.get(path).json()["revision"]}
+    )
+    url = ticket(mini, card, card["published_study_note"])
+
+    native_urls = [
+        mini.get(
+            f"/api/mini/v1/cards/{card['id']}/media/{card['content'][field]}/url",
+            params={"version_id": card["current_version_id"]},
+        ).json()["url"]
+        for field in ("image_id", "audio_id")
+    ]
+
+    def read():
+        return [
+            mini.get(url).status_code,
+            mini.head(url).status_code,
+            mini.get(url, headers={"Range": "bytes=0-3"}).status_code,
+        ]
+
+    assert read() == [200, 200, 206]
+    mini.headers.pop("Authorization")
+    assert read() == [401, 401, 401]
+    for native_url in native_urls:
+        assert mini.get(native_url).status_code == 200
+        assert mini.head(native_url).status_code == 200
+        assert mini.get(native_url, headers={"Range": "bytes=0-3"}).status_code == 206
+    for code in ("bob:other", "alice:other"):
+        access = login(mini, code, key()["Idempotency-Key"]).json()["access_token"]
+        mini.headers["Authorization"] = "Bearer " + access
+        if code.startswith("bob:"):
+            assert (
+                mini.get(f"/api/mini/v1/cards/{card['id']}?mark_started=false").status_code == 403
+            )
+        assert read() == [401, 401, 401]

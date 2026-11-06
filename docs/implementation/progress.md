@@ -487,3 +487,10 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 - 先真实HTTP RED4项，再真实MySQL四同步点RED；修复后分别11通过/4条件跳过及4通过。扩展SQLite专项123通过/7条件跳过，MySQL专项47通过；独立定向审查11项SQLite通过并核对4个MySQL同步点，未发现阻断。
 - 冻结后一次完整SQLite：686通过/53条件跳过（230.20秒），完整真实MySQL：735通过/4条件跳过（484.20秒），均exit0。SQLite跳过52项MySQL条件及1项Redis；MySQL跳过1项Redis及3项SQLite专属，队列传输未改，沿用此前独立Redis补验。日志`.private/study-notes-task1c-full-{sqlite,mysql}.log`。
 - ruff check、316文件格式、86源文件mypy及diff-check通过。契约第3/4节、mini OpenAPI及中文query已更新；报告`.superpowers/sdd/2026-11-06-study-notes/task-1c-report.md`。仅本地API源码/隔离测试，未改前端、业务库、远程环境或推送；小程序实际推进/跳过与真机验证交Task3/后续验收。
+
+## 2026-11-06 整合07最终整体审查修复
+
+- 学习笔记 PDF 的 GET、HEAD 和 Range 兑现请求须携带签发票据的 Bearer 会话。与票据不匹配的会话或匿名请求返回 401，签发会话继续重验当前版本与授权。图片和音频继续支持原生票据读取。
+- ZIP 核对和保存共用目标草稿的笔记决策计算，核对显示有效附件、失败待处理件与原因。选择候选仅限当前包／目录，切换或清除目标重新计算；保留省略动作的落盘及去重语义。
+- 完整临时 SQLite 688 通过/53 条件跳过（245.43 秒），本机 Unix socket 独立 MySQL 库 juya_verify 737 通过/4 条件跳过（487.91 秒）。SQLite 的 52 项 MySQL 条件及 MySQL 的 3 项 SQLite 条件在各自对应环境运行；两个环境各跳过 1 项专用 Redis 检查。队列传输未改动，沿用此前独立 Redis/Celery 专项 1 通过。Ruff、316 文件格式、86 源文件 mypy 及 diff 检查均通过。
+- 后台 310 单测及 6 项相关 Chrome 用例、小程序 625 单测与本地 H5/微信构建均通过。原 450 KiB 限制下，test / production 主包分别为 459435 B / 458354 B。最终定向复审核对 5 项及 1 项显示收尾全部关闭，真机 PDF、耳机与系统面板仍待验。三仓为本地 test 提交，未推送、部署、迁移远程数据库或上传 OSS/微信。

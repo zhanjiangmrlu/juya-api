@@ -604,6 +604,9 @@ def mini_routes():
         elif ticket.purpose == "study_note":
             from .study_notes import require_note
 
+            scheme, _, bearer = request.headers.get("Authorization", "").partition(" ")
+            if scheme.lower() != "bearer" or not bearer or digest(bearer) != ticket.session_digest:
+                raise DomainError(401, "login_required", "请主动登录后继续")
             require_access(db, ticket.user_id, ticket.card_id, now)
             card, _ = published_card(db, ticket.card_id)
             require_note(db, card, ticket.media_id, ticket.study_note_version_id)

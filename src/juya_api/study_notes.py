@@ -151,14 +151,12 @@ def change_selection(db, previous, change, admin_id, card=None):
     """Omitted changes preserve editor intent; explicit keep cancels a pending replacement."""
     if change is None:
         return previous
-    fallback_id = effective_media_id(db, previous, card)
     if "previous_media_id" in change.model_fields_set:
         fallback = ready_pdf(db, change.previous_media_id)
         if not fallback or fallback.owner_id != admin_id:
             raise DomainError(
                 422, "study_note_previous_invalid", "请选择当前管理员已校验可用的PDF作为保留附件"
             )
-        fallback_id = fallback.id
     if change.action == "set":
         medium = db.get(Media, change.media_id)
         if (
@@ -168,13 +166,23 @@ def change_selection(db, previous, change, admin_id, card=None):
             or medium.owner_id != admin_id
         ):
             raise DomainError(422, "study_note_media_invalid", "请选择当前管理员上传的学习笔记PDF")
+    return project_selection(db, previous, change.model_dump(), card)
+
+
+def project_selection(db, previous, change, card=None):
+    """Project a staged change onto the target draft without changing either source."""
+    if change is None:
+        return previous
+    action = change["action"]
+    fallback_id = change.get("previous_media_id") or effective_media_id(db, previous, card)
+    if action == "set":
         return {
             "action": "set",
-            "media_id": medium.id,
+            "media_id": change["media_id"],
             "previous_media_id": fallback_id,
             "candidate_file_ids": (previous or {}).get("candidate_file_ids", []),
         }
-    if change.action == "keep":
+    if action == "keep":
         note = published_note(db, card) if card else None
         restored = (
             previous.get("previous_media_id")
@@ -183,8 +191,8 @@ def change_selection(db, previous, change, admin_id, card=None):
         )
         return {"action": "keep", "media_id": restored}
     return {
-        "action": change.action,
-        "previous_media_id": fallback_id if change.action == "unresolved" else None,
+        "action": action,
+        "previous_media_id": fallback_id if action == "unresolved" else None,
         "candidate_file_ids": (previous or {}).get("candidate_file_ids", []),
     }
 
@@ -226,7 +234,7 @@ def note_issues(db, selection, card=None):
     return []
 
 
-def selection_view(db, selection, card=None):
+def selection_view(db, selection, card=None, *, candidate_file_ids=None):
     """Render effective/pending objects and provenance without mutating candidate revision."""
     from .import_models import ImportFile
     from .media_api import media_view
@@ -240,7 +248,9 @@ def selection_view(db, selection, card=None):
         else None
     )
     candidates = []
-    for file_id in selection.get("candidate_file_ids", []):
+    if candidate_file_ids is None:
+        candidate_file_ids = selection.get("candidate_file_ids", [])
+    for file_id in candidate_file_ids:
         row = db.get(ImportFile, file_id)
         if row:
             medium = db.get(Media, row.media_id) if row.media_id else None

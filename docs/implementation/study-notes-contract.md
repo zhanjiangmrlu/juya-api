@@ -25,7 +25,7 @@
 
 ## 2. ZIP核对
 
-仅场景ZIP支持可选PDF；不扩展听读或独立DOCX笔记匹配。每个包实例parent_id与完整目录隔离：唯一PDF自动set，多份为unresolved，零份保留keep。核对结果 `ImportItemView.study_note` 与CardView同型。选定一份用set，选择不添加用remove。无效、超限、多候选均可保存待处理草稿，不能发布；修正或明确移除后继续。保存收据及dedupe包括笔记内容、有效回退PDF内容及动作，按字节而非上传ID识别，重复提交仍沿用原逐项幂等。同正文、同图片与音频字节的ZIP只更换PDF时，保存会复用目标等价正文，保持正文行ID、原媒体ID、正文版本与阅读位置。
+仅场景ZIP支持可选PDF；不扩展听读或独立DOCX笔记匹配。每个包实例parent_id与完整目录隔离：唯一PDF自动set，多份为unresolved，零份保留keep。核对结果 `ImportItemView.study_note` 与CardView同型。确认更新目标后，核对附件、待处理件、issues与发布资格均按目标草稿和本项决策计算；候选列表仅来自当前包／目录。切换或清除目标会重新计算，继承结果不写入暂存决策。选定一份用set，选择不添加用remove。无效、超限、多候选均可保存待处理草稿，不能发布；修正或明确移除后继续。保存收据及dedupe包括笔记内容、有效回退PDF内容及动作，按字节而非上传ID识别，重复提交仍沿用原逐项幂等。同正文、同图片与音频字节的ZIP只更换PDF时，保存会复用目标等价正文，保持正文行ID、原媒体ID、正文版本与阅读位置。
 
 ## 3. 用户列表与详情
 
@@ -48,7 +48,7 @@
 
 ## 4. 下载票据与队列
 
-复用 `GET /api/mini/v1/cards/{card_id}/media/{media_id}/url?purpose=study_note&study_note_version_id={note.version_id}`，返回原ResourceURL（相对url、expires_at）。笔记用途无需正文version_id；必须携带独立study_note_version_id。每次申请与访问票据均重验会话、卡片发布/删除、免费或有效授权、当前PDF媒体及独立笔记版本。GET、HEAD及Range全部相同；替换/移除后旧票据409 study_note_changed。无公开永久链接；客户端每次重试应刷新元数据/权限并重新获取票据，临时文件按账号+卡片+独立笔记版本隔离。
+复用 `GET /api/mini/v1/cards/{card_id}/media/{media_id}/url?purpose=study_note&study_note_version_id={note.version_id}`，返回原ResourceURL（相对url、expires_at）。笔记用途无需正文version_id；必须携带独立study_note_version_id。每次申请与访问票据均重验会话、卡片发布/删除、免费或有效授权、当前PDF媒体及独立笔记版本。笔记兑现请求必须携带签发会话的Authorization Bearer，匿名、其他用户或同账号另一会话均返回401。GET、HEAD及Range全部相同；替换/移除后旧票据409 study_note_changed。无公开永久链接；客户端每次重试应刷新元数据/权限并重新获取票据，临时文件按账号+卡片+独立笔记版本隔离。
 
 原 `POST /api/mini/v1/learning-queues` 的source新增 `learning_notes`，创建请求仍为 `{source,card_id}`。快照包含已学，顺序与笔记列表一致，每项实时校验发布PDF与权限；PDF失效不移位、不循环、不跨来源。`learning`仍按待学集合，不要求PDF。learning_notes结束始终round_complete，不套free_uncompleted终止语义；客户端回对应Tab列表刷新。队列条目的available只是该次查询资格；learning_notes推进至候选正文时，最终详情GET还必须传require_study_note=true（实际进入保留mark_started默认true）。若在队列查询后移除PDF，最终GET以study_note_unavailable拒绝且无新开始，客户端可跳至后续合法项或返回来源。只读探测不能替代最终原子准入；普通learning不加该要求。
 

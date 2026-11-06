@@ -292,6 +292,18 @@ def file_view(db, row):
     }
 
 
+def import_note_selection(selected, staged):
+    """Apply source-local candidate IDs and a restored baseline to the projected draft."""
+    if not staged:
+        return selected
+    result = dict(selected or {})
+    if staged["action"] == "keep" and staged.get("media_id"):
+        result = {"action": "keep", "media_id": staged["media_id"]}
+    if staged.get("candidate_file_ids"):
+        result["candidate_file_ids"] = staged["candidate_file_ids"]
+    return result
+
+
 def item_view(db, item):
     """Derive current staging state without treating deleted cards as saved results."""
     job = item_job(db, item)
@@ -305,9 +317,16 @@ def item_view(db, item):
         if i["code"] != "title_en_conflict" or not item.content.get("title_en", "").strip()
     ]
     issues += validate_publication(db, item.content)
-    from .study_notes import note_issues, selection_view
+    from .study_notes import note_issues, project_selection, selection_view
 
-    issues += note_issues(db, item.study_note)
+    target = live_card(db, item.target_card_id) if item.target_card_id else saved_card
+    target_draft = db.get(CardDraft, target.id) if target else None
+    staged = item.study_note
+    selection = project_selection(
+        db, target_draft.study_note if target_draft else None, staged, target
+    )
+    selection = import_note_selection(selection, staged)
+    issues += note_issues(db, selection, target)
     if not item.readable:
         state = "unreadable"
     elif job and job.state in {"queued", "running", "retry"}:
@@ -334,7 +353,9 @@ def item_view(db, item):
     else:
         state = "ready" if not issues else "incomplete"
     return {
-        "study_note": selection_view(db, item.study_note),
+        "study_note": selection_view(
+            db, selection, target, candidate_file_ids=(staged or {}).get("candidate_file_ids", [])
+        ),
         "id": item.id,
         "revision": item.revision,
         "content": item.content,
@@ -936,18 +957,7 @@ def prepare_save(settings, sessions, job, now):
             card = create_candidate(db, content, job["owner_id"], now, study_note=note_change)
         draft = db.get(CardDraft, card.id)
         if item.study_note and not result.get("skipped"):
-            selection = dict(draft.study_note or {})
-            if item.study_note["action"] == "keep" and item.study_note.get("media_id"):
-                # Validate ownership with set; retain keep for the restored stored baseline.
-                selection = {"action": "keep", "media_id": item.study_note["media_id"]}
-            if item.study_note.get("candidate_file_ids"):
-                selection["candidate_file_ids"] = item.study_note["candidate_file_ids"]
-            if item.study_note.get("previous_media_id") and selection.get("action") in {
-                "set",
-                "unresolved",
-            }:
-                selection["previous_media_id"] = item.study_note["previous_media_id"]
-            draft.study_note = selection
+            draft.study_note = import_note_selection(draft.study_note, item.study_note)
         item.saved_card_id = card.id
         item.saved_draft_revision = draft.revision
         item.last_saved_hash = hashed
