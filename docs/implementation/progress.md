@@ -479,3 +479,11 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 - 独立定向审查原3项Important、1项Minor全部ADDRESSED，独立13项通过；修复先RED9失败/1通过，再同组GREEN10通过。受影响SQLite140通过/6条件跳过、真实MySQL67通过。
 - 冻结后一次最终完整SQLite675通过/49条件跳过（222.70秒），完整真实MySQL720通过/4条件跳过（462.22秒），均exit0。SQLite跳过48项MySQL条件及1项Redis；MySQL跳过1项Redis及3项SQLite专属。队列传输未改，沿用Task1已完成的独立Redis/Celery补验，未重复运行。日志`.private/study-notes-task1b-full-{sqlite,mysql}.log`。
 - ruff check、315文件格式检查、86源文件mypy及diff-check通过；报告`.superpowers/sdd/2026-11-06-study-notes/task-1b-report.md`。本Task仅本地源码与隔离测试，未改前端、业务库、远程环境或推送；真实UI由Task2验收，微信真机/云验证仍留待后续。
+
+## 2026-11-06 笔记来源正文原子准入（Task1c）
+
+- 对应Task3队列候选到详情之间PDF失效竞态，原详情GET新增可选`require_study_note=false`。true时按用户→目录共享→Card/PDF媒体共享的既有锁序持有至提交，复用published_note谓词并在锁等待后重验权限/时间；笔记移除/不可用返回409 study_note_unavailable，无新增ReadingStart。
+- 合法notes正文仍按mark_started默认true写原本人＋卡片唯一开始记录，不新增PDF开始事件；mark_started=false仅资格探测/刷新不写学习事实。默认false、普通learning无PDF、正文版本检查、成绩与打卡语义完整保留。无新表/route/依赖/迁移，admin接口不改。
+- 先真实HTTP RED4项，再真实MySQL四同步点RED；修复后分别11通过/4条件跳过及4通过。扩展SQLite专项123通过/7条件跳过，MySQL专项47通过；独立定向审查11项SQLite通过并核对4个MySQL同步点，未发现阻断。
+- 冻结后一次完整SQLite：686通过/53条件跳过（230.20秒），完整真实MySQL：735通过/4条件跳过（484.20秒），均exit0。SQLite跳过52项MySQL条件及1项Redis；MySQL跳过1项Redis及3项SQLite专属，队列传输未改，沿用此前独立Redis补验。日志`.private/study-notes-task1c-full-{sqlite,mysql}.log`。
+- ruff check、316文件格式、86源文件mypy及diff-check通过。契约第3/4节、mini OpenAPI及中文query已更新；报告`.superpowers/sdd/2026-11-06-study-notes/task-1c-report.md`。仅本地API源码/隔离测试，未改前端、业务库、远程环境或推送；小程序实际推进/跳过与真机验证交Task3/后续验收。

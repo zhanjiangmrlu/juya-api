@@ -831,7 +831,7 @@
           "已发布雅思词汇"
         ],
         "summary": "读取词汇卡片学习内容",
-        "description": "读取卡片当前版本，仅为当前用户记录首次有效打开，不计学习完成成绩。",
+        "description": "读取卡片当前版本，沿用mark_started记录正文首次有效打开，不计完成。require_study_note=true要求当前有效发布PDF；失效409且不新增开始记录。",
         "operationId": "detail_api_mini_v1_cards__card_id__get",
         "parameters": [
           {
@@ -874,6 +874,18 @@
               "description": "读取详情时是否将该场景记为当前用户已开始学习。"
             },
             "description": "读取详情时是否将该场景记为当前用户已开始学习。"
+          },
+          {
+            "name": "require_study_note",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "要求有效发布笔记",
+              "description": "默认false保持原详情语义；true按当前权限及有效发布PDF原子校验后，沿用mark_started记录正文开始。笔记失效409且不新增开始记录；mark_started=false只读。"
+            },
+            "description": "默认false保持原详情语义；true按当前权限及有效发布PDF原子校验后，沿用mark_started记录正文开始。笔记失效409且不新增开始记录；mark_started=false只读。"
           }
         ],
         "responses": {

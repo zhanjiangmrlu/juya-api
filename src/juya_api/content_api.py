@@ -15,7 +15,7 @@ from .access_service import (
     require_access,
 )
 from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
-from .content_models import Card, CardDraft, CardVersion, Media
+from .content_models import Card, CardDraft, CardStudyNoteVersion, CardVersion, Media
 from .content_service import (
     card_view,
     create_candidate,
@@ -36,6 +36,7 @@ from .dependencies import (
     write_transaction,
 )
 from .discovery_models import ReadingStart
+from .errors import DomainError
 from .import_models import ImportItem
 from .import_service import owned_batch
 from .learning_models import Completion, DailyLearning, Favorite
@@ -50,8 +51,8 @@ from .response_contracts import (
     PublishedDetail,
     PublishedPreview,
 )
-from .study_notes import note_filter, note_metadata
-from .transactions import operate
+from .study_notes import note_filter, note_metadata, published_note
+from .transactions import actor_lock, operate
 
 
 def admin_routes():
@@ -443,12 +444,44 @@ def mini_routes():
         request: Request,
         version_id: str | None = None,
         mark_started: bool = True,
+        require_study_note: bool = False,
         user=Depends(learner),
         db: Session = Depends(database, scope="function"),
     ):
         """读取卡片当前版本并仅为当前用户记录首次有效打开，不计成绩"""
-        access = require_access(db, user.id, card_id, request.app.state.clock())
+        # Match learner writes: user -> shared catalog -> shared card/media, held to commit.
+        if require_study_note and actor_lock(db, user, "mini") is None:
+            raise DomainError(401, "login_required", "请主动登录后继续")
+        access = require_access(
+            db, user.id, card_id, request.app.state.clock(), lock=require_study_note
+        )
+        if require_study_note:
+            db.scalar(
+                select(Card)
+                .where(Card.id == card_id)
+                .with_for_update(read=True)
+                .execution_options(populate_existing=True)
+            )
         card, version = published_card(db, card_id, version_id)
+        if require_study_note:
+            note_version = (
+                db.get(CardStudyNoteVersion, card.current_study_note_version_id)
+                if card.current_study_note_version_id
+                else None
+            )
+            if note_version and note_version.card_id == card.id and note_version.media_id:
+                db.scalar(
+                    select(Media)
+                    .where(Media.id == note_version.media_id)
+                    .with_for_update(read=True)
+                    .execution_options(populate_existing=True)
+                )
+            if published_note(db, card) is None:
+                raise DomainError(
+                    409, "study_note_unavailable", "学习笔记已移除或暂不可用，请返回来源列表继续"
+                )
+            # Recheck live permission/time after waits and refreshed card/media locks.
+            access = require_access(db, user.id, card_id, request.app.state.clock())
         # 列表缩略图缺失时仅补读素材元信息，不能当作用户已打开场景
         if mark_started:
             insert_once(

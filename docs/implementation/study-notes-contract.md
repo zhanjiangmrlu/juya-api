@@ -43,11 +43,14 @@
 
 `GET /api/mini/v1/cards/{id}?mark_started=false` 经过当前授权后新增 `study_note: StudyNoteMetadata|null`。笔记打开/重试刷新必须mark_started=false，避免写ReadingStart；单独申请票据及下载不写任何开始/完成/打卡/进度。正文version_id保持原意义。
 
+详情新增可选`require_study_note=false`（默认）。笔记来源实际进入正文/下一张时传`require_study_note=true`，合法成员仍沿用原`mark_started=true`默认规则写一次ReadingStart，不新增PDF开始事件。服务端在同一事务持有用户、目录及当前卡片/PDF的合理锁，按当前发布/删除/权限和共享published_note有效谓词检查后才插入开始记录；有效PDF已移除或不可用返回`409 study_note_unavailable`，没有新增ReadingStart。当前无权限、下线/删除继续按原403/410处理。`require_study_note=true&mark_started=false`为资格探测/只读刷新，不写学习事实。默认false、普通learning无PDF详情完整保留旧语义；正文版本校验不变，PDF-only替换仍用独立笔记版本。
+
+
 ## 4. 下载票据与队列
 
 复用 `GET /api/mini/v1/cards/{card_id}/media/{media_id}/url?purpose=study_note&study_note_version_id={note.version_id}`，返回原ResourceURL（相对url、expires_at）。笔记用途无需正文version_id；必须携带独立study_note_version_id。每次申请与访问票据均重验会话、卡片发布/删除、免费或有效授权、当前PDF媒体及独立笔记版本。GET、HEAD及Range全部相同；替换/移除后旧票据409 study_note_changed。无公开永久链接；客户端每次重试应刷新元数据/权限并重新获取票据，临时文件按账号+卡片+独立笔记版本隔离。
 
-原 `POST /api/mini/v1/learning-queues` 的source新增 `learning_notes`，创建请求仍为 `{source,card_id}`。快照包含已学，顺序与笔记列表一致，每项实时校验发布PDF与权限；PDF失效不移位、不循环、不跨来源。`learning`仍按待学集合，不要求PDF。learning_notes结束始终round_complete，不套free_uncompleted终止语义；客户端回对应Tab列表刷新。
+原 `POST /api/mini/v1/learning-queues` 的source新增 `learning_notes`，创建请求仍为 `{source,card_id}`。快照包含已学，顺序与笔记列表一致，每项实时校验发布PDF与权限；PDF失效不移位、不循环、不跨来源。`learning`仍按待学集合，不要求PDF。learning_notes结束始终round_complete，不套free_uncompleted终止语义；客户端回对应Tab列表刷新。队列条目的available只是该次查询资格；learning_notes推进至候选正文时，最终详情GET还必须传require_study_note=true（实际进入保留mark_started默认true）。若在队列查询后移除PDF，最终GET以study_note_unavailable拒绝且无新开始，客户端可跳至后续合法项或返回来源。只读探测不能替代最终原子准入；普通learning不加该要求。
 
 ## 5. 前端接入次序
 

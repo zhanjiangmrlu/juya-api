@@ -1,6 +1,10 @@
 """Chinese documentation metadata; wire names and validation rules stay unchanged."""
 
 FIELD_DOCS: dict[str, tuple[str, str]] = {
+    "require_study_note": (
+        "要求有效发布笔记",
+        "默认false保持原详情语义；true按当前权限及有效发布PDF原子校验后，沿用mark_started记录正文开始。笔记失效409且不新增开始记录；mark_started=false只读。",
+    ),
     "previous_media_id": (
         "有效保留笔记标识",
         "仅set或unresolved允许：原子保存尚未落盘的有效PDF与待处理替换；"
