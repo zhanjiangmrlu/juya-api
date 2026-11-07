@@ -22311,7 +22311,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },
@@ -24576,7 +24583,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },

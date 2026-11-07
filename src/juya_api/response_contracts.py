@@ -154,12 +154,12 @@ class CardBrief(PublicModel):
     published_at: str
     vocabulary_count: int = Field(default=0, ge=0)
     chunk_count: int = Field(default=0, ge=0)
-    state: CardState
+    state: CardState | None
 
 
 class LearningCardPage(Page[CardBrief]):
     learning_access: CurrentAccess | None = None
-    free_uncompleted_total: int = 0
+    free_uncompleted_total: int | None = 0
     published_total: int
 
 
@@ -178,7 +178,7 @@ class PublishedDetail(PublicModel):
     version_id: str
     content: SceneContent
     published_at: str
-    state: CardState
+    state: CardState | None
     reading_position: ReadingPosition | None = None
     reading_position_reset: bool = False
 
@@ -262,7 +262,7 @@ class CardSummary(PublicModel):
 
 
 class PersonalSummary(CardSummary):
-    state: CardState
+    state: CardState | None
     favorited_at: str | None = None
 
 

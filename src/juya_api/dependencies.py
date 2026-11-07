@@ -73,6 +73,18 @@ def learner(request: Request, db: Session = Depends(database, scope="function"))
     return user
 
 
+def optional_learner(
+    request: Request, db: Session = Depends(database, scope="function")
+) -> User | None:
+    """Only an absent/empty credential is anonymous; supplied identities must be valid."""
+    if not request.headers.get("Authorization", ""):
+        return None
+    scheme, _, credential = request.headers["Authorization"].partition(" ")
+    if scheme != "Bearer" or not credential or " " in credential:
+        raise DomainError(401, "login_required", "请主动登录后继续")
+    return learner(request, db)
+
+
 def operation_key(request: Request) -> str:
     """Require a sufficiently long key for durable idempotency and recovery."""
     value = request.headers.get("Idempotency-Key", "")

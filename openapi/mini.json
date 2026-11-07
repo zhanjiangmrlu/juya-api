@@ -646,7 +646,7 @@
           "已发布雅思词汇"
         ],
         "summary": "分页查询已发布词汇卡片",
-        "description": "先按本人完成记录过滤，免费内容优先，各组内保留人工顺序，再进行分页。",
+        "description": "游客按全部发布集合查询，显式uncompleted也按published处理且个人字段为null；已登录先按本人完成记录过滤。免费优先、人工顺序及有效PDF过滤在分页前执行。",
         "operationId": "listing_api_mini_v1_cards_get",
         "parameters": [
           {
@@ -831,7 +831,7 @@
           "已发布雅思词汇"
         ],
         "summary": "读取词汇卡片学习内容",
-        "description": "读取卡片当前版本，沿用mark_started记录正文首次有效打开，不计完成。require_study_note=true要求当前有效发布PDF；失效409且不新增开始记录。",
+        "description": "读取卡片当前版本，沿用mark_started记录正文首次有效打开，不计完成。require_study_note=true要求当前有效发布PDF；失效409且不新增开始记录。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。",
         "operationId": "detail_api_mini_v1_cards__card_id__get",
         "parameters": [
           {
@@ -1198,7 +1198,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "校验本人对卡片发布版本及素材的访问权限后签发受控访问地址。"
+        "description": "校验本人对卡片发布版本及素材的访问权限后签发受控访问地址。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。"
       }
     },
     "/api/mini/v1/media/{credential}": {
@@ -1351,6 +1351,158 @@
           }
         },
         "description": "校验素材访问凭证和当前内容权限后交付素材。"
+      }
+    },
+    "/api/mini/v1/public/resources/{credential}": {
+      "get": {
+        "tags": [
+          "游客受控资源"
+        ],
+        "summary": "读取游客受控资源",
+        "operationId": "resource_api_mini_v1_public_resources__credential__get",
+        "parameters": [
+          {
+            "name": "credential",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "临时访问凭据",
+              "description": "服务端签发的短期资源访问凭据，按原值使用，不解析或自行构造。"
+            },
+            "description": "服务端签发的短期资源访问凭据，按原值使用，不解析或自行构造。"
+          },
+          {
+            "name": "thumbnail",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "const": "list",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "缩略图规格",
+              "description": "list 表示用于列表展示的缩略图。"
+            },
+            "description": "list 表示用于列表展示的缩略图。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        },
+        "description": "校验独立公开票据的用途、有效期、当前发布及免费权限和版本，支持GET、HEAD与Range；不依赖本人会话，不返回永久存储地址。"
       }
     },
     "/api/mini/v1/me/statistics": {
@@ -2193,7 +2345,7 @@
         "tags": [
           "个人词汇学习"
         ],
-        "summary": "查询个人记录中的词汇摘要",
+        "summary": "读取当前发布或本人历史词汇摘要",
         "operationId": "summary_api_mini_v1_cards__card_id__summary_get",
         "parameters": [
           {
@@ -2320,7 +2472,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "读取本人收藏或完成记录中指定词汇卡片的摘要及当前状态。"
+        "description": "游客可读当前发布安全摘要；下线及删除摘要继续要求本人收藏或完成归属。摘要不含正文、词汇原句或PDF元信息。"
       }
     },
     "/api/mini/v1/me/learning-records": {
@@ -4096,7 +4248,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "校验本人权限及服务端词汇引用后请求受控单词发音合成。"
+        "description": "校验本人权限及服务端词汇引用后请求受控单词发音合成。 游客仅允许当前发布免费预置词汇及版本引用，复用共享缓存和任务，不创建用户或个人幂等记录；不允许任意文本及正文点词。"
       },
       "get": {
         "tags": [
@@ -4278,7 +4430,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "读取当前可访问卡片中指定词汇的发音状态及音频信息。"
+        "description": "读取当前可访问卡片中指定词汇的发音状态及音频信息。 游客仅允许当前发布免费预置词汇及版本引用，复用共享缓存和任务，不创建用户或个人幂等记录；不允许任意文本及正文点词。"
       }
     },
     "/api/mini/v1/pronunciation/{credential}": {
@@ -7095,7 +7247,7 @@
           "主题听读学习"
         ],
         "summary": "查询主题听读首页",
-        "description": "返回各分类学习进度、独立计算的继续学习目标及本人授权和学习统计。",
+        "description": "返回各分类学习进度、独立计算的继续学习目标及本人授权和学习统计。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。",
         "operationId": "home_api_mini_v1_listening_home_get",
         "responses": {
           "200": {
@@ -7357,7 +7509,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "读取兼容接口提供的听读主题及学习进度，可按分类筛选。"
+        "description": "读取兼容接口提供的听读主题及学习进度，可按分类筛选。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。"
       }
     },
     "/api/mini/v1/listening/topics/{topic_id}/articles": {
@@ -7366,7 +7518,7 @@
           "主题听读学习"
         ],
         "summary": "查询旧主题所属分类文章",
-        "description": "按旧主题对应的直接分类分页查询文章，免费文章优先，各组内保留人工顺序。",
+        "description": "按旧主题对应的直接分类分页查询文章，免费文章优先，各组内保留人工顺序。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。",
         "operationId": "articles_api_mini_v1_listening_topics__topic_id__articles_get",
         "parameters": [
           {
@@ -7528,7 +7680,7 @@
           "主题听读学习"
         ],
         "summary": "分页查询已发布听读文章",
-        "description": "可按分类筛选；免费内容优先，各组内保留分类及文章顺序。",
+        "description": "可按分类筛选；免费内容优先，各组内保留分类及文章顺序。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。",
         "operationId": "category_articles_api_mini_v1_listening_articles_get",
         "parameters": [
           {
@@ -8534,7 +8686,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "读取指定听读文章的摘要及本人学习、收藏和可用状态。"
+        "description": "读取指定听读文章的摘要及本人学习、收藏和可用状态。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。"
       }
     },
     "/api/mini/v1/listening/articles/{article_id}": {
@@ -8669,7 +8821,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "校验本人学习权限后读取文章当前有效发布内容及个人进度。"
+        "description": "校验本人学习权限后读取文章当前有效发布内容及个人进度。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。"
       }
     },
     "/api/mini/v1/listening/articles/{article_id}/next": {
@@ -9694,7 +9846,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "校验文章发布版本和缩略图引用后交付列表缩略图。"
+        "description": "校验文章发布版本和缩略图引用后交付列表缩略图。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。"
       }
     },
     "/api/mini/v1/listening/articles/{article_id}/thumbnail-ticket": {
@@ -9840,7 +9992,7 @@
             "description": "服务暂不可用，请稍后重试"
           }
         },
-        "description": "为指定文章发布版本的缩略图签发短期访问凭证。"
+        "description": "为指定文章发布版本的缩略图签发短期访问凭证。 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，个人字段为null；非空无效凭据返回401。"
       }
     },
     "/api/mini/v1/listening/articles/{article_id}/media-ticket": {
@@ -10616,7 +10768,7 @@
           "听读词汇发音"
         ],
         "summary": "查询听读文章词汇发音",
-        "description": "读取已持久化的发音状态，不启动云端合成任务。",
+        "description": "读取已持久化的发音状态，不启动云端合成任务。 游客仅允许当前发布免费预置词汇及版本引用，复用共享缓存和任务，不创建用户或个人幂等记录；不允许任意文本及正文点词。",
         "operationId": "read_api_mini_v1_listening_articles__article_id__words__word_id__pronunciation_get",
         "parameters": [
           {
@@ -10798,7 +10950,7 @@
           "听读词汇发音"
         ],
         "summary": "生成听读文章词汇发音",
-        "description": "由服务端解析指定词汇并生成单词发音，使用持久化幂等记录。",
+        "description": "由服务端解析指定词汇并生成单词发音，使用持久化幂等记录。 游客仅允许当前发布免费预置词汇及版本引用，复用共享缓存和任务，不创建用户或个人幂等记录；不允许任意文本及正文点词。",
         "operationId": "generate_api_mini_v1_listening_articles__article_id__words__word_id__pronunciation_post",
         "parameters": [
           {
@@ -10979,7 +11131,14 @@
             "description": "根据保存的字符位置计算的非空正文段落序号，从 1 开始；未保存时为空。"
           },
           "progress": {
-            "$ref": "#/components/schemas/Progress",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Progress"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人听读进度",
             "description": "绑定当前发布版本的阅读字符位置、音频秒数、译文展开状态及播放倍速。"
           },
@@ -11082,7 +11241,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },
@@ -11145,7 +11311,14 @@
             "description": "正文词项与音频时间的对应信息及其处理、核对状态。"
           },
           "queue_token": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "听读队列凭据",
             "description": "服务端签发的分类连续学习凭据，读取下一篇时按原值携带。"
           },
@@ -11442,7 +11615,14 @@
             "description": "当前已发布场景中的语块条数。"
           },
           "state": {
-            "$ref": "#/components/schemas/CardState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人场景状态",
             "description": "当前用户对场景的收藏、累计完成、今日完成和开始学习标记。"
           }
@@ -11527,7 +11707,14 @@
             "description": "当前分类或主题中纳入统计的文章总数量。"
           },
           "completed_articles": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "已完成听读篇数",
             "description": "当前统计范围内用户已完成的不同听读文章数量。"
           },
@@ -11873,7 +12060,14 @@
             "description": "当前对象的乐观锁版本；修改时提交最近读取的值，防止覆盖并发更新。"
           },
           "authorization": {
-            "$ref": "#/components/schemas/AuthorizationView",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthorizationView"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "学习授权",
             "description": "当前用户的统一学习授权状态、有效日期及修订号。"
           },
@@ -12725,8 +12919,15 @@
             "description": "服务端是否已配置当前内容模块的免费策略。"
           },
           "authorization": {
-            "additionalProperties": true,
-            "type": "object",
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "学习授权",
             "description": "当前用户的统一学习授权状态、有效日期及修订号。"
           },
@@ -12765,7 +12966,14 @@
             "description": "当前已发布且标记为免费的可用场景数量。"
           },
           "statistics": {
-            "$ref": "#/components/schemas/Statistics",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Statistics"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人学习统计",
             "description": "场景、听读完成数量、收藏数量及打卡情况等统计。"
           }
@@ -12823,7 +13031,14 @@
             "description": "列表读取时用户的统一学习策略和授权快照。"
           },
           "free_uncompleted_total": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "未完成免费场景数",
             "default": 0,
             "description": "当前用户尚未完成且当前可用的免费场景数量。"
@@ -13216,7 +13431,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },
@@ -13964,7 +14186,14 @@
             "description": "历史收藏或记录对应内容当前无法访问的原因。"
           },
           "state": {
-            "$ref": "#/components/schemas/CardState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人场景状态",
             "description": "当前用户对场景的收藏、累计完成、今日完成和开始学习标记。"
           },
@@ -14304,7 +14533,14 @@
             "description": "当前不可变内容版本发布生效的时间。"
           },
           "state": {
-            "$ref": "#/components/schemas/CardState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人场景状态",
             "description": "当前用户对场景的收藏、累计完成、今日完成和开始学习标记。"
           },
@@ -15021,7 +15257,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },
@@ -15278,7 +15521,14 @@
             "description": "当前分类或主题中纳入统计的文章总数量。"
           },
           "completed_articles": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "已完成听读篇数",
             "description": "当前统计范围内用户已完成的不同听读文章数量。"
           }
@@ -15783,6 +16033,10 @@
     {
       "name": "私有反馈",
       "description": "查询和处理反馈会话、消息、未读状态及受控图片。"
+    },
+    {
+      "name": "游客受控资源",
+      "description": "匿名短期票据读取并逐次重验发布免费和当前版本。"
     },
     {
       "name": "公开分享摘要",

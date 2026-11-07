@@ -24,7 +24,7 @@ class CurrentAccess(BaseModel):
     enabled: bool
     free_count: int | None
     revision: int
-    authorization: AuthorizationView
+    authorization: AuthorizationView | None
     server_now: str
 
 

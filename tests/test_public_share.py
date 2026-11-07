@@ -47,7 +47,7 @@ def test_anonymous_summary_is_a_current_public_whitelist_and_private_routes_stay
         result = client.get(image["url"])
         assert result.status_code == 200
         assert result.headers["Content-Type"] == "image/jpeg"
-    assert client.get("/api/mini/v1/cards/" + card["id"]).status_code == 401
+    assert client.get("/api/mini/v1/cards/" + card["id"]).status_code == 200
     assert client.get("/api/mini/v1/me").status_code == 401
     with system["sessions"]() as db:
         assert [

@@ -23,7 +23,13 @@ from .access_service import require_access
 from .content_models import Media, MediaTicket
 from .content_service import published_card
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key, write_transaction
+from .dependencies import (
+    administrator,
+    database,
+    operation_key,
+    optional_learner,
+    write_transaction,
+)
 from .errors import DomainError
 from .job_models import Job
 from .jobs import enqueue
@@ -538,9 +544,27 @@ def mini_routes():
         version_id: str | None = None,
         purpose: Literal["content", "summary", "study_note"] = "content",
         study_note_version_id: str | None = None,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
+        if user is None:
+            from .public_resources import issue as public_issue
+            from .public_resources import scene_medium
+
+            # Resolve the current publication before binding the opaque reference.
+            card, version = published_card(db, card_id, version_id)
+            if purpose == "content" and not version_id:
+                raise DomainError(422, "version_required", "请刷新后重新获取资源")
+            scene_medium(db, request, card_id, version.id, media_id, purpose, study_note_version_id)
+            return public_issue(
+                request,
+                "scene",
+                card_id,
+                version.id,
+                purpose,
+                media_id=media_id,
+                note_version_id=study_note_version_id,
+            )
         medium = db.get(Media, media_id)
         if purpose == "summary":
             version = summary_thumbnail(db, user.id, card_id, media_id, version_id)

@@ -224,7 +224,7 @@ def test_listening_thumbnail_is_small_and_rechecks_scope_before_cached_range(
         == 403
     )
     bearer = mini.headers.pop("Authorization")
-    assert mini.get(url).status_code == 401
+    assert mini.get(url).status_code == 200  # current published thumbnail is public
     mini.headers["Authorization"] = bearer
     post(admin, A + f"/articles/{row['id']}/offline", {"revision": live["revision"]})
     assert mini.get(url, headers={"Range": "bytes=0-15"}).status_code == 404

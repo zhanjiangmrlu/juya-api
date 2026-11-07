@@ -134,6 +134,17 @@ def controlled_media(db, payload, media_id, *, thumbnail=False):
 
 
 def issue_ticket(request, user_id, article_id, version_id, media_id, *, purpose="content"):
+    if user_id is None:
+        from .public_resources import issue
+
+        return issue(
+            request,
+            "listening",
+            article_id,
+            version_id,
+            "summary" if purpose == "thumbnail" else purpose,
+            media_id=media_id,
+        )
     now = request.app.state.clock()
     expires = now + timedelta(minutes=5)
     bearer = request.headers.get("Authorization", "").removeprefix("Bearer ")

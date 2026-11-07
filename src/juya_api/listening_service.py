@@ -357,12 +357,15 @@ def summaries(db, rows, user_id, now, *, include_progress=False, snapshot=None):
             select(Category).where(Category.id.in_({row.category_id for row in rows}))
         )
     }
-    flags = {}
+    flags: dict[str, set[str]] = {}
     for name, model in (
         ("favorite", Favorite),
         ("completed", Completion),
         ("today_completed", Daily),
     ):
+        if user_id is None:
+            flags[name] = set()
+            continue
         query = select(model.article_id).where(model.user_id == user_id, model.article_id.in_(ids))
         if model is Daily:
             query = query.where(Daily.date == business_date(now))
@@ -426,7 +429,7 @@ def _summary(
         "progress": progress,
         "reading_paragraph": reading_paragraph(payload["body_en"], progress),
         "access": access(db, user_id, row, now, snapshot=snapshot),
-        "state": {name: row.id in values for name, values in flags.items()},
+        "state": {name: row.id in values for name, values in flags.items()} if user_id else None,
     }
 
 
@@ -704,7 +707,11 @@ def topics(db, user_id, now, category_id=None):
         query = query.where(Topic.category_id == category_id)
     result = []
     valid = published_rows(db)
-    completed = set(db.scalars(select(Completion.article_id).where(Completion.user_id == user_id)))
+    completed = (
+        set(db.scalars(select(Completion.article_id).where(Completion.user_id == user_id)))
+        if user_id
+        else set()
+    )
     for row in db.scalars(query):
         ids = {a.id for a in valid if a.category_id == row.category_id}
         result.append(
@@ -717,7 +724,7 @@ def topics(db, user_id, now, category_id=None):
                 "sort_order": row.sort_order,
                 "revision": row.revision,
                 "total_articles": len(ids),
-                "completed_articles": len(ids & completed),
+                "completed_articles": len(ids & completed) if user_id else None,
             }
         )
     return result
@@ -916,20 +923,21 @@ def categories_progress(db, user_id, now, *, snapshot=None):
         Article.deleted_at.is_(None),
         Article.version_id.is_not(None),
     )
-    counts = (
+    counts_query = (
         select(
             Article.category_id.label("category_id"),
             func.count().label("total"),
-            func.count(Completion.article_id).label("completed"),
+            (func.count(Completion.article_id) if user_id else func.count()).label("completed"),
             func.sum(case((Article.is_free.is_(False), 1), else_=0)).label("restricted"),
-        )
-        .outerjoin(
-            Completion, and_(Completion.article_id == Article.id, Completion.user_id == user_id)
         )
         .where(*live)
         .group_by(Article.category_id)
-        .subquery()
     )
+    if user_id:
+        counts_query = counts_query.outerjoin(
+            Completion, and_(Completion.article_id == Article.id, Completion.user_id == user_id)
+        )
+    counts = counts_query.subquery()
     # Only the first available thumbnail is returned; image JSON stays in the database.
     ranked = (
         select(
@@ -959,7 +967,7 @@ def categories_progress(db, user_id, now, *, snapshot=None):
             "sort_order": owner.sort_order,
             "revision": owner.revision,
             "total_articles": total,
-            "completed_articles": completed,
+            "completed_articles": completed if user_id else None,
             "restricted_articles": 0 if grant["status"] == "active" else restricted,
             "thumbnail_url": thumbnails.get(owner.id),
         }
