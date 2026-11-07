@@ -5528,7 +5528,7 @@
       "id": "T356",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "iPhone用户确认游客首页及免费详情可打开；冷启动无建档由隔离库及请求记录核对",
+      "current_status": "iPhone游客首页／免费详情通过，登录前个人表零增长已核对",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5556,7 +5556,7 @@
       "id": "T358",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "真机失败待修复：缩略图／1.5×；本地回归不能代替真机通过",
+      "current_status": "本地游客内容及媒体覆盖；iPhone图片／播放／倍率／原图／PDF通过，不冒充全部设备逐项通过",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5570,7 +5570,7 @@
       "id": "T359",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "真机失败待修复：缩略图／1.5×；本地回归不能代替真机通过",
+      "current_status": "本地游客听读及iPhone读播／连续倍率／暂停与手动续播通过；全部内容与设备未逐项人工覆盖",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5626,7 +5626,7 @@
       "id": "T363",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "API与本地生命周期测试覆盖；iPhone PDF及返回状态尚未确认",
+      "current_status": "iPhone用户确认PDF可打开，返回暂停、原进度及1.5×保持；API／本地生命周期回归通过",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5696,7 +5696,7 @@
       "id": "T368",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "最终审查发现听读返回缺陷，修复中；浏览器游客无个人写入已验证",
+      "current_status": "听读返回三项修复已独立复审；真实微信登录通过，全来源位置尚未逐项真机重验",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5724,7 +5724,7 @@
       "id": "T370",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "最终审查发现听读返回缺陷，修复中；浏览器游客无个人写入已验证",
+      "current_status": "真实登录后未自动收藏，最初个人学习事实均0；再次主动收藏成功，其他自动操作边界有本地回归",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5738,7 +5738,7 @@
       "id": "T371",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "最终审查发现听读返回缺陷，修复中；浏览器游客无个人写入已验证",
+      "current_status": "登录前游客个人事实零增长已核对；未将临时进度迁移，后续写入对应用户主动滚动",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5766,7 +5766,7 @@
       "id": "T373",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "真实WechatGateway配置就绪；用户尚未登录，真实交换待验",
+      "current_status": "实际WechatGateway真实登录200且一名用户／一会话；默认隐私与选填有代码／单测，未逐项人工复核",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5836,7 +5836,7 @@
       "id": "T378",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "真机失败待修复：缩略图／1.5×；本地回归不能代替真机通过",
+      "current_status": "702项完整回归通过；iPhone图片／倍率／PDF及暂停续播通过，Android／系统控制等仍待实测",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5850,7 +5850,7 @@
       "id": "T379",
       "chapter": "47. 游客体验与按需登录整改",
       "baseline_history": null,
-      "current_status": "来源版本／379编号已核对；未修改原Word／Figma，不声称静态全套重新交付或程序验收完成",
+      "current_status": "379项预期与原WordSHA核对；逐项状态保留失败／待验，原Word和Figma未修改，未声称全验收完成",
       "evidence": [
         "docs/verification/integration08-guest-20261107.md"
       ],
@@ -5862,5 +5862,6 @@
     }
   ],
   "expected_rows_extracted": 379,
-  "current_status": "验收进行中，包含明确失败和待验，非379项通过清单"
+  "current_status": "本轮代码及iPhone已报告问题闭环，其他设备／系统场景仍待验；非379项全通过清单",
+  "final_review": "docs/verification/integration08-review-20261107.md"
 }

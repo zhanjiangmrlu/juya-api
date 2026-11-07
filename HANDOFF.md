@@ -1,6 +1,8 @@
-# 整合08游客体验本地接续（2026-11-07，验收进行中）
+# 整合08游客体验本地交付（2026-11-07）
 
-当前真源为V1.5整合08／修订17、T01—T379，SHA及历史引用见[需求来源](docs/handoff/revision17/requirement-reference.json)。三仓在原生隔离工作树本地开发；原运行目录、业务数据及配置保留，无推送、部署、正式版本上传或远程迁移。用户已配合iPhone临时预览验收，当前缩略图与1.5×倍速两项失败、三项听读返回审查缺陷正在修复，不能标记最终通过。接续读[本轮验收](docs/verification/integration08-guest-20261107.md)及[接口契约](docs/implementation/integration08-guest-contract.md)，下方为历史发布授权，不扩大本轮操作范围。
+当前真源为V1.5整合08／修订17、T01—T379，SHA及历史引用见[需求来源](docs/handoff/revision17/requirement-reference.json)。三仓在原生隔离工作树本地开发；原运行目录、业务数据及配置保留，无推送、部署、正式版本上传或远程迁移。API713项SQLite／760项真实MySQL回归，后台310项、小程序702项及静态／构建通过；最低schema0026／contract3，本轮无新迁移。
+
+用户iPhone确认图片、实际倍速、PDF及返回、真实微信登录与主动收藏正常，追加的听读暂停／保持暂停／手动续播也已通过；Android及完整系统媒体／前后台／分享仍待实测。接续读[本轮验收](docs/verification/integration08-guest-20261107.md)、[379项状态](docs/verification/integration08-acceptance-index.json)、[配套提交](docs/handoff/revision17/repository-set.json)及[接口契约](docs/implementation/integration08-guest-contract.md)，下方历史发布授权不扩大本轮操作范围。
 
 ---
 
