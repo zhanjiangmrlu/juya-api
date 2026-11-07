@@ -1,3 +1,9 @@
+# 整合08游客体验本地接续（2026-11-07，验收进行中）
+
+当前真源为V1.5整合08／修订17、T01—T379，SHA及历史引用见[需求来源](docs/handoff/revision17/requirement-reference.json)。三仓在原生隔离工作树本地开发；原运行目录、业务数据及配置保留，无推送、部署、正式版本上传或远程迁移。用户已配合iPhone临时预览验收，当前缩略图与1.5×倍速两项失败、三项听读返回审查缺陷正在修复，不能标记最终通过。接续读[本轮验收](docs/verification/integration08-guest-20261107.md)及[接口契约](docs/implementation/integration08-guest-contract.md)，下方为历史发布授权，不扩大本轮操作范围。
+
+---
+
 # 最新整合07测试发布与微信开发版（2026-11-06）
 
 用户新增授权后，三仓已推远程test；测试双API／Worker／dispatcher及独立听读Worker共7服务和管理后台已部署，测试库备份后0026／contract3。固定API f219a39、后台97937db、小程序d99a12c。官方CI真实MySQL／Redis738通过／3跳过，双镜像通过；公网和契约复核通过，55原业务表原字段及行数保留，12个非目标容器元数据不变。
