@@ -8,7 +8,7 @@
   "workspace_relative_path": "句芽英语V1.5-整合08-修订17-开发完整交付版-20261106.docx",
   "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX/?node-id=277-5040",
   "design_status": "本轮读取核对12个当前游客状态，保留原水彩布局；未修改Figma",
-  "scope": "用户批准仅本地隔离开发和验收；无推送、部署、远程迁移或正式微信版本上传；用户配合iPhone临时预览验收中，实际结果以本轮记录为准",
+  "scope": "2026-11-08用户当次追加授权推送三仓test、部署测试双API／配套Worker／独立听读与后台、上传微信开发版；体验版用户手动切换，生产与原本地数据保留，实际结果见integration08-test-release-20261108",
   "previous_reference": {
     "filename": "句芽英语V1.5完整需求文档-当前确认版.md",
     "version": "V1.5整合06",
@@ -40,5 +40,6 @@
         "original_workspace_relative_path": "../../docs/需求文档/句芽英语-开发需求交接版-当前开发版.md"
       }
     }
-  }
+  },
+  "local_development_scope": "用户批准仅本地隔离开发和验收；无推送、部署、远程迁移或正式微信版本上传；用户配合iPhone临时预览验收中，实际结果以本轮记录为准"
 }

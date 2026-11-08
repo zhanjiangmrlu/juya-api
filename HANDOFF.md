@@ -1,3 +1,11 @@
+# 整合08测试发布与微信开发版（2026-11-08）
+
+按用户追加授权，三仓已推远程test；测试双API／配套Worker／dispatcher和独立听读Worker共7服务、后台均已部署。API固定5249c04，后台7d32973，小程序6d49d98；官方真实MySQL／Redis763通过／3项SQLite专用跳过，双镜像通过。schema0026／contract3，无迁移，56张原业务表数据及12个非目标容器不变。
+
+微信开发版**1.5.0-test.20261108.071926**已上传，**体验版由用户手动切换**，未提审或正式发布。公网游客／鉴权／契约、后台只读管理员及文件哈希核验通过；原本地与生产保持。见[发布记录](docs/verification/integration08-test-release-20261108.md)及[无密钥回执](docs/verification/integration08-test-release-20261108.json)。下方“仅本地”为此前开发阶段。
+
+---
+
 # 整合08游客体验本地交付（2026-11-07）
 
 当前真源为V1.5整合08／修订17、T01—T379，SHA及历史引用见[需求来源](docs/handoff/revision17/requirement-reference.json)。三仓在原生隔离工作树本地开发；原运行目录、业务数据及配置保留，无推送、部署、正式版本上传或远程迁移。API713项SQLite／760项真实MySQL回归，后台310项、小程序702项及静态／构建通过；最低schema0026／contract3，本轮无新迁移。

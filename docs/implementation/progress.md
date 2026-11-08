@@ -1,3 +1,9 @@
+# 2026-11-08 整合08测试发布
+
+用户追加授权后，三仓test推送、测试双API及配套Worker／独立听读和后台部署完成；官方CI763通过／3项SQLite专属跳过，schema0026／contract3无迁移，原业务数据及生产保持。微信开发版1.5.0-test.20261108.071926上传成功，体验版用户手动切换。以[发布记录](../verification/integration08-test-release-20261108.md)和无密钥JSON回执为准，下方仅历史阶段。
+
+---
+
 2026-11-01 整合06修订17：三端在codex/revision17-integration06隔离分支完成主要实现及分任务审查，最终整体独立审查Approved，交付证据核对完成。API542通过/40跳过、MySQL全marked37通过；后台233与小程序427及检查构建通过。旧主题层和N/M退出、逐项免费/直接分类/可选词汇上线于隔离代码。原运行环境及业务库未切换，无合并/推送/部署；详细范围及未验项见docs/handoff/revision17/integration06/README.md。
 
 2026-10-18 CHG-0015测试部署完成：后端8d4e665、后台6bedc86、小程序3b8210c已推送test。修复CI缺少FFmpeg后39138543235全部181项通过，两角色镜像均成功。共享测试库受控迁移0013，原CLI构建/身份/发布/健康/回滚及保留流程完成两API与后台发布。六容器均为8d4e665、healthy、重启/OOM零；公网两API ready、后台HTML及4个入口资源匹配构建，两个运行中契约匹配源码。Chrome登录与新字段/入口检查及部署Worker隔离四格式/MP3/Range/长静音AAC/版本隔离回归通过。微信开发版本1.5.0-test.20261018已上传，未设体验版、未提审或正式发布。未部署生产，真机验收仍待进行；并行local-share修改未纳入。详细机器证据和交付边界见docs/verification/rev13/test-deployment-20261018.md及同名JSON。

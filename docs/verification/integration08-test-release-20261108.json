@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "environment": "test",
+  "application_completed_at": "2026-11-08T02:57:52.925642+08:00",
+  "wechat_uploaded_at": "2026-11-08T07:19:44.288218+08:00",
+  "deployed_commits": {
+    "juya-api": "5249c04fa8892230e2ae16d2226b93660498ce07",
+    "juya-admin": "7d32973b69c009536a58da4a5f592e4a2dab435f",
+    "juya-miniapp": "6d49d9832861858aa441334dbb3734feb95c8da3"
+  },
+  "ci": {
+    "run_id": 42387153743,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/42387153743",
+    "commit": "5249c04fa8892230e2ae16d2226b93660498ce07",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      }
+    ],
+    "quality_counts": {
+      "passed": 763,
+      "skipped": 3
+    }
+  },
+  "application_releases": [
+    {
+      "project": "juya-admin-api",
+      "release_id": "20261107T160944-5249c04fa889-e191ac",
+      "commit": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "project": "juya-miniapp-api",
+      "release_id": "20261107T161711-5249c04fa889-6f50cc",
+      "commit": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "project": "juya-admin",
+      "release_id": "20261107T153851-7d32973b69c0-460ceb",
+      "commit": "7d32973b69c009536a58da4a5f592e4a2dab435f",
+      "public_hashes_match": true
+    }
+  ],
+  "runtime_services": [
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "id": "a36388d93b6ba24fcbbe1c62f7a0d628db63f4e6a4700a9a44d7fc91e80d89bd",
+      "image": "sha256:9d74e9b5a2bb9fa26041d9000d90e8a2ef86543d330fdac9c7887b8c1309e266",
+      "started_at": "2026-11-07T18:54:12.718943073Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "id": "28f4698c0e2197509a0a2bc65d928a64cbaa039543eaa2ec7d27cbeb341946c9",
+      "image": "sha256:9d74e9b5a2bb9fa26041d9000d90e8a2ef86543d330fdac9c7887b8c1309e266",
+      "started_at": "2026-11-07T18:54:29.757151366Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "id": "61557ea32f03270d06ebdb75e050a7bc5688aff3d54b36cf2f2fd36b4cbeeca0",
+      "image": "sha256:9d74e9b5a2bb9fa26041d9000d90e8a2ef86543d330fdac9c7887b8c1309e266",
+      "started_at": "2026-11-07T18:54:30.283186322Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "id": "1ea47ad81c1efa0333c8a2420d4ebd8068754c187f83af66dc070ac0624daee0",
+      "image": "sha256:9d74e9b5a2bb9fa26041d9000d90e8a2ef86543d330fdac9c7887b8c1309e266",
+      "started_at": "2026-11-07T18:57:06.753333328Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "id": "7945b214dc41759b6009c3b2d76919f192b3d17a4e80e6542341cebf2ffd5351",
+      "image": "sha256:cd5e8255a8731f4a0f1cca786e1da9f84cc18b2de5d24e0d09ceb35f8078539f",
+      "started_at": "2026-11-07T18:56:16.593641265Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "id": "ac4c516e893d23e371c61142c6bc89a8800233efd202a44a35c315941f8dda47",
+      "image": "sha256:cd5e8255a8731f4a0f1cca786e1da9f84cc18b2de5d24e0d09ceb35f8078539f",
+      "started_at": "2026-11-07T18:56:33.907489077Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "id": "ecc3dd2f224caec346e84ee84e83fc179f506a9ec5dff0674da6cd98b1bd2c8a",
+      "image": "sha256:cd5e8255a8731f4a0f1cca786e1da9f84cc18b2de5d24e0d09ceb35f8078539f",
+      "started_at": "2026-11-07T18:56:33.494585912Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "revision": "5249c04fa8892230e2ae16d2226b93660498ce07"
+    }
+  ],
+  "database": {
+    "schema": "0026",
+    "contract": 3,
+    "tables": 56,
+    "all_original_columns_and_rows_preserved": true,
+    "migration": false,
+    "database_restored": false
+  },
+  "public_checks": {
+    "readiness": {
+      "admin": 200,
+      "mini": 200
+    },
+    "private_auth": {
+      "admin-private": 401,
+      "mini-private": 401,
+      "admin-other-role": 404,
+      "mini-other-role": 404
+    },
+    "guest": {
+      "cards": 200,
+      "notes": 200,
+      "listening_home": 200,
+      "listening_articles": 200,
+      "invalid_identity_rejected": true
+    },
+    "admin_reads": {
+      "/api/admin/v1/auth/session": 200,
+      "/api/admin/v1/cards?limit=1": 200,
+      "/api/admin/v1/users?limit=1": 200,
+      "/api/admin/v1/listening/categories": 200,
+      "/api/admin/v1/learning-access/free-policy": 200
+    },
+    "admin_public_hashes_match": true,
+    "admin_login_status": 200,
+    "admin_cors": true,
+    "admin_verification_session_closed": true,
+    "runtime": {
+      "openapi_hashes": {
+        "admin": "12920463ad7b580560f91e5202b6b9a314be6a6461a9b5e557cbfa8a9e89f386",
+        "mini": "9a072f46840805282e3d28abdd823f17bb80e945a2c7a1dd3eeb55254f5ba596"
+      },
+      "healthy_services": 7,
+      "protected_containers_unchanged": true,
+      "data": {
+        "schema": "0026",
+        "contract": 3,
+        "tables": 56,
+        "all_original_columns_and_rows_preserved": true,
+        "migration": false,
+        "database_restored": false
+      }
+    },
+    "status": "verified"
+  },
+  "guest_data_verification": {
+    "personal_tables_unchanged": 18,
+    "no_guest_personal_growth": true,
+    "protected_containers_unchanged": true
+  },
+  "wechat": {
+    "environment": "test",
+    "version": "1.5.0-test.20261108.071926",
+    "status": "success",
+    "source_commit": "6d49d9832861858aa441334dbb3734feb95c8da3",
+    "test_api_verified": true,
+    "private_project_config_excluded": true,
+    "diagnostics_disabled": true,
+    "official_size": {
+      "total": 1329082,
+      "packages": [
+        {
+          "name": "TOTAL",
+          "size": 1329082
+        },
+        {
+          "name": "main",
+          "size": 776250
+        },
+        {
+          "name": "/sub-packages/account/",
+          "size": 57822
+        },
+        {
+          "name": "/sub-packages/feedback/",
+          "size": 91602
+        },
+        {
+          "name": "/sub-packages/listening/",
+          "size": 158214
+        },
+        {
+          "name": "/sub-packages/records/",
+          "size": 24978
+        },
+        {
+          "name": "/sub-packages/scenes/",
+          "size": 220216
+        }
+      ]
+    },
+    "experience_version_changed": false,
+    "submitted_for_review": false
+  },
+  "oss": {
+    "new": 0,
+    "reused": 13
+  },
+  "retention": {
+    "retained": [
+      "20261106T102006-97937db74d6b-17328f",
+      "20261107T153851-7d32973b69c0-460ceb"
+    ],
+    "removed": [
+      "20261104T055224-d2d07f0834df-af6c15"
+    ]
+  },
+  "protected_container_count": 12,
+  "production_and_infrastructure_metadata_unchanged": true,
+  "experience_version_changed": false,
+  "submitted_for_review": false,
+  "production_deployed": false,
+  "original_local_checkouts_preserved": true
+}
