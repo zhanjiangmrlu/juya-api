@@ -1,0 +1,280 @@
+{
+  "environment": "production",
+  "branch": "release",
+  "deployed_commit": "b36fc5a5e758adbb3333cebec25700ba04142b99",
+  "completed_at": "2026-11-09T15:17:57.688585+08:00",
+  "ci": {
+    "run_id": 42573453878,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/42573453878",
+    "commit": "b36fc5a5e758adbb3333cebec25700ba04142b99",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      }
+    ],
+    "quality_counts": {
+      "passed": 763,
+      "skipped": 3
+    }
+  },
+  "database": {
+    "before_schema": "0025",
+    "schema": "0026",
+    "contract": 3,
+    "tables": 55,
+    "all_original_fields_rows_preserved": true,
+    "new_note_versions": 0,
+    "database_restored": false,
+    "fingerprint_comparisons": {
+      "data-after-migration.json": true,
+      "data-after-deployment.json": true,
+      "data-after-public-probes.json": true
+    }
+  },
+  "backup": {
+    "database": "juya_production",
+    "path": "/root/juya-rebuild/ci-images/integration08-production-20261109/backups/juya_production-before-0026.sql.gz",
+    "bytes": 43955492,
+    "sha256": "de27aec5b58654bb01f46106e9a0a9b2321ca84912774f8c270e6115ce9678c1",
+    "uncompressed_bytes": 69111888,
+    "uncompressed_sha256": "5d040ec6aaeb0a9feeba8444338af7b857d1159076114a17b11796ac34af7b69",
+    "tables": 56,
+    "gzip_integrity": true,
+    "dump_completion_marker": true,
+    "all_original_tables_present": true,
+    "automatically_restored": false
+  },
+  "configuration_backup": {
+    "path": "/root/juya-rebuild/ci-images/integration08-production-20261109/backups/production-runtime-config.tar.gz",
+    "bytes": 2672,
+    "sha256": "faa20bce55119b94c51f9d72195bbdd4d0f8ea1c36b698a9ddbc1558cf0c3a65"
+  },
+  "local_backup_verification": {
+    "sha256": "de27aec5b58654bb01f46106e9a0a9b2321ca84912774f8c270e6115ce9678c1",
+    "bytes": 43955492,
+    "gzip_integrity": true,
+    "config_backup_verified": true,
+    "local_copies": [
+      {
+        "path": "/Users/lubi/Desktop/juya/.private/integration08-production-20261109/backups/juya_production-before-0026.sql.gz",
+        "bytes": 43955492,
+        "sha256": "de27aec5b58654bb01f46106e9a0a9b2321ca84912774f8c270e6115ce9678c1"
+      },
+      {
+        "path": "/Users/lubi/Desktop/juya/.private/integration08-production-20261109/backups/production-runtime-config.tar.gz",
+        "bytes": 2672,
+        "sha256": "faa20bce55119b94c51f9d72195bbdd4d0f8ea1c36b698a9ddbc1558cf0c3a65"
+      }
+    ]
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-production-admin-admin-api-1",
+      "id": "66ae4109a3a3a8b2d367668f222a7527f8999a0921f420dfb9c0c5e502b8d8b4",
+      "image": "sha256:9e62074f56b5cfdb260b9a9a42c4885d0f5a6238bc94660820767a1e9a405c05",
+      "started_at": "2026-11-09T07:14:51.594692478Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-api",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-dispatcher-1",
+      "id": "664afc97287ff925c39a11e515adf8c374106541186f3a071ad54b224636035a",
+      "image": "sha256:9e62074f56b5cfdb260b9a9a42c4885d0f5a6238bc94660820767a1e9a405c05",
+      "started_at": "2026-11-09T07:15:10.802143353Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-dispatcher",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-worker-1",
+      "id": "038897e04e5d67eb4aa0bd97173e0be74ae73cbdd71c8b3ca961271f7821c127",
+      "image": "sha256:9e62074f56b5cfdb260b9a9a42c4885d0f5a6238bc94660820767a1e9a405c05",
+      "started_at": "2026-11-09T07:15:11.281047547Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-worker",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    },
+    {
+      "name": "/juya-rebuild-production-listening-listening-worker-1",
+      "id": "45360a9033906a0e0b63d4bb174ad301085a2e0f5aa600d81ab3e983ea804b01",
+      "image": "sha256:9e62074f56b5cfdb260b9a9a42c4885d0f5a6238bc94660820767a1e9a405c05",
+      "started_at": "2026-11-09T07:17:28.933951244Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-listening",
+      "service": "listening-worker",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-api-1",
+      "id": "2eac85d6b05dee1d8b7696a4550685f0469a877fa8d93b59da1f0d0926978abe",
+      "image": "sha256:2374d9de848e485fcbd7388694c664eaa668503af3b0ed01df00b193b69b933e",
+      "started_at": "2026-11-09T07:16:33.225435757Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-api",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-dispatcher-1",
+      "id": "a4ee601a3ca5b2b21417a0263820717eb9383f9a4773b5660492c88d3445ca34",
+      "image": "sha256:2374d9de848e485fcbd7388694c664eaa668503af3b0ed01df00b193b69b933e",
+      "started_at": "2026-11-09T07:16:50.697067496Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-dispatcher",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-worker-1",
+      "id": "9a783eeb814df23aece7c8b1d55c4677d4588eea4ec59d82c86a1d924b4b68bf",
+      "image": "sha256:2374d9de848e485fcbd7388694c664eaa668503af3b0ed01df00b193b69b933e",
+      "started_at": "2026-11-09T07:16:50.356249167Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-worker",
+      "revision": "b36fc5a5e758adbb3333cebec25700ba04142b99"
+    }
+  ],
+  "independent_service_check_at": "2026-11-09T07:18:21.440784+00:00",
+  "protected_containers": {
+    "count": 12,
+    "all_metadata_unchanged": true
+  },
+  "maintenance": {
+    "removed": true,
+    "configuration_restored_exactly": true,
+    "private_probe_token_removed": true
+  },
+  "public_verification": {
+    "checked_at": "2026-11-09T07:18:18.030681+00:00",
+    "origin": "local-independent-public-https",
+    "checks": [
+      {
+        "url": "https://api.juyayingyu.com/health/ready",
+        "status": 200,
+        "expected": 200,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://admin-api.juyayingyu.com/health/ready",
+        "status": 200,
+        "expected": 200,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/mini/v1/listening/home",
+        "status": 200,
+        "expected": 200,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/mini/v1/cards?limit=2",
+        "status": 200,
+        "expected": 200,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/mini/v1/cards?has_study_note=true&limit=2",
+        "status": 200,
+        "expected": 200,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/mini/v1/listening/articles?limit=2",
+        "status": 200,
+        "expected": 200,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/mini/v1/me/statistics",
+        "status": 401,
+        "expected": 401,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/admin/v1/auth/session",
+        "status": 404,
+        "expected": 404,
+        "anonymous": true,
+        "maintenance_header": false
+      },
+      {
+        "url": "https://api.juyayingyu.com/api/mini/v1/listening/home",
+        "status": 401,
+        "expected": 401,
+        "anonymous": false,
+        "maintenance_header": false
+      }
+    ],
+    "home_categories": 3,
+    "card_total": 10,
+    "note_card_total": 0,
+    "listening_total": 481,
+    "guest_personal_fields_null": true
+  },
+  "release_pointers": {
+    "juya-admin-api": {
+      "current-release": "/opt/juya/rebuild/production/juya-admin-api/releases/20261109T070232-b36fc5a5e758-b89f29",
+      "previous-release": "/opt/juya/rebuild/production/juya-admin-api/releases/20261105T143636-b2744ec24702-cd3c95"
+    },
+    "juya-miniapp-api": {
+      "current-release": "/opt/juya/rebuild/production/juya-miniapp-api/releases/20261109T070624-b36fc5a5e758-5f7f9e",
+      "previous-release": "/opt/juya/rebuild/production/juya-miniapp-api/releases/20261105T144325-b2744ec24702-1375ad"
+    }
+  },
+  "miniapp": {
+    "existing_production_version": "1.0.2",
+    "version_code": 102,
+    "rebuilt_or_uploaded_in_this_operation": false,
+    "experience_switch": "user_manual"
+  },
+  "validation_boundary": "生产公网匿名HTTPS及服务/数据库核验完成；本轮未执行新的微信真机扫码验收。备份完成压缩、内容完整性及双副本摘要校验，未做恢复演练。",
+  "scope": {
+    "backend_and_workers": true,
+    "frontend_deployed": false,
+    "test_environment_modified": false,
+    "business_data_replaced": false,
+    "database_downgrade_or_restore": false
+  }
+}
