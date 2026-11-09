@@ -1,3 +1,43 @@
+# 2026-11-09 test合并release
+
+用户本次仅授权将远程test合并到release并推送；本次没有部署、迁移数据库、上传微信或切换体验版。已有release独有提交保留，下方生产／测试发布记录均按原日期追溯，不能将本次合并视为上线。
+
+---
+
+# 整合08测试发布与微信开发版（2026-11-08）
+
+按用户追加授权，三仓已推远程test；测试双API／配套Worker／dispatcher和独立听读Worker共7服务、后台均已部署。API固定5249c04，后台7d32973，小程序6d49d98；官方真实MySQL／Redis763通过／3项SQLite专用跳过，双镜像通过。schema0026／contract3，无迁移，56张原业务表数据及12个非目标容器不变。
+
+微信开发版**1.5.0-test.20261108.071926**已上传，**体验版由用户手动切换**，未提审或正式发布。公网游客／鉴权／契约、后台只读管理员及文件哈希核验通过；原本地与生产保持。见[发布记录](docs/verification/integration08-test-release-20261108.md)及[无密钥回执](docs/verification/integration08-test-release-20261108.json)。下方“仅本地”为此前开发阶段。
+
+---
+
+# 整合08游客体验本地交付（2026-11-07）
+
+当前真源为V1.5整合08／修订17、T01—T379，SHA及历史引用见[需求来源](docs/handoff/revision17/requirement-reference.json)。三仓在原生隔离工作树本地开发；原运行目录、业务数据及配置保留，无推送、部署、正式版本上传或远程迁移。API713项SQLite／760项真实MySQL回归，后台310项、小程序702项及静态／构建通过；最低schema0026／contract3，本轮无新迁移。
+
+用户iPhone确认图片、实际倍速、PDF及返回、真实微信登录与主动收藏正常，追加的听读暂停／保持暂停／手动续播也已通过；Android及完整系统媒体／前后台／分享仍待实测。接续读[本轮验收](docs/verification/integration08-guest-20261107.md)、[379项状态](docs/verification/integration08-acceptance-index.json)、[配套提交](docs/handoff/revision17/repository-set.json)及[接口契约](docs/implementation/integration08-guest-contract.md)，下方历史发布授权不扩大本轮操作范围。
+
+---
+
+# 最新整合07测试发布与微信开发版（2026-11-06）
+
+用户新增授权后，三仓已推远程test；测试双API／Worker／dispatcher及独立听读Worker共7服务和管理后台已部署，测试库备份后0026／contract3。固定API f219a39、后台97937db、小程序d99a12c。官方CI真实MySQL／Redis738通过／3跳过，双镜像通过；公网和契约复核通过，55原业务表原字段及行数保留，12个非目标容器元数据不变。
+
+微信开发版本**1.5.0-test.20261106.184331**已上传，**体验版用户自行切换**，未提审或正式发布。仅部署测试，生产与原本地热更新保持。实际切换完成时间为北京时间22:31:12；见[发布记录](docs/verification/study-notes-test-release-20261106.md)与[无密钥回执](docs/verification/study-notes-test-release-20261106.json)。下方“仅本地／未部署”为此前开发阶段。
+
+---
+
+# 最新整合07学习笔记与列表分区（2026-11-06，仅本地）
+
+本轮三仓现有test分支开发：API独立PDF版本／0026、后台PDF及ZIP核对、小程序双Tab与笔记来源队列已配套实现。最终功能头API ea6e0e4、后台97937db、小程序2cae38e。仅本地提交，未推送、部署、上传OSS／微信或迁移远程库；历史发布授权不扩大本轮范围。
+
+API完整SQLite688通过／53条件跳过、独立MySQL737通过／4条件跳过，Redis定向1通过；后台310单测与6条相关浏览器、小程序625单测与双端本地构建通过，三仓静态检查通过。整体及定向复审六项发现全部关闭。微信iOS／Android、耳机／系统面板尚待真机，静态设计交付及完整Word核对不冒充程序通过。详见[逐条验收和兼容决定](docs/verification/study-notes-20261106.md)及[审查记录](docs/verification/study-notes-20261106-review.md)，接口见[契约](docs/implementation/study-notes-contract.md)。
+
+当前实际本地5173／8291预览库备份、试升后0024→0026，55张原表原数据核对不变；旧0023接续库免费名单不明而保留，不猜测免费资格。预览worker跳过云TTS。远程环境未动。
+
+---
+
 # 最新管理后台与接口生产同步（2026-11-05）
 
 用户授权将两个仓库 test 合并 release 并上线后，后台 c81aa8e 与双角色 API 固定运行版本 b2744ec 已完成生产发布。后台 286 测试、API 官方真实 MySQL/Redis CI 644 通过 / 3 跳过；7 服务 healthy，后台安装及公网资源哈希匹配，生产文档入口保持关闭。数据库仍 0025 / contract 3，无迁移或新增 ASR 调用；测试、基础设施及 CLI 保持。小程序本轮未再次上传，体验版由用户切换。见[发布与验收](docs/verification/admin-api-production-release-20261105.md)。下方为历史记录。

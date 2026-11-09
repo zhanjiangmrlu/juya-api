@@ -1,5 +1,7 @@
 """Thin role-specific scene HTTP adapters over the same publication domain."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
@@ -13,7 +15,7 @@ from .access_service import (
     require_access,
 )
 from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
-from .content_models import Card, CardDraft, CardVersion, Media
+from .content_models import Card, CardDraft, CardStudyNoteVersion, CardVersion, Media
 from .content_service import (
     card_view,
     create_candidate,
@@ -25,8 +27,16 @@ from .content_service import (
     save_candidate,
 )
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key, write_transaction
+from .dependencies import (
+    administrator,
+    database,
+    operation_key,
+    optional_learner,
+    read_snapshot,
+    write_transaction,
+)
 from .discovery_models import ReadingStart
+from .errors import DomainError
 from .import_models import ImportItem
 from .import_service import owned_batch
 from .learning_models import Completion, DailyLearning, Favorite
@@ -41,7 +51,8 @@ from .response_contracts import (
     PublishedDetail,
     PublishedPreview,
 )
-from .transactions import operate
+from .study_notes import note_filter, note_metadata, published_note
+from .transactions import actor_lock, operate
 
 
 def admin_routes():
@@ -141,7 +152,7 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = create_candidate(db, body.content, admin.id, now)
+            card = create_candidate(db, body.content, admin.id, now, study_note=body.study_note)
             return card_view(db, card)
 
         return operate(
@@ -174,6 +185,7 @@ def admin_routes():
             "card_id": card.id,
             "version_id": version.id,
             "content": version.payload,
+            "study_note": note_metadata(db, card),
             "mode": "published",
         }
 
@@ -189,7 +201,9 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = save_candidate(db, card_id, body.revision, body.content, admin.id, now)
+            card = save_candidate(
+                db, card_id, body.revision, body.content, admin.id, now, study_note=body.study_note
+            )
             return card_view(db, card)
 
         return operate(
@@ -303,29 +317,36 @@ def admin_routes():
 def mini_routes():
     router = APIRouter(prefix="/api/mini/v1", tags=["published learning content"])
 
-    @router.get("/cards", response_model=LearningCardPage)
+    @router.get("/cards", response_model=LearningCardPage, dependencies=[Depends(read_snapshot)])
     def listing(
         request: Request,
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
-        user=Depends(learner),
+        scope: Literal["uncompleted", "published"] = "uncompleted",
+        has_study_note: bool | None = None,
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         """先过滤本人完成记录，免费优先且组内保留人工顺序，再分页"""
         now = request.app.state.clock()
-        access_snapshot = learning_access_snapshot(db, user.id, now)
+        access_snapshot = learning_access_snapshot(db, user.id if user else None, now)
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
         published_total = db.scalar(select(func.count()).select_from(query.subquery()))
-        query = query.where(
-            Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id))
-        )
+        if scope == "uncompleted" and user:
+            query = query.where(
+                Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id))
+            )
+        if has_study_note is not None:
+            query = query.where(note_filter() if has_study_note else ~note_filter())
         total = db.scalar(select(func.count()).select_from(query.subquery()))
+        page = min(page, max(1, ((total or 0) + limit - 1) // limit))
         rows = db.scalars(
             query.order_by(Card.is_free.desc(), Card.sort_order, Card.id)
             .offset((page - 1) * limit)
             .limit(limit)
         ).all()
         ids = [card.id for card in rows]
+        noted = set(db.scalars(select(Card.id).where(Card.id.in_(ids), note_filter())))
         versions = {
             v.id: v
             for v in db.scalars(
@@ -342,35 +363,51 @@ def mini_routes():
                 )
             )
         }
-        completed = set(
-            db.scalars(
-                select(Completion.card_id).where(
-                    Completion.user_id == user.id, Completion.card_id.in_(ids)
+        completed = (
+            set(
+                db.scalars(
+                    select(Completion.card_id).where(
+                        Completion.user_id == user.id, Completion.card_id.in_(ids)
+                    )
                 )
             )
+            if user
+            else set()
         )
-        daily = set(
-            db.scalars(
-                select(DailyLearning.card_id).where(
-                    DailyLearning.user_id == user.id,
-                    DailyLearning.card_id.in_(ids),
-                    DailyLearning.date == business_date(request.app.state.clock()),
+        daily = (
+            set(
+                db.scalars(
+                    select(DailyLearning.card_id).where(
+                        DailyLearning.user_id == user.id,
+                        DailyLearning.card_id.in_(ids),
+                        DailyLearning.date == business_date(request.app.state.clock()),
+                    )
                 )
             )
+            if user
+            else set()
         )
-        favorites = set(
-            db.scalars(
-                select(Favorite.card_id).where(
-                    Favorite.user_id == user.id, Favorite.card_id.in_(ids)
+        favorites = (
+            set(
+                db.scalars(
+                    select(Favorite.card_id).where(
+                        Favorite.user_id == user.id, Favorite.card_id.in_(ids)
+                    )
                 )
             )
+            if user
+            else set()
         )
-        started = set(
-            db.scalars(
-                select(ReadingStart.card_id).where(
-                    ReadingStart.user_id == user.id, ReadingStart.card_id.in_(ids)
+        started = (
+            set(
+                db.scalars(
+                    select(ReadingStart.card_id).where(
+                        ReadingStart.user_id == user.id, ReadingStart.card_id.in_(ids)
+                    )
                 )
             )
+            if user
+            else set()
         )
         items = []
         for card in rows:
@@ -380,8 +417,14 @@ def mini_routes():
             items.append(
                 {
                     "id": card.id,
+                    "has_study_note": card.id in noted,
                     "access": learning_access(
-                        db, user.id, card.id, now, snapshot=access_snapshot, card=card
+                        db,
+                        user.id if user else None,
+                        card.id,
+                        now,
+                        snapshot=access_snapshot,
+                        card=card,
                     ),
                     "name": version.payload["name"],
                     "title_en": version.payload.get("title_en", ""),
@@ -395,7 +438,9 @@ def mini_routes():
                         "today_completed": card.id in daily,
                         "favorite": card.id in favorites,
                         "started": card.id in started,
-                    },
+                    }
+                    if user
+                    else None,
                 }
             )
         return {
@@ -406,10 +451,10 @@ def mini_routes():
             "published_total": published_total,
             "learning_access": {
                 **policy(db),
-                "authorization": access_snapshot[0],
+                "authorization": access_snapshot[0] if user else None,
                 "server_now": timestamp(now),
             },
-            "free_uncompleted_total": free_uncompleted(db, user.id),
+            "free_uncompleted_total": free_uncompleted(db, user.id) if user else None,
         }
 
     @router.get(
@@ -422,14 +467,52 @@ def mini_routes():
         request: Request,
         version_id: str | None = None,
         mark_started: bool = True,
-        user=Depends(learner),
+        require_study_note: bool = False,
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         """读取卡片当前版本并仅为当前用户记录首次有效打开，不计成绩"""
-        access = require_access(db, user.id, card_id, request.app.state.clock())
+        # Match learner writes: user -> shared catalog -> shared card/media, held to commit.
+        if user and require_study_note and actor_lock(db, user, "mini") is None:
+            raise DomainError(401, "login_required", "请主动登录后继续")
+        access = require_access(
+            db,
+            user.id if user else None,
+            card_id,
+            request.app.state.clock(),
+            lock=require_study_note,
+        )
+        if require_study_note:
+            db.scalar(
+                select(Card)
+                .where(Card.id == card_id)
+                .with_for_update(read=True)
+                .execution_options(populate_existing=True)
+            )
         card, version = published_card(db, card_id, version_id)
+        if require_study_note:
+            note_version = (
+                db.get(CardStudyNoteVersion, card.current_study_note_version_id)
+                if card.current_study_note_version_id
+                else None
+            )
+            if note_version and note_version.card_id == card.id and note_version.media_id:
+                db.scalar(
+                    select(Media)
+                    .where(Media.id == note_version.media_id)
+                    .with_for_update(read=True)
+                    .execution_options(populate_existing=True)
+                )
+            if published_note(db, card) is None:
+                raise DomainError(
+                    409, "study_note_unavailable", "学习笔记已移除或暂不可用，请返回来源列表继续"
+                )
+            # Recheck live permission/time after waits and refreshed card/media locks.
+            access = require_access(
+                db, user.id if user else None, card_id, request.app.state.clock()
+            )
         # 列表缩略图缺失时仅补读素材元信息，不能当作用户已打开场景
-        if mark_started:
+        if mark_started and user:
             insert_once(
                 db,
                 ReadingStart,
@@ -438,16 +521,17 @@ def mini_routes():
             )
         audio = db.get(Media, version.payload["audio_id"])
         image = db.get(Media, version.payload["image_id"])
-        reading = db.get(ReadingStart, (user.id, card.id))
+        reading = db.get(ReadingStart, (user.id, card.id)) if user else None
         return {
             "access": access,
+            "study_note": note_metadata(db, card),
             "audio_duration": audio.duration if audio else None,
             "thumbnail_id": image.thumbnail_id if image else None,
             "card_id": card.id,
             "version_id": version.id,
             "content": version.payload,
             "published_at": timestamp(version.published_at),
-            "state": card_state(db, user.id, card.id, request.app.state.clock()),
+            "state": card_state(db, user.id, card.id, request.app.state.clock()) if user else None,
             "reading_position": reading.position
             if reading and reading.position and reading.position.get("version_id") == version.id
             else None,

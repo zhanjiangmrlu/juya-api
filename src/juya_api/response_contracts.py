@@ -1,5 +1,7 @@
 """Public response whitelists used by runtime serialization and generated clients."""
 
+from __future__ import annotations
+
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -73,7 +75,36 @@ class FieldIssue(PublicModel):
     message: str
 
 
+class StudyNoteMetadata(PublicModel):
+    version_id: str
+    media_id: str
+    filename: str
+    size: int
+    state: Literal["ready"]
+
+
+class StudyNoteCandidate(PublicModel):
+    error: str | None = None
+    file_id: str
+    name: str
+    size: int
+    media_id: str | None
+    state: str
+    error_code: str | None
+    parent_id: str
+
+
+class StudyNoteDraft(PublicModel):
+    action: Literal["keep", "set", "remove", "unresolved"]
+    attachment: MediaMetadata | None = None
+    pending_attachment: MediaMetadata | None = None
+    can_publish: bool
+    candidates: list[StudyNoteCandidate] = Field(default_factory=list)
+
+
 class CardView(PublicModel):
+    study_note: StudyNoteDraft
+    published_study_note: StudyNoteMetadata | None = None
     free_revision: int = 1
     is_free: bool = False
     id: str
@@ -97,6 +128,7 @@ class AdminCardPage(Page[CardView]):
 
 
 class CardPreview(PublicModel):
+    study_note: StudyNoteDraft
     preview_id: str
     revision: int
     content: SceneContent
@@ -112,6 +144,7 @@ class CardState(PublicModel):
 
 
 class CardBrief(PublicModel):
+    has_study_note: bool = False
     access: LearningPermission | None = None
     id: str
     name: str
@@ -121,12 +154,12 @@ class CardBrief(PublicModel):
     published_at: str
     vocabulary_count: int = Field(default=0, ge=0)
     chunk_count: int = Field(default=0, ge=0)
-    state: CardState
+    state: CardState | None
 
 
 class LearningCardPage(Page[CardBrief]):
     learning_access: CurrentAccess | None = None
-    free_uncompleted_total: int = 0
+    free_uncompleted_total: int | None = 0
     published_total: int
 
 
@@ -137,6 +170,7 @@ class ReadingPosition(PublicModel):
 
 
 class PublishedDetail(PublicModel):
+    study_note: StudyNoteMetadata | None = None
     access: LearningPermission | None = None
     audio_duration: float | None
     thumbnail_id: str | None = None
@@ -144,12 +178,13 @@ class PublishedDetail(PublicModel):
     version_id: str
     content: SceneContent
     published_at: str
-    state: CardState
+    state: CardState | None
     reading_position: ReadingPosition | None = None
     reading_position_reset: bool = False
 
 
 class PublishedPreview(PublicModel):
+    study_note: StudyNoteMetadata | None = None
     card_id: str
     version_id: str
     content: SceneContent
@@ -227,7 +262,7 @@ class CardSummary(PublicModel):
 
 
 class PersonalSummary(CardSummary):
-    state: CardState
+    state: CardState | None
     favorited_at: str | None = None
 
 
@@ -298,6 +333,7 @@ class ErrorResponse(PublicModel):
 
 
 class UploadConfiguration(PublicModel):
+    study_note_limit_bytes: int
     image_limit_bytes: int
     audio_limit_bytes: int
     archive_limit_bytes: int
@@ -306,3 +342,6 @@ class UploadConfiguration(PublicModel):
 
 class ClientConfiguration(PublicModel):
     avatar_limit_bytes: int
+
+
+StudyNoteDraft.model_rebuild()

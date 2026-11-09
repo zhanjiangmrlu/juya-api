@@ -1,3 +1,9 @@
+# 2026-11-08 整合08测试发布
+
+用户追加授权后，三仓test推送、测试双API及配套Worker／独立听读和后台部署完成；官方CI763通过／3项SQLite专属跳过，schema0026／contract3无迁移，原业务数据及生产保持。微信开发版1.5.0-test.20261108.071926上传成功，体验版用户手动切换。以[发布记录](../verification/integration08-test-release-20261108.md)和无密钥JSON回执为准，下方仅历史阶段。
+
+---
+
 2026-11-01 整合06修订17：三端在codex/revision17-integration06隔离分支完成主要实现及分任务审查，最终整体独立审查Approved，交付证据核对完成。API542通过/40跳过、MySQL全marked37通过；后台233与小程序427及检查构建通过。旧主题层和N/M退出、逐项免费/直接分类/可选词汇上线于隔离代码。原运行环境及业务库未切换，无合并/推送/部署；详细范围及未验项见docs/handoff/revision17/integration06/README.md。
 
 2026-10-18 CHG-0015测试部署完成：后端8d4e665、后台6bedc86、小程序3b8210c已推送test。修复CI缺少FFmpeg后39138543235全部181项通过，两角色镜像均成功。共享测试库受控迁移0013，原CLI构建/身份/发布/健康/回滚及保留流程完成两API与后台发布。六容器均为8d4e665、healthy、重启/OOM零；公网两API ready、后台HTML及4个入口资源匹配构建，两个运行中契约匹配源码。Chrome登录与新字段/入口检查及部署Worker隔离四格式/MP3/Range/长静音AAC/版本隔离回归通过。微信开发版本1.5.0-test.20261018已上传，未设体验版、未提审或正式发布。未部署生产，真机验收仍待进行；并行local-share修改未纳入。详细机器证据和交付边界见docs/verification/rev13/test-deployment-20261018.md及同名JSON。
@@ -460,6 +466,44 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 ## 2026-11-05 部分匹配高亮
 
 按用户要求实现匹配词高亮/遗漏词跳过及已有任务复用（源码待发布）；生产仅《银行》复用原结果恢复ready/118词，无新ASR提交。详见 `docs/verification/listening-partial-highlighting-20261105.md`。
+
+## 2026-11-06 整合07学习笔记后端（Task 1）
+
+- 已在用户指定的test分支实现独立PDF笔记版本、草稿有效/待处理附件与保留/设置/移除/未决决策、0026增量迁移、实际PDF异步校验、候选/发布预览、独立版本下载票据、SQL笔记筛选与learning_notes来源队列。最低schema0026，code contract3；API与worker健康探针统一要求新schema。
+- ZIP按包实例与完整目录隔离，旧包省略PDF保留目标；去重含当前/有效回退PDF字节摘要及动作，等价正文复用原行/媒体/正文版本。PDF-only发布保持原排序、阅读位置、音频和学习事实，不生成TTS；笔记变更推进目录版本。
+- 真实MySQL列表使用同一读取快照保证total、有效页、行与has_study_note一致。资源GET/HEAD/Range仍逐次复验当前会话、卡片、免费/授权及独立笔记版本，不写学习数据。详细接入见 `study-notes-contract.md` 与已导出的两份OpenAPI。
+- 经两轮独立定向审查修复四项Important（ZIP正文漂移、内部keep、有效/待处理传递及分页快照）及同一项回退PDF重存去重；复审均通过。先RED后GREEN的专项日志保存在私有`.private/study-notes-fix-round*.log`；SQLite导入专项83通过/4条件跳过，MySQL专项33通过。
+- 最终完整SQLite：638通过/49条件跳过，204.99秒；48项需真实MySQL、1项需隔离Redis。ruff check、ruff format --check和mypy src通过。最终完整MySQL：683通过/4条件跳过，434.23秒；跳过隔离Redis集成1项和SQLite专属回归3项。完整日志分别为`.private/study-notes-sqlite.log`和`.private/study-notes-mysql-full.log`，均exit0。
+- 本Task仅本地隔离测试和源码提交；未推送、部署、业务库迁移、OSS/微信上传。真实微信文档预览、iOS/Android、真实云资源及前端交互待后续验收。其他历史授权与发布记录不扩大本Task范围。
+- 最后补验原隔离Redis条件项：使用现有redis-server binary新建127.0.0.1临时端口/目录、空DB15，真实Celery独立子进程定向验证`test_committed_upload_survives_missing_dispatch_and_duplicate_broker_delivery`，1通过（2.17秒，exit0）。自己的Redis进程和临时目录已清理；未连接既有/远程broker，未变更功能。原完整套件计数不变。私有证据`.private/study-notes-redis-verification.md`及`study-notes-redis-integration.log`。
+
+## 2026-11-06 学习笔记原子保留契约补足（Task1b）
+
+- 针对Task2跨保存复审暴露的已批准能力缺口，新增可选`StudyNoteChange.previous_media_id`：仅set/unresolved接受明确有效ID，服务端验证ready PDF与管理员归属，一次保存未落盘有效B和待处理C；省略沿用原逻辑，null及keep/remove携带拒绝。重开/取消保留B，发布A与正文/排序保持。
+- ZIP按最终目标与完整保留状态重验（包含省略note、keep、清空/切换目标），worker保存或判重前复验；合法目标历史附件例外不跨目标继承。无ImportFile不再自动视为手动上传，须有AdminMediaSource证明；删除源ZIP后不能借遗留Media串配。合法同目录、既有目标和真实单独上传正例均通过。
+- PDF错误区分非PDF、结构损坏、无法解密、空与超限；包含PdfReader构造阶段的证书加密不支持。媒体/导入文件/candidate/单一失败候选issues复用实际安全原因，不回传底层异常。契约及OpenAPI已导出，无新route、reader、依赖或数据库迁移，仍schema0026/contract3。
+- 独立定向审查原3项Important、1项Minor全部ADDRESSED，独立13项通过；修复先RED9失败/1通过，再同组GREEN10通过。受影响SQLite140通过/6条件跳过、真实MySQL67通过。
+- 冻结后一次最终完整SQLite675通过/49条件跳过（222.70秒），完整真实MySQL720通过/4条件跳过（462.22秒），均exit0。SQLite跳过48项MySQL条件及1项Redis；MySQL跳过1项Redis及3项SQLite专属。队列传输未改，沿用Task1已完成的独立Redis/Celery补验，未重复运行。日志`.private/study-notes-task1b-full-{sqlite,mysql}.log`。
+- ruff check、315文件格式检查、86源文件mypy及diff-check通过；报告`.superpowers/sdd/2026-11-06-study-notes/task-1b-report.md`。本Task仅本地源码与隔离测试，未改前端、业务库、远程环境或推送；真实UI由Task2验收，微信真机/云验证仍留待后续。
+
+## 2026-11-06 笔记来源正文原子准入（Task1c）
+
+- 对应Task3队列候选到详情之间PDF失效竞态，原详情GET新增可选`require_study_note=false`。true时按用户→目录共享→Card/PDF媒体共享的既有锁序持有至提交，复用published_note谓词并在锁等待后重验权限/时间；笔记移除/不可用返回409 study_note_unavailable，无新增ReadingStart。
+- 合法notes正文仍按mark_started默认true写原本人＋卡片唯一开始记录，不新增PDF开始事件；mark_started=false仅资格探测/刷新不写学习事实。默认false、普通learning无PDF、正文版本检查、成绩与打卡语义完整保留。无新表/route/依赖/迁移，admin接口不改。
+- 先真实HTTP RED4项，再真实MySQL四同步点RED；修复后分别11通过/4条件跳过及4通过。扩展SQLite专项123通过/7条件跳过，MySQL专项47通过；独立定向审查11项SQLite通过并核对4个MySQL同步点，未发现阻断。
+- 冻结后一次完整SQLite：686通过/53条件跳过（230.20秒），完整真实MySQL：735通过/4条件跳过（484.20秒），均exit0。SQLite跳过52项MySQL条件及1项Redis；MySQL跳过1项Redis及3项SQLite专属，队列传输未改，沿用此前独立Redis补验。日志`.private/study-notes-task1c-full-{sqlite,mysql}.log`。
+- ruff check、316文件格式、86源文件mypy及diff-check通过。契约第3/4节、mini OpenAPI及中文query已更新；报告`.superpowers/sdd/2026-11-06-study-notes/task-1c-report.md`。仅本地API源码/隔离测试，未改前端、业务库、远程环境或推送；小程序实际推进/跳过与真机验证交Task3/后续验收。
+
+## 2026-11-06 整合07最终整体审查修复
+
+后续发布状态：用户已授权推送test、部署测试并上传微信开发版。北京时间22:31:12完成，API f219a39／后台97937db／小程序d99a12c；官方CI738通过／3跳过、双镜像通过。测试库备份后0025→0026／contract3，55原业务表原字段及行数保留，7服务健康、12非目标容器未变。微信1.5.0-test.20261106.184331已上传，体验版用户自行切换，未部署生产。完整发布及后验见`docs/verification/study-notes-test-release-20261106.md`和同名JSON，下列为开发阶段记录。
+
+- 学习笔记 PDF 的 GET、HEAD 和 Range 兑现请求须携带签发票据的 Bearer 会话。与票据不匹配的会话或匿名请求返回 401，签发会话继续重验当前版本与授权。图片和音频继续支持原生票据读取。
+- ZIP 核对和保存共用目标草稿的笔记决策计算，核对显示有效附件、失败待处理件与原因。选择候选仅限当前包／目录，切换或清除目标重新计算；保留省略动作的落盘及去重语义。
+- 完整临时 SQLite 688 通过/53 条件跳过（245.43 秒），本机 Unix socket 独立 MySQL 库 juya_verify 737 通过/4 条件跳过（487.91 秒）。SQLite 的 52 项 MySQL 条件及 MySQL 的 3 项 SQLite 条件在各自对应环境运行；两个环境各跳过 1 项专用 Redis 检查。队列传输未改动，沿用此前独立 Redis/Celery 专项 1 通过。Ruff、316 文件格式、86 源文件 mypy 及 diff 检查均通过。
+- 后台 310 单测及 6 项相关 Chrome 用例、小程序 625 单测与本地 H5/微信构建均通过。原 450 KiB 限制下，test / production 主包分别为 459435 B / 458354 B。最终定向复审核对 5 项及 1 项显示收尾全部关闭，真机 PDF、耳机与系统面板仍待验。三仓为本地 test 提交，未推送、部署、迁移远程数据库或上传 OSS/微信。
+
+---
 
 
 ## 2026-11-05 部分匹配高亮生产发布

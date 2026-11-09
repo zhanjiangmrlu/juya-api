@@ -13,7 +13,7 @@ from . import listening_service as service
 from .access_service import read_preview
 from .content_models import Media
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key
+from .dependencies import administrator, database, learner, operation_key, optional_learner
 from .dictionary import DictionaryResult, TokenTarget, lookup
 from .errors import DomainError
 from .learning_models import Checkin
@@ -949,42 +949,50 @@ def mini_routes():
 
     @router.get("/home", response_model=C.Home)
     def home(
-        request: Request, user=Depends(learner), db: Session = Depends(database, scope="function")
+        request: Request,
+        user=Depends(optional_learner),
+        db: Session = Depends(database, scope="function"),
     ):
         """Return category progress and an independent continuation target."""
         now = request.app.state.clock()
         from .access_service import policy
 
-        snapshot = service.access_snapshot(db, user.id, now)
+        snapshot = service.access_snapshot(db, user.id if user else None, now)
         scene_policy = policy(db)
         listening_policy = service.policy_view(db)
-        categories = service.categories_progress(db, user.id, now, snapshot=snapshot)
-        target = service.continue_row(db, user.id, now, snapshot=snapshot)
+        categories = service.categories_progress(
+            db, user.id if user else None, now, snapshot=snapshot
+        )
+        target = service.continue_row(db, user.id, now, snapshot=snapshot) if user else None
         return {
             "categories": categories,
             "topics": [],
             "continue_learning": service.summary(
-                db, target, user.id, now, include_progress=True, snapshot=snapshot
+                db, target, user.id if user else None, now, include_progress=True, snapshot=snapshot
             )
             if target
             else None,
             "configured": listening_policy["configured"],
-            "authorization": snapshot[0],
+            "authorization": snapshot[0] if user else None,
             "free_count": listening_policy["free_count"],
             "actual_free_count": len(listening_policy["article_ids"]),
             "scene_free_count": scene_policy["free_count"],
             "scene_actual_free_count": scene_policy["free_count"],
-            "statistics": statistics(db, user.id, now),
+            "statistics": statistics(db, user.id, now) if user else None,
         }
 
     @router.get("/topics", response_model=dict[str, list[C.TopicProgress]])
     def topics(
         request: Request,
         category_id: str | None = None,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
-        return {"items": service.topics(db, user.id, request.app.state.clock(), category_id)}
+        return {
+            "items": service.topics(
+                db, user.id if user else None, request.app.state.clock(), category_id
+            )
+        }
 
     @router.get("/topics/{topic_id}/articles", response_model=Page[C.Summary])
     def articles(
@@ -992,7 +1000,7 @@ def mini_routes():
         request: Request,
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         """Page free articles first within their direct category, preserving manual ranks."""
@@ -1012,7 +1020,7 @@ def mini_routes():
             page,
             limit,
             render_batch=lambda rows: service.summaries(
-                db, rows, user.id, request.app.state.clock()
+                db, rows, user.id if user else None, request.app.state.clock()
             ),
         )
 
@@ -1022,7 +1030,7 @@ def mini_routes():
         category_id: str | None = None,
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         """Page free publications first, preserving category and article ranks in each group."""
@@ -1051,7 +1059,7 @@ def mini_routes():
             page,
             limit,
             render_batch=lambda rows: service.summaries(
-                db, rows, user.id, request.app.state.clock()
+                db, rows, user.id if user else None, request.app.state.clock()
             ),
         )
 
@@ -1129,37 +1137,41 @@ def mini_routes():
     def summary(
         article_id: str,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         row = service.require_article(db, article_id, allow_deleted=True)
-        if (
-            row.status != "published"
-            and not db.get(Favorite, (user.id, row.id))
-            and not db.get(Completion, (user.id, row.id))
+        if (row.status != "published" or row.deleted_at or not row.version_id) and (
+            not user
+            or (
+                not db.get(Favorite, (user.id, row.id))
+                and not db.get(Completion, (user.id, row.id))
+            )
         ):
             raise DomainError(404, "listening_article_missing", "未找到本人可见文章")
-        return service.summary(db, row, user.id, request.app.state.clock())
+        return service.summary(db, row, user.id if user else None, request.app.state.clock())
 
     @router.get("/articles/{article_id}", response_model=C.ArticleDetail)
     def detail(
         article_id: str,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         now = request.app.state.clock()
-        row, version = service.published(db, user.id, article_id, now)
+        row, version = service.published(db, user.id if user else None, article_id, now)
         audio = db.get(Media, version.payload["audio_id"])
         if not audio or audio.state != "ready" or not audio.duration:
             raise DomainError(503, "listening_audio_unavailable", "完整音频暂不可用，请重试")
         return {
-            **service.summary(db, row, user.id, now),
+            **service.summary(db, row, user.id if user else None, now),
             "payload": version.payload,
-            "progress": service.progress_view(db, user.id, row),
+            "progress": service.progress_view(db, user.id, row) if user else None,
             "audio_duration": audio.duration,
             "timeline": timeline_view(db, version.payload),
-            "queue_token": service.queue_token(db, request.app.state.settings, user.id, row, now),
+            "queue_token": service.queue_token(db, request.app.state.settings, user.id, row, now)
+            if user
+            else None,
         }
 
     @router.get("/articles/{article_id}/next", response_model=C.NextArticle)
@@ -1302,11 +1314,11 @@ def mini_routes():
         media_id: str,
         version_id: str,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         _, version = service.published(
-            db, user.id, article_id, request.app.state.clock(), version_id
+            db, user.id if user else None, article_id, request.app.state.clock(), version_id
         )
         return deliver(media.controlled_media(db, version.payload, media_id), request)
 
@@ -1315,7 +1327,7 @@ def mini_routes():
         article_id: str,
         version_id: str,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         version = service.thumbnail_version(db, article_id, version_id)
@@ -1328,28 +1340,37 @@ def mini_routes():
         article_id: str,
         version_id: str,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         version = service.thumbnail_version(db, article_id, version_id)
-        media.controlled_media(db, version.payload, "", thumbnail=True)
-        return media.issue_ticket(request, user.id, article_id, version_id, "", purpose="thumbnail")
+        thumbnail_medium = media.controlled_media(db, version.payload, "", thumbnail=True)
+        return media.issue_ticket(
+            request,
+            user.id if user else None,
+            article_id,
+            version_id,
+            thumbnail_medium.id,
+            purpose="thumbnail",
+        )
 
     @router.post("/articles/{article_id}/media-ticket", response_model=C.TicketResult)
     def media_ticket(
         article_id: str,
         body: C.MediaTicketInput,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         key=Depends(operation_key),
         db: Session = Depends(database, scope="function"),
     ):
         _, version = service.published(
-            db, user.id, article_id, request.app.state.clock(), body.version_id
+            db, user.id if user else None, article_id, request.app.state.clock(), body.version_id
         )
         media.controlled_media(db, version.payload, body.media_id)
         # No durable mutation: credential refresh must remain short-lived even for receipt replay.
-        return media.issue_ticket(request, user.id, article_id, body.version_id, body.media_id)
+        return media.issue_ticket(
+            request, user.id if user else None, article_id, body.version_id, body.media_id
+        )
 
     @router.get("/media/{credential}")
     @router.head("/media/{credential}", include_in_schema=False)

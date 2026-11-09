@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from .access_service import require_access
 from .content_models import Media
-from .dependencies import ADMIN_COOKIE, administrator, database, learner, operation_key
+from .dependencies import ADMIN_COOKIE, administrator, database, operation_key, optional_learner
 from .errors import DomainError
 from .media_api import deliver
 from .models import AdminSession, MiniSession
@@ -85,7 +85,7 @@ def with_grant(
 
 def routes(role):
     router = APIRouter(prefix=f"/api/{role}/v1", tags=["controlled word pronunciation"])
-    authorize = administrator if role == "admin" else learner
+    authorize = administrator if role == "admin" else optional_learner
 
     @router.post("/cards/{card_id}/words/{word_id}/pronunciation", response_model=SpeechState)
     def generate(
@@ -98,6 +98,10 @@ def routes(role):
         db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
+        if actor is None:
+            from .public_resources import speech_state
+
+            return speech_state(db, request, "scene", card_id, word_id, body, create=True)
         if role == "mini":
             require_access(db, actor.id, card_id, request.app.state.clock())
         word, reading, config, cache_key = reference(
@@ -128,6 +132,10 @@ def routes(role):
         db: Session = Depends(database, scope="function"),
     ):
         ref = SpeechReference(version_id=version_id, revision=revision)
+        if actor is None:
+            from .public_resources import speech_state
+
+            return speech_state(db, request, "scene", card_id, word_id, ref)
         if role == "mini":
             require_access(db, actor.id, card_id, request.app.state.clock())
         _, _, _, cache_key = reference(

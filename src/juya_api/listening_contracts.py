@@ -69,7 +69,7 @@ class CategoryProgress(CategoryInput):
     name_en: str = ""
     revision: int
     total_articles: int
-    completed_articles: int
+    completed_articles: int | None
     restricted_articles: int
     thumbnail_url: str | None = None
 
@@ -115,7 +115,7 @@ class Topic(BaseModel):
 
 class TopicProgress(Topic):
     total_articles: int
-    completed_articles: int
+    completed_articles: int | None
 
 
 class ArticleInput(Input):
@@ -207,7 +207,7 @@ class Summary(BaseModel):
     available: bool
     thumbnail_url: str | None
     access: LearningPermission
-    state: ArticleState
+    state: ArticleState | None
     first_completed_at: str | None = None
     last_completed_at: str | None = None
     favorited_at: str | None = None
@@ -243,9 +243,9 @@ class Progress(ProgressInput):
 
 class ArticleDetail(Summary):
     payload: ListeningPayload
-    progress: Progress
+    progress: Progress | None
     timeline: Timeline
-    queue_token: str
+    queue_token: str | None
     audio_duration: float
 
 
@@ -254,12 +254,12 @@ class Home(BaseModel):
     topics: list[TopicProgress]
     continue_learning: Summary | None
     configured: bool
-    authorization: dict
+    authorization: dict | None
     free_count: int | None
     actual_free_count: int
     scene_free_count: int | None
     scene_actual_free_count: int
-    statistics: Statistics
+    statistics: Statistics | None
 
 
 class NextArticle(BaseModel):

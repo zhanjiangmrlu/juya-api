@@ -196,7 +196,7 @@ def test_interrupted_ddl_resumes_from_durable_snapshot_without_reapplying_batch_
     with monkeypatch.context() as patch:
         patch.setattr(Operations, "add_column", interrupt)
         with pytest.raises(RuntimeError, match="simulated ddl interruption"):
-            command.upgrade(config, "head")
+            command.upgrade(config, "0024")
     if engine.dialect.name == "mysql":
         with engine.connect() as db:
             assert (
@@ -204,7 +204,7 @@ def test_interrupted_ddl_resumes_from_durable_snapshot_without_reapplying_batch_
                 == 1
             )
             assert db.scalar(text("SELECT revision FROM listening_imports WHERE id='batch'")) == 6
-    command.upgrade(config, "head")
+    command.upgrade(config, "0024")
     with engine.begin() as db:
         assert db.execute(
             text("SELECT id,category_id,source_hash,topic_id FROM listening_candidates")
@@ -214,7 +214,7 @@ def test_interrupted_ddl_resumes_from_durable_snapshot_without_reapplying_batch_
             text("SELECT canonical_hash FROM listening_candidates WHERE id='candidate'")
         )
         db.execute(text("UPDATE alembic_version SET version_num='0023'"))
-    command.upgrade(config, "head")
+    command.upgrade(config, "0024")
     with engine.connect() as db:
         assert db.scalar(text("SELECT revision FROM listening_imports WHERE id='batch'")) == 7
     with engine.connect() as db:
@@ -223,6 +223,7 @@ def test_interrupted_ddl_resumes_from_durable_snapshot_without_reapplying_batch_
             db.scalar(select(receipts.c.result).where(receipts.c.key_digest == "successful-key"))
             == "original-encrypted-receipt"
         )
+    command.upgrade(config, "head")
     command.check(config)
 
 

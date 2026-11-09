@@ -183,7 +183,17 @@ def fail(sessions, job_id, lease, now, code, *, temporary=False, apply=None):
 
 def lock_admin_job(db, job_id, *, role=None):
     """Use actor→job→file ordering, shared with HTTP import writes and progress."""
-    owner = db.execute(select(Job.owner_kind, Job.owner_id).where(Job.id == job_id)).first()
+    owner = db.execute(
+        select(Job.owner_kind, Job.owner_id, Job.kind).where(Job.id == job_id)
+    ).first()
+    if (
+        owner
+        and owner.owner_kind == "mini"
+        and owner.owner_id == "public-pronunciation"
+        and owner.kind == "tts.synthesize"
+    ):
+        # Shared public synthesis has a service owner, never a synthetic learner.
+        return
     if owner and owner.owner_kind in {"admin", "mini"} and role in {None, owner.owner_kind}:
         model = Administrator if owner.owner_kind == "admin" else User
         actor = db.get(model, owner.owner_id)

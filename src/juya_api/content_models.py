@@ -33,6 +33,9 @@ class Card(Base):
     current_version_id: Mapped[str | None] = mapped_column(
         String(36), comment="当前已发布场景版本标识；空表示从未发布"
     )
+    current_study_note_version_id: Mapped[str | None] = mapped_column(
+        String(36), index=True, comment="当前已发布学习笔记独立版本标识；空表示无笔记"
+    )
     sort_order: Mapped[int] = mapped_column(
         Integer, default=0, index=True, comment="排序值，按升序展示"
     )
@@ -53,6 +56,11 @@ class CardDraft(Base):
     revision: Mapped[int] = mapped_column(Integer, default=1, comment="并发修改校验版本号")
     payload: Mapped[dict] = mapped_column(
         JSON, comment="场景当前草稿内容JSON，包含中英文资料、词汇及媒体引用"
+    )
+    study_note: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="学习笔记草稿决策JSON：keep保留、set设置、remove移除、unresolved待选择及有效与待处理媒体引用",
     )
     updated_at: Mapped[datetime] = mapped_column(
         UTCDateTime, default=utc_now, comment="最近更新时间（UTC，微秒精度）"
@@ -80,6 +88,31 @@ class CardVersion(Base):
     )
     published_at: Mapped[datetime] = mapped_column(
         UTCDateTime, comment="版本发布时间（UTC，微秒精度）"
+    )
+
+
+class CardStudyNoteVersion(Base):
+    __tablename__ = "card_study_note_versions"
+    __table_args__ = (
+        UniqueConstraint("card_id", "number", name="uq_card_study_note_version"),
+        {"comment": "场景学习笔记独立不可变发布版本，不改变正文学习身份"},
+    )
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=identifier, comment="学习笔记版本内部标识"
+    )
+    card_id: Mapped[str] = mapped_column(
+        ForeignKey("cards.id"), index=True, comment="所属场景稳定标识，关联cards.id"
+    )
+    number: Mapped[int] = mapped_column(Integer, comment="同一场景内独立递增的笔记发布版本序号")
+    media_id: Mapped[str | None] = mapped_column(
+        ForeignKey("media.id"), comment="有效PDF媒体标识；空表示已发布移除笔记"
+    )
+    filename: Mapped[str | None] = mapped_column(
+        String(512), comment="发布时PDF原文件名快照；移除时为空"
+    )
+    size: Mapped[int | None] = mapped_column(Integer, comment="发布时PDF实际字节数；移除时为空")
+    published_at: Mapped[datetime] = mapped_column(
+        UTCDateTime, comment="笔记版本发布时间（UTC，微秒精度）"
     )
 
 
@@ -167,6 +200,10 @@ class MediaTicket(Base):
     )
     media_id: Mapped[str] = mapped_column(
         ForeignKey("media.id"), comment="关联媒体标识，关联media.id"
+    )
+    study_note_version_id: Mapped[str | None] = mapped_column(
+        ForeignKey("card_study_note_versions.id"),
+        comment="票据绑定的独立学习笔记版本；正文或摘要用途为空",
     )
     purpose: Mapped[str] = mapped_column(
         String(16),

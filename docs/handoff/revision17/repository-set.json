@@ -1,89 +1,149 @@
 {
-  "date": "2026-11-01",
-  "purpose": "整合06修订17三端已推送test并部署测试环境；小程序已上传，体验版由用户手动切换",
-  "minimum_schema": "0024",
+  "date": "2026-11-08",
+  "purpose": "整合08三仓test已推送，测试双API／Worker／独立听读及后台部署，微信开发版上传；体验版用户手动切换",
+  "minimum_schema": "0026",
   "code_contract": 3,
   "repositories": {
     "juya-api": {
-      "branch": "codex/revision17-integration06",
-      "implementation_commit": "ca951462d21fb09cd60c7909cf60e9399c412d27",
-      "worktree_relative_path": ".worktrees/revision17-integration06/juya-api",
-      "commit_reference": "本清单所在文档提交包含最终交付证据；implementation_commit为功能修复提交",
-      "remote_branch": "test",
-      "test_release_commit": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87"
+      "branch": "test",
+      "test_release_commit": "5249c04fa8892230e2ae16d2226b93660498ce07",
+      "commit_reference": "本清单所在后续文档提交不改变已部署功能源码"
     },
     "juya-admin": {
-      "branch": "codex/revision17-integration06",
-      "implementation_commit": "c1357ff333e6456a2dd3230b4a59d91059682b84",
-      "worktree_relative_path": ".worktrees/revision17-integration06/juya-admin",
-      "remote_branch": "test",
-      "test_release_commit": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e"
+      "branch": "test",
+      "test_release_commit": "7d32973b69c009536a58da4a5f592e4a2dab435f"
     },
     "juya-miniapp": {
-      "branch": "codex/revision17-integration06",
-      "implementation_commit": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a",
-      "worktree_relative_path": ".worktrees/revision17-integration06/juya-miniapp",
-      "remote_branch": "test",
-      "test_release_commit": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
+      "branch": "test",
+      "test_release_commit": "6d49d9832861858aa441334dbb3734feb95c8da3",
+      "wechat_version": "1.5.0-test.20261108.071926"
+    },
+    "juya-cli": {
+      "change": "本轮无源码变化，未重新部署工作台"
     }
   },
+  "verification": "docs/verification/integration08-test-release-20261108.md",
   "previous_reference": {
-    "date": "2026-10-30",
-    "purpose": "Integration05 revision17 local implementation only; branches preserved, no merge/push/deployment/remote migration",
+    "date": "2026-11-07",
+    "purpose": "整合08游客体验本地隔离交付；本次iPhone图片／实际倍速／PDF／真实登录／主动收藏／听读暂停与续播通过；无推送部署或正式微信版本上传",
+    "minimum_schema": "0026",
+    "code_contract": 3,
+    "worktree_mode": "native managed detached worktrees; original checkouts preserved",
     "repositories": {
       "juya-api": {
-        "branch": "codex/revision17-integration05",
-        "commit": "6b4af24017b6396975a6e68b53d21e2e721ee22b",
-        "worktree_relative_path": ".worktrees/revision17-integration05/juya-api",
-        "commit_reference": "API documentation commit containing this manifest; implementation commits cb9f94c,6b4af24"
+        "base_commit": "f41f5c5",
+        "implementation_commit": "32dfa4ef028bcd45d2d636a6b2ec1ccc86e0850d",
+        "worktree_name": "juya-api-integration08",
+        "commit_reference": "本清单所在文档提交记录本地验证状态，无本轮远程发布"
       },
       "juya-admin": {
-        "branch": "codex/revision17-integration05",
-        "commit": "2ec0d0a53cebcfc2c5a86487974393bc32cf0f46",
-        "worktree_relative_path": ".worktrees/revision17-integration05/juya-admin"
+        "base_commit": "90d4e00",
+        "implementation_commit": "178bcea",
+        "worktree_name": "juya-admin-integration08",
+        "change": "仅生成可空state契约与交接说明",
+        "documentation_commit": "7d32973b69c009536a58da4a5f592e4a2dab435f"
       },
       "juya-miniapp": {
-        "branch": "codex/revision17-integration05",
-        "commit": "1d399948fed18087c96a1685b07b9055a9431722",
-        "worktree_relative_path": ".worktrees/revision17-integration05/juya-miniapp"
+        "base_commit": "eaa8ef6",
+        "implementation_commit": "afcb378b00223e072f4cb0675539e7947d8e085f",
+        "worktree_name": "juya-miniapp-integration08",
+        "status": "702测试与静态／构建通过；原五项及追加D3暂停修复均独立复审批准；本次iPhone反馈全部闭环",
+        "documentation_commit": "6d49d9832861858aa441334dbb3734feb95c8da3"
       },
       "juya-cli": {
-        "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca",
-        "change": "本轮未修改"
+        "change": "本轮未修改，保留原运行目录"
       }
     },
-    "previous_2026_10_29": {
-      "date": "2026-10-29",
-      "purpose": "Revision17 design repairs on test; source synchronization only, no deployment or remote database migration.",
+    "verification": "docs/verification/integration08-guest-20261107.md",
+    "acceptance_index": "docs/verification/integration08-acceptance-index.json",
+    "previous_reference": {
+      "date": "2026-11-01",
+      "purpose": "整合06修订17三端已推送test并部署测试环境；小程序已上传，体验版由用户手动切换",
+      "minimum_schema": "0024",
+      "code_contract": 3,
       "repositories": {
+        "juya-api": {
+          "branch": "codex/revision17-integration06",
+          "implementation_commit": "ca951462d21fb09cd60c7909cf60e9399c412d27",
+          "worktree_relative_path": ".worktrees/revision17-integration06/juya-api",
+          "commit_reference": "本清单所在文档提交包含最终交付证据；implementation_commit为功能修复提交",
+          "remote_branch": "test",
+          "test_release_commit": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87"
+        },
         "juya-admin": {
-          "branch": "test",
-          "commit": "22c3a6e95244a76f0e4db0d4b16002107222dc79"
+          "branch": "codex/revision17-integration06",
+          "implementation_commit": "c1357ff333e6456a2dd3230b4a59d91059682b84",
+          "worktree_relative_path": ".worktrees/revision17-integration06/juya-admin",
+          "remote_branch": "test",
+          "test_release_commit": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e"
         },
         "juya-miniapp": {
-          "branch": "test",
-          "commit": "014e95ad9a56e64667de719acfaeb8e5c21e4a9f"
-        },
-        "juya-cli": {
-          "branch": "test",
-          "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca"
-        },
-        "juya-api": {
-          "branch": "test",
-          "commit_reference": "The test commit containing this manifest; git rev-parse HEAD after pull."
+          "branch": "codex/revision17-integration06",
+          "implementation_commit": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a",
+          "worktree_relative_path": ".worktrees/revision17-integration06/juya-miniapp",
+          "remote_branch": "test",
+          "test_release_commit": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
         }
+      },
+      "previous_reference": {
+        "date": "2026-10-30",
+        "purpose": "Integration05 revision17 local implementation only; branches preserved, no merge/push/deployment/remote migration",
+        "repositories": {
+          "juya-api": {
+            "branch": "codex/revision17-integration05",
+            "commit": "6b4af24017b6396975a6e68b53d21e2e721ee22b",
+            "worktree_relative_path": ".worktrees/revision17-integration05/juya-api",
+            "commit_reference": "API documentation commit containing this manifest; implementation commits cb9f94c,6b4af24"
+          },
+          "juya-admin": {
+            "branch": "codex/revision17-integration05",
+            "commit": "2ec0d0a53cebcfc2c5a86487974393bc32cf0f46",
+            "worktree_relative_path": ".worktrees/revision17-integration05/juya-admin"
+          },
+          "juya-miniapp": {
+            "branch": "codex/revision17-integration05",
+            "commit": "1d399948fed18087c96a1685b07b9055a9431722",
+            "worktree_relative_path": ".worktrees/revision17-integration05/juya-miniapp"
+          },
+          "juya-cli": {
+            "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca",
+            "change": "本轮未修改"
+          }
+        },
+        "previous_2026_10_29": {
+          "date": "2026-10-29",
+          "purpose": "Revision17 design repairs on test; source synchronization only, no deployment or remote database migration.",
+          "repositories": {
+            "juya-admin": {
+              "branch": "test",
+              "commit": "22c3a6e95244a76f0e4db0d4b16002107222dc79"
+            },
+            "juya-miniapp": {
+              "branch": "test",
+              "commit": "014e95ad9a56e64667de719acfaeb8e5c21e4a9f"
+            },
+            "juya-cli": {
+              "branch": "test",
+              "commit": "f1ab9f9aa83609f1a7c433b53afa559ca3371aca"
+            },
+            "juya-api": {
+              "branch": "test",
+              "commit_reference": "The test commit containing this manifest; git rev-parse HEAD after pull."
+            }
+          }
+        }
+      },
+      "test_release": {
+        "date": "2026-11-01",
+        "record": "docs/verification/integration06-test-release-20261101.md",
+        "commits": {
+          "juya-api": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87",
+          "juya-admin": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e",
+          "juya-miniapp": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
+        },
+        "mini_version": "1.5.0-r17.06.1101",
+        "experience_switched": false
       }
     }
-  },
-  "test_release": {
-    "date": "2026-11-01",
-    "record": "docs/verification/integration06-test-release-20261101.md",
-    "commits": {
-      "juya-api": "f46f2d4ab3f12cdc5bcad75acbbdfaa69ac06b87",
-      "juya-admin": "b9aa4b382edc0b3bba61ec80cef2da2defc5814e",
-      "juya-miniapp": "ca6bb37bda749650ba32c5b41c4ed05a900e0f5a"
-    },
-    "mini_version": "1.5.0-r17.06.1101",
-    "experience_switched": false
   }
 }

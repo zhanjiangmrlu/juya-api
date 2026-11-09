@@ -17,6 +17,11 @@ def write_transaction(request: Request):
     request.state.database_write_intent = True
 
 
+def read_snapshot(request: Request):
+    """Keep a compound catalog read on one MySQL MVCC snapshot without locking writers."""
+    request.state.database_read_snapshot = True
+
+
 def database(request: Request):
     """Commit all business records together, or roll back the entire failed request."""
     with request.app.state.sessions.begin() as session:
@@ -30,6 +35,8 @@ def database(request: Request):
                 request.state, "database_write_intent", False
             )
             session.connection(execution_options={"sqlite_write_intent": write_intent})
+        elif getattr(request.state, "database_read_snapshot", False):
+            session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
         yield session
 
 
@@ -64,6 +71,18 @@ def learner(request: Request, db: Session = Depends(database, scope="function"))
     if not user:
         raise DomainError(401, "login_required", "请主动登录后继续")
     return user
+
+
+def optional_learner(
+    request: Request, db: Session = Depends(database, scope="function")
+) -> User | None:
+    """Only an absent/empty credential is anonymous; supplied identities must be valid."""
+    if not request.headers.get("Authorization", ""):
+        return None
+    scheme, _, credential = request.headers["Authorization"].partition(" ")
+    if scheme != "Bearer" or not credential or " " in credential:
+        raise DomainError(401, "login_required", "请主动登录后继续")
+    return learner(request, db)
 
 
 def operation_key(request: Request) -> str:

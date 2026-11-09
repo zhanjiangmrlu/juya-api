@@ -1,6 +1,8 @@
 """Human-edited scene data, with safe text and explicit source fragments."""
 
-from pydantic import BaseModel, Field, model_validator
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .models import identifier
 
@@ -60,8 +62,27 @@ class SceneContent(BaseModel):
         return self
 
 
+class StudyNoteChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action: Literal["keep", "set", "remove", "unresolved"]
+    media_id: str | None = Field(default=None, min_length=1, max_length=36)
+    previous_media_id: str | None = Field(default=None, min_length=1, max_length=36)
+
+    @model_validator(mode="after")
+    def selection_matches_action(self):
+        """Only an explicit set operation may carry one selected PDF."""
+        if "previous_media_id" in self.model_fields_set and (
+            self.action not in {"set", "unresolved"} or self.previous_media_id is None
+        ):
+            raise ValueError("仅设置或待选择笔记可提供明确的有效保留PDF标识")
+        if (self.action == "set") != (self.media_id is not None):
+            raise ValueError("设置笔记须提供PDF，其他操作不提供媒体标识")
+        return self
+
+
 class CreateCard(BaseModel):
     content: SceneContent
+    study_note: StudyNoteChange | None = None
 
 
 class Revision(BaseModel):
@@ -70,6 +91,7 @@ class Revision(BaseModel):
 
 class SaveCard(Revision):
     content: SceneContent
+    study_note: StudyNoteChange | None = None
 
 
 class PublishCard(Revision):

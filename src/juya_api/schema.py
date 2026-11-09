@@ -7,7 +7,7 @@ from sqlalchemy import inspect, text
 from .content_models import SettingCounter
 from .errors import DomainError
 
-MINIMUM_REVISION = 24
+MINIMUM_REVISION = 26
 CODE_CONTRACT = 3
 
 

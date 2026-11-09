@@ -101,7 +101,16 @@ def status(db, cache_key):
 
 
 def request(db, settings, actor, role, word, reading, config, cache_key, now, *, prewarm=None):
-    """Reserve one global cache row so different learners share the same pending task."""
+    """Request controlled speech for an authenticated actor, preserving existing ownership."""
+    return request_for_owner(
+        db, settings, actor.id, role, word, reading, config, cache_key, now, prewarm=prewarm
+    )
+
+
+def request_for_owner(
+    db, settings, owner_id, role, word, reading, config, cache_key, now, *, prewarm=None
+):
+    """Reserve shared speech work independently of a User or personal operation receipt."""
     # Serialize cache-pointer writers before reading the job, never take a cache
     # lock and subsequently wait for its old job (finish locks in reverse order).
     name = fingerprint({"tts_cache_lock": cache_key})
@@ -172,7 +181,7 @@ def request(db, settings, actor, role, word, reading, config, cache_key, now, *,
             db,
             "tts.prewarm" if prewarm else "tts.synthesize",
             role,
-            actor.id,
+            owner_id,
             {"cache_key": cache_key, **(prewarm or {})},
             now,
             settings=settings,

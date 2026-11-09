@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 
-from .dependencies import administrator, database, learner, operation_key
+from .dependencies import administrator, database, operation_key, optional_learner
 from .errors import DomainError
 from .listening_models import ListeningCandidate
 from .listening_service import catalog_lock, published, require_article
@@ -47,7 +47,7 @@ def reference(
         payload = candidate.payload
     elif version_id:
         if role == "mini":
-            _, version = published(db, actor_id, article_id, now, version_id)
+            _, version = published(db, actor_id, article_id, now, version_id, lock=lock)
         else:
             from .listening_service import admin_publication
 
@@ -65,12 +65,16 @@ def reference(
 def routes(role):
     """Offer version-bound single-word speech for each isolated API role."""
     router = APIRouter(prefix=f"/api/{role}/v1/listening", tags=["listening word pronunciation"])
-    authorize = administrator if role == "admin" else learner
+    authorize = administrator if role == "admin" else optional_learner
 
     def result(
         db, request, actor, article_id, word_id, ref, *, create=False, key=None, context=None
     ):
         """Refresh references inside the receipt transaction before starting synthesis."""
+        if actor is None:
+            from .public_resources import speech_state
+
+            return speech_state(db, request, "listening", article_id, word_id, ref, create=create)
         args = (
             db,
             request.app.state.settings,

@@ -16,7 +16,7 @@ from .security import decrypt, encrypt
 
 def authorization(db, user_id, now):
     """Derive effective status at server time; revocation retains the original dates."""
-    row = db.get(LearningAuthorization, user_id)
+    row = db.get(LearningAuthorization, user_id) if user_id is not None else None
     status = "none"
     if row and row.expires_on and not row.revoked_at:
         status = "active" if row.expires_on >= business_date(now) else "expired"

@@ -17,9 +17,10 @@ from .errors import DomainError
 from .learning_models import Completion, DailyLearning, Favorite
 from .learning_service import card_state
 from .response_contracts import CardState
+from .study_notes import note_filter, published_note
 from .transactions import operate
 
-QueueSource = Literal["learning", "favorites", "records", "day"]
+QueueSource = Literal["learning_notes", "learning", "favorites", "records", "day"]
 
 
 class CreateLearningQueue(BaseModel):
@@ -70,6 +71,12 @@ def source_ids(db, user_id, body):
             )
             .order_by(Card.is_free.desc(), Card.sort_order, Card.id)
         )
+    elif body.source == "learning_notes":
+        query = (
+            select(Card.id)
+            .where(Card.status == "published", Card.deleted_at.is_(None), note_filter())
+            .order_by(Card.is_free.desc(), Card.sort_order, Card.id)
+        )
     elif body.source == "favorites":
         query = (
             select(Favorite.card_id)
@@ -107,6 +114,8 @@ def queue_eligible(db, queue, card_id, state):
         return False
     if not learning_access(db, queue.user_id, card_id, db.info["now"])["can_learn"]:
         return False
+    if queue.source == "learning_notes":
+        return published_note(db, card) is not None
     if queue.source == "learning":
         return not state["completed"]
     if queue.source == "favorites":
@@ -208,7 +217,8 @@ def routes():
             )
         context = access_context(db, user.id, now)
         free_complete = (
-            context["enabled"]
+            queue.source != "learning_notes"
+            and context["enabled"]
             and context["authorization"]["status"] != "active"
             and free_uncompleted(db, user.id) == 0
             and bool(

@@ -46,6 +46,10 @@ TAG_DOCS: dict[str, tuple[str, str]] = {
         "正文查词与发音",
         "依据正文中的受控词语引用查词、生成发音并读取音频。",
     ),
+    "public controlled resources": (
+        "游客受控资源",
+        "匿名短期票据读取并逐次重验发布免费和当前版本。",
+    ),
     "public share summaries": ("公开分享摘要", "读取已发布词汇卡片的公开分享摘要和分享图片。"),
     "thematic listening": (
         "主题听读学习",
@@ -827,7 +831,7 @@ _register(
             "get",
             "/cards/{card_id}",
             "读取词汇卡片学习内容",
-            "读取卡片当前版本，仅为当前用户记录首次有效打开，不计学习完成成绩。",
+            "读取卡片当前版本，沿用mark_started记录正文首次有效打开，不计完成。require_study_note=true要求当前有效发布PDF；失效409且不新增开始记录。",
         ),
         (
             "get",
@@ -1195,3 +1199,54 @@ _register(
         ),
     ),
 )
+
+
+# 整合08公共读取补充；保留既有操作标识及请求路径。
+OPERATION_DOCS[("get", "/api/mini/v1/public/resources/{credential}")] = (
+    "读取游客受控资源",
+    "校验独立公开票据的用途、有效期、当前发布及免费权限和版本，支持GET、HEAD与Range；不依赖本人会话，不返回永久存储地址。",
+)
+for _path in (
+    "/api/mini/v1/cards",
+    "/api/mini/v1/cards/{card_id}",
+    "/api/mini/v1/cards/{card_id}/summary",
+    "/api/mini/v1/cards/{card_id}/media/{media_id}/url",
+    "/api/mini/v1/listening/home",
+    "/api/mini/v1/listening/topics",
+    "/api/mini/v1/listening/articles",
+    "/api/mini/v1/listening/topics/{topic_id}/articles",
+    "/api/mini/v1/listening/articles/{article_id}",
+    "/api/mini/v1/listening/articles/{article_id}/summary",
+    "/api/mini/v1/listening/articles/{article_id}/thumbnail",
+    "/api/mini/v1/listening/articles/{article_id}/thumbnail-ticket",
+):
+    _method = "get"
+    _summary, _description = OPERATION_DOCS[(_method, _path)]
+    OPERATION_DOCS[(_method, _path)] = (
+        _summary,
+        _description
+        + (
+            " 无Authorization时允许游客读取当前发布列表、安全摘要及免费正文/资源，"
+            "个人字段为null；非空无效凭据返回401。"
+        ),
+    )
+OPERATION_DOCS[("get", "/api/mini/v1/cards/{card_id}/summary")] = (
+    "读取当前发布或本人历史词汇摘要",
+    "游客可读当前发布安全摘要；下线及删除摘要继续要求本人收藏或完成归属。摘要不含正文、词汇原句或PDF元信息。",
+)
+OPERATION_DOCS[("get", "/api/mini/v1/cards")] = (
+    "分页查询已发布词汇卡片",
+    "游客按全部发布集合查询，显式uncompleted也按published处理且个人字段为null；已登录先按本人完成记录过滤。免费优先、人工顺序及有效PDF过滤在分页前执行。",
+)
+for _prefix, _object in (("", "cards/{card_id}"), ("/listening", "articles/{article_id}")):
+    for _method in ("get", "post"):
+        _path = f"/api/mini/v1{_prefix}/{_object}/words/{{word_id}}/pronunciation"
+        _summary, _description = OPERATION_DOCS[(_method, _path)]
+        OPERATION_DOCS[(_method, _path)] = (
+            _summary,
+            _description
+            + (
+                " 游客仅允许当前发布免费预置词汇及版本引用，复用共享缓存和任务，"
+                "不创建用户或个人幂等记录；不允许任意文本及正文点词。"
+            ),
+        )

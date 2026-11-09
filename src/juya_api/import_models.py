@@ -91,6 +91,11 @@ class ImportItem(Base):
     source_index: Mapped[int] = mapped_column(Integer, comment="候选项在源文件内的位置编号")
     source_identity: Mapped[str] = mapped_column(String(64), comment="候选项的稳定来源身份摘要")
     content: Mapped[dict] = mapped_column(JSON, comment="候选场景草稿内容JSON")
+    study_note: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="学习笔记核对决策JSON，保留同包同目录候选、有效及待处理媒体引用",
+    )
     parser_issues: Mapped[list] = mapped_column(
         JSON, default=list, comment="解析和内容校验问题JSON列表"
     )

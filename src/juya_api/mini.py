@@ -17,6 +17,7 @@ from .media_api import mini_routes as media_routes
 from .operation_api import routes as operation_routes
 from .profile_api import routes as profile_routes
 from .pronunciation_api import routes as pronunciation_routes
+from .public_resources import routes as public_resource_routes
 from .queue_api import routes as queue_routes
 from .reading_api import routes as reading_routes
 from .share_api import routes as share_routes
@@ -48,6 +49,7 @@ def create_app(
     app.include_router(mini_routes())
     app.include_router(content_routes())
     app.include_router(media_routes())
+    app.include_router(public_resource_routes())
     app.include_router(learning_routes())
     app.include_router(profile_routes())
     app.include_router(operation_routes("mini"))

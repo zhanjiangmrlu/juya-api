@@ -9,7 +9,7 @@ from uuid import NAMESPACE_URL, uuid5
 
 from sqlalchemy import func, or_, select
 
-from .content_contracts import SceneContent
+from .content_contracts import SceneContent, StudyNoteChange
 from .content_models import Card, CardDraft, Media
 from .content_service import (
     create_candidate,
@@ -27,10 +27,12 @@ from .jobs import enqueue, lock_admin_job
 from .models import Administrator
 from .security import fingerprint
 from .storage import ObjectStorage
+from .study_notes import PDF_ERROR_MESSAGES
 from .transactions import actor_lock
 from .zip_names import import_file_name, readable_zip_name
 
 INVALID_SOURCE_ERRORS = {
+    *PDF_ERROR_MESSAGES,
     "image_invalid",
     "audio_invalid",
     "audio_format_mismatch",
@@ -101,7 +103,7 @@ def item_job(db, item):
     return db.get(Job, item.job_id) if item.job_id else None
 
 
-def content_hash(db, content):
+def content_hash(db, content, study_note=None):
     """Ignore generated IDs, retaining text, confirmed sources and actual immutable media hashes."""
     value = copy.deepcopy(content)
     if not value.get("title_en"):
@@ -115,6 +117,24 @@ def content_hash(db, content):
             row.pop("id", None)
             if row.get("source"):
                 row["source"]["line_id"] = lines.get(row["source"]["line_id"], -1)
+    if study_note and (study_note.get("action", "keep") != "keep" or study_note.get("media_id")):
+        selected = db.get(Media, study_note.get("media_id")) if study_note.get("media_id") else None
+        candidates = [
+            db.get(ImportFile, file_id) for file_id in study_note.get("candidate_file_ids", [])
+        ]
+        previous = (
+            db.get(Media, study_note.get("previous_media_id"))
+            if study_note.get("previous_media_id") and study_note["action"] in {"set", "unresolved"}
+            else None
+        )
+        value["study_note"] = {
+            "action": study_note["action"],
+            "sha256": selected.sha256 if selected else None,
+            "previous_sha256": previous.sha256 if previous else None,
+            "candidates": sorted(row.sha256 for row in candidates if row)
+            if study_note["action"] == "unresolved"
+            else [],
+        }
     return fingerprint(value)
 
 
@@ -148,7 +168,7 @@ def find_identity(db, item):
             ImportItem.saved_card_id.is_not(None),
         )
     ).all()
-    hashed = content_hash(db, item.content)
+    hashed = content_hash(db, item.content, item.study_note)
     for candidate in previous:
         legacy = db.get(ImportIdentity, fingerprint({"incomplete_item": candidate.id}))
         if (
@@ -171,15 +191,24 @@ def source_view(db, item):
     }
 
 
-def validate_source_media(db, batch, item, content):
+def validate_source_media(db, batch, item, content, *, allowed_note_ids=()):
     """ZIP staging cannot bind attachments from another archive or card folder."""
     if batch.mode != "zip":
         return
     source = db.get(ImportFile, item.source_file_id)
-    for field in ["image_id", "audio_id"]:
-        if not content[field]:
+    for field in ["image_id", "audio_id", "study_note_media_id"]:
+        if not content.get(field):
             continue
+        if field == "study_note_media_id" and content[field] in allowed_note_ids:
+            continue  # The confirmed target already legitimately owns this historical attachment.
         attachment = db.scalar(select(ImportFile).where(ImportFile.media_id == content[field]))
+        if field == "study_note_media_id" and attachment is None:
+            from .admin_action_models import AdminMediaSource
+
+            if db.get(AdminMediaSource, content[field]) is None:
+                raise DomainError(
+                    422, "import_media_source", "无法确认此PDF为当前目录或单独上传资料，请重新上传"
+                )
         if attachment and (
             attachment.batch_id != batch.id
             or attachment.parent_id != source.parent_id
@@ -188,6 +217,44 @@ def validate_source_media(db, batch, item, content):
             raise DomainError(
                 422, "import_media_source", "请选择当前ZIP同一卡片文件夹的素材，或单独上传补充资料"
             )
+
+
+def validate_import_note_state(db, batch, item, selection, target_card_id):
+    """Revalidate retained references against the final target, including legacy staging."""
+    from .study_notes import effective_media_id, published_note, ready_pdf
+
+    if batch.mode != "zip" or not selection or selection["action"] == "remove":
+        return
+    allowed_note_ids = set()
+    target = live_card(db, target_card_id)
+    if target:
+        draft = db.get(CardDraft, target.id)
+        if draft is not None:
+            allowed_note_ids.add(effective_media_id(db, draft.study_note, target))
+        published = published_note(db, target)
+        if published:
+            allowed_note_ids.add(published.media_id)
+    references = []
+    if selection["action"] in {"set", "keep"} and selection.get("media_id"):
+        references.append((selection["media_id"], selection["action"] == "keep"))
+    if selection["action"] in {"set", "unresolved"} and selection.get("previous_media_id"):
+        references.append((selection["previous_media_id"], True))
+    for media_id, must_be_ready in references:
+        medium = db.get(Media, media_id)
+        if (
+            not medium
+            or medium.owner_kind != "admin"
+            or medium.owner_id != batch.admin_id
+            or medium.kind != "study_note"
+        ):
+            raise DomainError(422, "study_note_media_invalid", "请选择当前管理员上传的学习笔记PDF")
+        if must_be_ready and not ready_pdf(db, media_id):
+            raise DomainError(
+                422, "study_note_previous_invalid", "请选择当前管理员已校验可用的PDF作为保留附件"
+            )
+        validate_source_media(
+            db, batch, item, {"study_note_media_id": media_id}, allowed_note_ids=allowed_note_ids
+        )
 
 
 def file_view(db, row):
@@ -217,9 +284,24 @@ def file_view(db, row):
         "state": state,
         "job_id": job.id if job else None,
         "error_code": row.error_code or (job.error_code if job and job.state == "failed" else None),
+        "error": PDF_ERROR_MESSAGES.get(
+            row.error_code or (job.error_code if job and job.state == "failed" else "") or ""
+        ),
         "parent_id": row.parent_id,
         "progress": row.progress,
     }
+
+
+def import_note_selection(selected, staged):
+    """Apply source-local candidate IDs and a restored baseline to the projected draft."""
+    if not staged:
+        return selected
+    result = dict(selected or {})
+    if staged["action"] == "keep" and staged.get("media_id"):
+        result = {"action": "keep", "media_id": staged["media_id"]}
+    if staged.get("candidate_file_ids"):
+        result["candidate_file_ids"] = staged["candidate_file_ids"]
+    return result
 
 
 def item_view(db, item):
@@ -227,7 +309,7 @@ def item_view(db, item):
     job = item_job(db, item)
     saved_card = live_card(db, item.saved_card_id)
     image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
-    hashed = content_hash(db, item.content)
+    hashed = content_hash(db, item.content, item.study_note)
     identity = find_identity(db, item)
     issues = [
         i
@@ -235,6 +317,16 @@ def item_view(db, item):
         if i["code"] != "title_en_conflict" or not item.content.get("title_en", "").strip()
     ]
     issues += validate_publication(db, item.content)
+    from .study_notes import note_issues, project_selection, selection_view
+
+    target = live_card(db, item.target_card_id) if item.target_card_id else saved_card
+    target_draft = db.get(CardDraft, target.id) if target else None
+    staged = item.study_note
+    selection = project_selection(
+        db, target_draft.study_note if target_draft else None, staged, target
+    )
+    selection = import_note_selection(selection, staged)
+    issues += note_issues(db, selection, target)
     if not item.readable:
         state = "unreadable"
     elif job and job.state in {"queued", "running", "retry"}:
@@ -261,6 +353,9 @@ def item_view(db, item):
     else:
         state = "ready" if not issues else "incomplete"
     return {
+        "study_note": selection_view(
+            db, selection, target, candidate_file_ids=(staged or {}).get("candidate_file_ids", [])
+        ),
         "id": item.id,
         "revision": item.revision,
         "content": item.content,
@@ -299,6 +394,7 @@ def batch_view(db, batch, settings):
         for field in ["image_id", "audio_id"]
         if item.content[field]
     }
+    used.update((item.study_note or {}).get("media_id") for item in items)
     file_values = [file_view(db, row) for row in files]
     item_values = [item_view(db, item) for item in items]
     pending_items = [
@@ -357,7 +453,8 @@ def batch_view(db, batch, settings):
         "unused_file_ids": [
             row.id
             for row in files
-            if row.kind == "unused" or (row.kind in {"image", "audio"} and row.media_id not in used)
+            if row.kind == "unused"
+            or (row.kind in {"image", "audio", "study_note"} and row.media_id not in used)
         ],
     }
 
@@ -451,6 +548,8 @@ def resolve(db, batch, settings, now):
 def asset_kind(name):
     """Keep word, chunk and slice attachments out of whole-scene media."""
     path = PurePosixPath(name)
+    if path.suffix.lower() == ".pdf":
+        return "study_note"
     if any(
         value in path.stem.lower()
         for value in [
@@ -599,6 +698,8 @@ def prepare_parse(settings, sessions, job, *, clock):
                         if kind == "image"
                         else settings.audio_limit_mb
                         if kind == "audio"
+                        else settings.study_note_limit_mb
+                        if kind == "study_note"
                         else settings.archive_limit_mb
                     )
                     * 1024
@@ -616,7 +717,13 @@ def prepare_parse(settings, sessions, job, *, clock):
                         "size": member.file_size,
                         "sha256": "",
                         "media_id": None,
-                        "error_code": "archive_member_limit"
+                        "error_code": (
+                            "study_note_limit"
+                            if error.code == "archive_limit"
+                            else "study_note_invalid"
+                        )
+                        if kind == "study_note"
+                        else "archive_member_limit"
                         if error.code == "archive_limit"
                         else "archive_member_invalid",
                     }
@@ -636,7 +743,7 @@ def prepare_parse(settings, sessions, job, *, clock):
                     "size": len(body),
                     "sha256": sha,
                     "media_id": str(uuid5(NAMESPACE_URL, file_id + ":media"))
-                    if kind in {"image", "audio"}
+                    if kind in {"image", "audio", "study_note"}
                     else None,
                 }
                 prepared_files.append(entry)
@@ -681,6 +788,15 @@ def prepare_parse(settings, sessions, job, *, clock):
                         readable=parsed_items[0]["readable"],
                         issues=parsed_items[0]["issues"],
                     )
+                    notes = [f for f in files if f["kind"] == "study_note"]
+                    if notes:
+                        prepared_items[-1]["study_note"] = {
+                            "action": "set"
+                            if len(notes) == 1 and notes[0]["media_id"]
+                            else "unresolved",
+                            "media_id": notes[0]["media_id"] if len(notes) == 1 else None,
+                            "candidate_file_ids": [f["id"] for f in notes],
+                        }
                 except DomainError as error:
                     content = normalize(
                         SceneContent(name=PurePosixPath(document["name"]).parent.name)
@@ -789,7 +905,7 @@ def prepare_save(settings, sessions, job, now):
             raise DomainError(409, "import_changed", "核对资料已变化，请重新确认保存范围")
         batch = owned_batch(db, item.batch_id, job["owner_id"])
         content = SceneContent.model_validate(payload["content"])
-        hashed = content_hash(db, payload["content"])
+        hashed = content_hash(db, payload["content"], item.study_note)
         identity_key = object_key(db, item)
         identity = find_identity(db, item)
         target = payload.get("target_card_id") or (
@@ -800,6 +916,25 @@ def prepare_save(settings, sessions, job, now):
             if payload.get("target_card_id")
             else item.saved_draft_revision
         )
+        validate_import_note_state(db, batch, item, item.study_note, target)
+        note_change = (
+            StudyNoteChange(
+                action="set"
+                if item.study_note["action"] == "keep" and item.study_note.get("media_id")
+                else item.study_note["action"],
+                media_id=item.study_note.get("media_id")
+                if item.study_note["action"] in {"set", "keep"}
+                else None,
+                **(
+                    {"previous_media_id": item.study_note["previous_media_id"]}
+                    if item.study_note["action"] in {"set", "unresolved"}
+                    and item.study_note.get("previous_media_id")
+                    else {}
+                ),
+            )
+            if item.study_note
+            else None
+        )
         if identity and identity.content_hash == hashed and not target:
             card = require_card(db, identity.card_id)
             result["skipped"] = True
@@ -808,10 +943,21 @@ def prepare_save(settings, sessions, job, now):
                 409, "import_target_required", "资料已存在且本次内容有变化，请明确核对更新目标"
             )
         elif target:
-            card = save_candidate(db, target, target_revision, content, job["owner_id"], now)
+            card = save_candidate(
+                db,
+                target,
+                target_revision,
+                content,
+                job["owner_id"],
+                now,
+                study_note=note_change,
+                preserve_equivalent_body=True,
+            )
         else:
-            card = create_candidate(db, content, job["owner_id"], now)
+            card = create_candidate(db, content, job["owner_id"], now, study_note=note_change)
         draft = db.get(CardDraft, card.id)
+        if item.study_note and not result.get("skipped"):
+            draft.study_note = import_note_selection(draft.study_note, item.study_note)
         item.saved_card_id = card.id
         item.saved_draft_revision = draft.revision
         item.last_saved_hash = hashed

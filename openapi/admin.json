@@ -3977,13 +3977,14 @@
             "schema": {
               "enum": [
                 "image",
-                "audio"
+                "audio",
+                "study_note"
               ],
               "type": "string",
               "title": "文件类型",
-              "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+              "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
             },
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           }
         ],
         "requestBody": {
@@ -7088,9 +7089,9 @@
               ],
               "type": "string",
               "title": "文件类型",
-              "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+              "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
             },
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           }
         ],
         "requestBody": {
@@ -13091,10 +13092,10 @@
                 "topic"
               ],
               "type": "string",
-              "title": "排序范围",
-              "description": "category 为分类内排序，global 为全局排序，topic 为主题内排序。"
+              "title": "查询或排序范围",
+              "description": "场景列表uncompleted为本人待学、published为全部已发布；排序接口category为分类、global为全局、topic为主题。"
             },
-            "description": "category 为分类内排序，global 为全局排序，topic 为主题内排序。"
+            "description": "场景列表uncompleted为本人待学、published为全部已发布；排序接口category为分类、global为全局、topic为主题。"
           },
           {
             "name": "category_id",
@@ -13802,9 +13803,9 @@
               ],
               "type": "string",
               "title": "文件类型",
-              "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+              "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
             },
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           }
         ],
         "requestBody": {
@@ -19577,6 +19578,11 @@
       },
       "CardPreview": {
         "properties": {
+          "study_note": {
+            "$ref": "#/components/schemas/StudyNoteDraft",
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
+          },
           "preview_id": {
             "type": "string",
             "title": "草稿预览标识",
@@ -19606,6 +19612,7 @@
         },
         "type": "object",
         "required": [
+          "study_note",
           "preview_id",
           "revision",
           "content",
@@ -19616,6 +19623,23 @@
       },
       "CardView": {
         "properties": {
+          "study_note": {
+            "$ref": "#/components/schemas/StudyNoteDraft",
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
+          },
+          "published_study_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudyNoteMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "已发布学习笔记",
+            "description": "当前已发布的有效PDF元数据；与编辑候选分开读取，无笔记时为空。"
+          },
           "free_revision": {
             "type": "integer",
             "title": "免费标记修订号",
@@ -19721,6 +19745,7 @@
         },
         "type": "object",
         "required": [
+          "study_note",
           "id",
           "display_name",
           "display_thumbnail_id",
@@ -20131,6 +20156,18 @@
             "$ref": "#/components/schemas/SceneContent",
             "title": "场景内容",
             "description": "场景的名称、配图、音频、对话、词汇和语块资料。"
+          },
+          "study_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudyNoteChange"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
           }
         },
         "type": "object",
@@ -21538,6 +21575,18 @@
       },
       "ImportFileView": {
         "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "错误信息",
+            "description": "操作失败的原因；成功或没有错误时可为空。"
+          },
           "processing_stage": {
             "anyOf": [
               {
@@ -21563,7 +21612,7 @@
           "kind": {
             "type": "string",
             "title": "文件类型",
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           },
           "size": {
             "type": "integer",
@@ -21664,6 +21713,11 @@
       },
       "ImportItemView": {
         "properties": {
+          "study_note": {
+            "$ref": "#/components/schemas/StudyNoteDraft",
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
+          },
           "id": {
             "type": "string",
             "title": "资源标识",
@@ -21842,6 +21896,7 @@
         },
         "type": "object",
         "required": [
+          "study_note",
           "id",
           "revision",
           "content",
@@ -22256,7 +22311,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },
@@ -22538,7 +22600,7 @@
           "kind": {
             "type": "string",
             "title": "文件类型",
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           },
           "state": {
             "type": "string",
@@ -23413,6 +23475,18 @@
       },
       "PublishedPreview": {
         "properties": {
+          "study_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudyNoteMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
+          },
           "card_id": {
             "type": "string",
             "title": "场景卡片标识",
@@ -23540,7 +23614,7 @@
           "kind": {
             "type": "string",
             "title": "文件类型",
-            "description": "上传或处理的文件类别，例如 image、audio、zip、docx。"
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
           },
           "state": {
             "type": "string",
@@ -23582,6 +23656,18 @@
             "$ref": "#/components/schemas/SceneContent",
             "title": "场景内容",
             "description": "场景的名称、配图、音频、对话、词汇和语块资料。"
+          },
+          "study_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudyNoteChange"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
           }
         },
         "type": "object",
@@ -23981,6 +24067,18 @@
       },
       "StageItem": {
         "properties": {
+          "study_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudyNoteChange"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "学习笔记",
+            "description": "场景学习笔记草稿决策或当前发布PDF；请求省略表示保留，明确remove才移除。"
+          },
           "revision": {
             "type": "integer",
             "minimum": 1.0,
@@ -24126,6 +24224,228 @@
         ],
         "title": "本人学习与打卡统计"
       },
+      "StudyNoteCandidate": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "错误信息",
+            "description": "操作失败的原因；成功或没有错误时可为空。"
+          },
+          "file_id": {
+            "type": "string",
+            "title": "导入文件标识",
+            "description": "当前导入批次中的文件 ID。"
+          },
+          "name": {
+            "type": "string",
+            "title": "名称",
+            "description": "当前场景、分类、主题或文件的显示名称。"
+          },
+          "size": {
+            "type": "integer",
+            "title": "文件大小",
+            "description": "原始文件或返回资源的大小，单位为字节。"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "媒体标识",
+            "description": "已上传媒体的 ID，用于关联图片、音频或签发访问票据。"
+          },
+          "state": {
+            "type": "string",
+            "title": "当前状态",
+            "description": "当前资源处理状态或用户学习状态，具体结构以所在模型为准。"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "错误代码",
+            "description": "异步处理或当前操作失败时的稳定错误代码；无错误时为空。"
+          },
+          "parent_id": {
+            "type": "string",
+            "title": "父文件标识",
+            "description": "ZIP 内文件对应的根 ZIP 文件 ID；顶层上传文件使用空字符串。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_id",
+          "name",
+          "size",
+          "media_id",
+          "state",
+          "error_code",
+          "parent_id"
+        ],
+        "title": "同包同目录PDF候选"
+      },
+      "StudyNoteChange": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "set",
+              "remove",
+              "unresolved"
+            ],
+            "title": "操作类型",
+            "description": "本次请求或审计记录对应的业务操作，取值以当前接口约束为准。"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "媒体标识",
+            "description": "已上传媒体的 ID，用于关联图片、音频或签发访问票据。"
+          },
+          "previous_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "有效保留笔记标识",
+            "description": "仅set或unresolved允许：原子保存尚未落盘的有效PDF与待处理替换；须为当前管理员可合法引用的ready PDF。省略沿用服务端推导，不允许null。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "学习笔记编辑决策"
+      },
+      "StudyNoteDraft": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "set",
+              "remove",
+              "unresolved"
+            ],
+            "title": "操作类型",
+            "description": "本次请求或审计记录对应的业务操作，取值以当前接口约束为准。"
+          },
+          "attachment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "有效编辑附件",
+            "description": "当前编辑稿的可用PDF媒体；失败替换保留原有效附件。"
+          },
+          "pending_attachment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "待处理替换附件",
+            "description": "当前选择但尚未可用的PDF，可保存草稿但不可发布。"
+          },
+          "can_publish": {
+            "type": "boolean",
+            "title": "笔记是否就绪",
+            "description": "仅表示选填PDF已就绪或已明确取消，其他正文发布必填条件仍独立校验。"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/StudyNoteCandidate"
+            },
+            "type": "array",
+            "title": "待核对文章",
+            "description": "从导入文件解析出的候选文章及各自的核对、保存状态。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "can_publish"
+        ],
+        "title": "学习笔记候选状态"
+      },
+      "StudyNoteMetadata": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "title": "发布版本标识",
+            "description": "绑定此次学习或操作的不可变内容发布版本 ID。"
+          },
+          "media_id": {
+            "type": "string",
+            "title": "媒体标识",
+            "description": "已上传媒体的 ID，用于关联图片、音频或签发访问票据。"
+          },
+          "filename": {
+            "type": "string",
+            "title": "笔记文件名",
+            "description": "发布时学习笔记PDF的原始文件名；仅获权详情和管理员可见。"
+          },
+          "size": {
+            "type": "integer",
+            "title": "文件大小",
+            "description": "原始文件或返回资源的大小，单位为字节。"
+          },
+          "state": {
+            "type": "string",
+            "const": "ready",
+            "title": "当前状态",
+            "description": "当前资源处理状态或用户学习状态，具体结构以所在模型为准。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version_id",
+          "media_id",
+          "filename",
+          "size",
+          "state"
+        ],
+        "title": "已发布学习笔记元数据"
+      },
       "Summary": {
         "properties": {
           "audio_duration_seconds": {
@@ -24263,7 +24583,14 @@
             "description": "当前用户对该内容的实时学习和点词查询权限。"
           },
           "state": {
-            "$ref": "#/components/schemas/ArticleState",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleState"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "本人文章状态",
             "description": "当前用户对文章的收藏、累计完成和今日完成标记。"
           },
@@ -24648,6 +24975,11 @@
       },
       "UploadConfiguration": {
         "properties": {
+          "study_note_limit_bytes": {
+            "type": "integer",
+            "title": "学习笔记大小上限",
+            "description": "当前服务端实际允许的单个PDF最大字节数。"
+          },
           "image_limit_bytes": {
             "type": "integer",
             "title": "图片大小上限",
@@ -24671,6 +25003,7 @@
         },
         "type": "object",
         "required": [
+          "study_note_limit_bytes",
           "image_limit_bytes",
           "audio_limit_bytes",
           "archive_limit_bytes",

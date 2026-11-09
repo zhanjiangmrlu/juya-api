@@ -7,11 +7,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .access_service import require_access
+from .access_service import learning_access, require_access
 from .content_models import Card
 from .content_service import published_card
 from .database import timestamp
-from .dependencies import database, learner, operation_key
+from .dependencies import database, learner, operation_key, optional_learner
 from .errors import DomainError
 from .learning_models import Favorite
 from .learning_service import (
@@ -167,16 +167,29 @@ def routes():
     def summary(
         card_id: str,
         request: Request,
-        user=Depends(learner),
+        user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
         from .learning_models import Completion
 
-        if not db.get(Favorite, (user.id, card_id)) and not db.get(Completion, (user.id, card_id)):
+        card = db.get(Card, card_id)
+        current = bool(
+            card and card.status == "published" and not card.deleted_at and card.current_version_id
+        )
+        if not current and (
+            not user
+            or (
+                not db.get(Favorite, (user.id, card_id))
+                and not db.get(Completion, (user.id, card_id))
+            )
+        ):
             raise DomainError(404, "card_missing", "未找到本人记录中的场景卡")
         return {
-            **card_summary(db, card_id, user.id),
-            "state": card_state(db, user.id, card_id, request.app.state.clock()),
+            **card_summary(db, card_id, user.id if user else None),
+            "access": learning_access(
+                db, user.id if user else None, card_id, request.app.state.clock()
+            ),
+            "state": card_state(db, user.id, card_id, request.app.state.clock()) if user else None,
         }
 
     @router.get("/me/learning-records", response_model=Page[LearningRecord])
