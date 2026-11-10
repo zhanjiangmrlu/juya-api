@@ -15,6 +15,8 @@ from .listening_api import mini_routes as listening_routes
 from .listening_pronunciation import routes as listening_pronunciation_routes
 from .media_api import mini_routes as media_routes
 from .operation_api import routes as operation_routes
+from .privacy_api import routes as privacy_routes
+from .privacy_service import load_documents
 from .profile_api import routes as profile_routes
 from .pronunciation_api import routes as pronunciation_routes
 from .public_resources import routes as public_resource_routes
@@ -45,6 +47,9 @@ def create_app(
     app.state.share_images = ShareImages(
         max_source_bytes=min(settings.image_limit_mb, 20) * 1024 * 1024
     )
+    app.state.privacy_documents = load_documents(settings)
+    app.state.analytics_receiver = None
+    app.include_router(privacy_routes())
     app.include_router(access_routes())
     app.include_router(mini_routes())
     app.include_router(content_routes())

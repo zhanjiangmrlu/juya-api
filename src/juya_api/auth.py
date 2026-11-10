@@ -27,6 +27,14 @@ from .models import (
     User,
 )
 from .persistence import insert_once
+from .privacy_contracts import AgreementConfirmation, AnalyticsChoice, AnalyticsPreferenceInput
+from .privacy_service import (
+    change_preference,
+    preference,
+    save_confirmation,
+    validate_confirmation,
+    versions,
+)
 from .response_contracts import (
     AdminLoginResponse,
     AdminSessionResponse,
@@ -100,6 +108,8 @@ class WechatLogin(BaseModel):
     code: str = Field(min_length=1, max_length=512)
     consent: Literal[True]
     consent_version: str = Field(min_length=1, max_length=64)
+    agreement_confirmation: AgreementConfirmation | None = None
+    analytics_choice: AnalyticsChoice | None = None
 
 
 def admin_routes() -> APIRouter:
@@ -205,7 +215,10 @@ def mini_routes() -> APIRouter:
         db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
-        key_hash, request_hash = digest(key), fingerprint(body.model_dump())
+        key_hash, request_hash = (
+            digest(key),
+            fingerprint(body.model_dump(mode="json", exclude_none=True)),
+        )
         previous = db.get(LoginOperation, key_hash)
         if previous and previous.expires_at > now:
             if previous.fingerprint != request_hash:
@@ -236,6 +249,7 @@ def mini_routes() -> APIRouter:
             return clean_login_result(
                 json.loads(decrypt(settings, operation.result_cipher) or "{}")
             )
+        validate_confirmation(request, body.agreement_confirmation)
         openid = request.app.state.wechat.exchange(body.code)
         identity = lookup(settings, "openid:" + settings.wechat_app_id, openid)
         user = registered_user(db, settings.wechat_app_id, identity, now)
@@ -256,6 +270,26 @@ def mini_routes() -> APIRouter:
                 accepted_at=now,
             )
         )
+        if body.agreement_confirmation:
+            save_confirmation(db, user.id, body.agreement_confirmation, now)
+        if body.analytics_choice:
+            choice = body.analytics_choice
+            row = preference(db, user.id, now, lock=True)
+            valid = (
+                choice.scope_version and versions(request).get("analytics") == choice.scope_version
+            )
+            enabled = bool(choice.enabled and valid and body.agreement_confirmation)
+            change_preference(
+                db,
+                request,
+                user.id,
+                AnalyticsPreferenceInput(
+                    enabled=enabled,
+                    scope_version=choice.scope_version,
+                    expected_revision=row.revision,
+                ),
+                now,
+            )
         result = {
             "access_token": credential,
             "expires_at": timestamp(now + timedelta(days=settings.session_days)),

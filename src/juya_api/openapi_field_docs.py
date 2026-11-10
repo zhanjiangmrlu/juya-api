@@ -966,3 +966,62 @@ FIELD_OVERRIDES: dict[tuple[str, str], tuple[str, str]] = {
         "当前用户学习授权到期日之后的首个时刻；不代表免费内容也会在此时失效。",
     ),
 }
+
+# CHG-0040：明确确认与必要登录、可选统计分别记录
+SCHEMA_TITLES.update(
+    {
+        "AgreementConfirmation": "明确协议确认",
+        "AnalyticsChoice": "独立统计选择",
+        "AnalyticsPreferenceInput": "统计许可变更请求",
+        "AnalyticsEventInput": "获准统计事件",
+    }
+)
+FIELD_DOCS.update(
+    {
+        "agreement_confirmation": (
+            "当前协议确认",
+            "明确展示并确认的用户协议和隐私指引记录；不以登录成功代替明确确认。",
+        ),
+        "analytics_choice": (
+            "独立统计选择",
+            "本次明确选择及实际展示的统计披露版本；拒绝不影响必要登录。",
+        ),
+        "confirmation_id": (
+            "协议确认标识",
+            "本次明确确认的稳定编号，重试保持不变并安全关联可信账号。",
+        ),
+        "terms_version": ("用户协议版本", "用户实际阅读并确认的已发布用户协议版本。"),
+        "privacy_version": ("隐私指引版本", "用户实际阅读并确认的已发布隐私保护指引版本。"),
+        "client_confirmed_at": (
+            "客户端确认时间",
+            "用户主动确认的客户端时间，不替代服务端接受时间。",
+        ),
+        "scope_version": ("统计披露版本", "用户实际展示并明确允许的可选统计范围版本。"),
+        "expected_revision": ("预期许可修订号", "基于本人最新许可状态提交，并发变更须重新核对。"),
+        "event": ("统计事件类型", "仅允许页面进入、内容打开、实际播放成功、收藏变更和完成成功。"),
+        "consent_revision": (
+            "统计许可修订号",
+            "事件产生时的当前账号许可代次；撤回或换号后不得继承。",
+        ),
+        "properties": (
+            "必要事件引用",
+            "仅接受页面、内容及结果等白名单引用，不接受用户输入或身份凭据。",
+        ),
+        "operation_key": (
+            "业务成功回执键",
+            "收藏或完成事件对应的本人已成功业务操作，仅校验不执行业务。",
+        ),
+    }
+)
+FIELD_OVERRIDES.update(
+    {
+        ("AnalyticsEventInput", "event_id"): (
+            "唯一事件标识",
+            "同一事件的重试去重标识，重试保持不变。",
+        ),
+        ("AnalyticsEventInput", "occurred_at"): (
+            "事件发生时间",
+            "事件实际发生时间，必须处于当前许可有效时间范围。",
+        ),
+    }
+)
