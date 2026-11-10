@@ -7,7 +7,7 @@
   "workspace_relative_path": "句芽英语-CHG-0039-取消联系方式收集-开发整改需求-20261110.docx",
   "figma": "https://www.figma.com/design/yVnE9TCSoRS5sv4vAuxsBX?node-id=383-4835",
   "design_status": "6主要页面与38关联状态；沿用原登录及隐私弹窗样式，保留有效统计披露与收藏入口",
-  "scope": "本地test开发及隔离验证；未推送、部署、上传、清理真实数据或重新提审",
+  "scope": "2026-11-10追加授权推送test、测试部署及开发版上传已完成；体验版手动切换，未提审或改生产/真实历史数据",
   "previous_reference": {
     "filename": "句芽英语V1.5-整合08-修订17-开发完整交付版-20261106.docx",
     "version": "V1.5整合08",
@@ -52,5 +52,6 @@
       }
     },
     "local_development_scope": "用户批准仅本地隔离开发和验收；无推送、部署、远程迁移或正式微信版本上传；用户配合iPhone临时预览验收中，实际结果以本轮记录为准"
-  }
+  },
+  "deployment_record": "docs/verification/contact-retirement-test-release-20261110.md"
 }

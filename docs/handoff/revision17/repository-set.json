@@ -159,5 +159,16 @@
     "verification": "docs/verification/contact-retirement-20261110.md",
     "minimum_schema": "0026",
     "code_contract": 3
+  },
+  "test_contact_retirement_release": {
+    "date": "2026-11-10",
+    "source_commits": {
+      "juya-api": "db13c6648f32eef87f344e8839701299b834fea8",
+      "juya-admin": "8516379d820610ac45d9ede4b0487c58fe45ef80",
+      "juya-miniapp": "e4d8cf84370fba1f31a55cf3c9b741cb3b4fb673"
+    },
+    "wechat_version": "1.5.0-test.20261110.163037",
+    "verification": "docs/verification/contact-retirement-test-release-20261110.md",
+    "scope": "仅测试应用与微信开发版；体验版手动切换，生产与历史数据保留"
   }
 }
