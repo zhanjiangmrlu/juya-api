@@ -57,6 +57,16 @@ def versions(request):
     return {v["kind"]: v["version"] for v in documents(request)}
 
 
+def client_transport_ready(request):
+    """Advertise client SDK authorization only for an explicit complete test configuration."""
+    settings = request.app.state.settings
+    return bool(
+        settings.environment in {"local", "test"}
+        and settings.analytics_client_transport_enabled
+        and {"terms", "privacy", "analytics"} <= versions(request).keys()
+    )
+
+
 def validate_confirmation(request, confirmation):
     """A new publication cannot be accepted via a legacy boolean or stale version."""
     current = versions(request)
@@ -150,14 +160,13 @@ def preference(db, user_id, now, *, lock=False):
 
 def preference_view(row, request):
     """An explicit permission and the actual collection state are different facts."""
+    enabled = bool(row and row.enabled and row.scope_version == versions(request).get("analytics"))
     return dict(
-        enabled=bool(
-            row and row.enabled and row.scope_version == versions(request).get("analytics")
-        ),
+        enabled=enabled,
         scope_version=row.scope_version if row else "",
         revision=row.revision if row else 0,
         updated_at=timestamp(row.updated_at) if row else None,
-        collecting=False,
+        collecting=None if enabled and client_transport_ready(request) else False,
     )
 
 

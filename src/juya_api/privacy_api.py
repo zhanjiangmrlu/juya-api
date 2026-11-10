@@ -27,6 +27,7 @@ from .privacy_models import AnalyticsEventReceipt
 from .privacy_service import (
     agreement_state,
     change_preference,
+    client_transport_ready,
     documents,
     preference,
     preference_view,
@@ -129,6 +130,7 @@ def routes():
     def policies(request: Request):
         values = documents(request)
         return dict(
+            analytics_available=client_transport_ready(request),
             mode="published" if values else "legacy",
             server_now=timestamp(request.app.state.clock()),
             documents=values,
@@ -159,6 +161,7 @@ def routes():
         analytics = preference_view(preference(db, user.id, request.app.state.clock()), request)
         if not agreements["current"]:
             analytics["enabled"] = False
+            analytics["collecting"] = False
         return dict(agreements=agreements, analytics=analytics)
 
     @router.post(
@@ -218,7 +221,7 @@ def routes():
         "/analytics/events",
         response_model=AnalyticsEventReceiptView,
         summary="接收已获许可的分析事件",
-        description="实际运行固定关闭接收；隔离接收器校验账号许可、五类事件及持久去重，不修改任何学习成绩。",
+        description="验证账号许可、五类事件及持久去重，不修改学习成绩。测试客户端SDK模式仅授权本次事件，不代表第三方已收妥；未显式配置时关闭。",
     )
     def receive(
         body: AnalyticsEventInput,
@@ -227,13 +230,14 @@ def routes():
         db: Session = Depends(database, scope="function"),
     ):
         receiver = request.app.state.analytics_receiver
-        if receiver is None:
+        if receiver is None and not client_transport_ready(request):
             raise DomainError(503, "analytics_unavailable", "真实统计尚未启用")
         actor_lock(db, user, "mini")
         now = request.app.state.clock()
         permission = preference(db, user.id, now, lock=True)
         if (
-            not permission.enabled
+            not permission
+            or not permission.enabled
             or permission.revision != body.consent_revision
             or permission.scope_version != versions(request).get("analytics")
             or not agreement_state(db, request, user.id)["current"]
@@ -272,7 +276,8 @@ def routes():
                     }
                 )
 
-        sql_event.listen(db, "after_commit", deliver, once=True)
+        if receiver is not None:
+            sql_event.listen(db, "after_commit", deliver, once=True)
         return {"event_id": body.event_id, "accepted": True}
 
     return router

@@ -57,6 +57,11 @@ class PolicyDocument(BaseModel):
 
 class PolicyCatalog(BaseModel):
     model_config = ConfigDict(title="公开协议目录")
+    analytics_available: bool = Field(
+        default=False,
+        title="测试统计授权是否可用",
+        description="仅完整披露且显式启用测试客户端SDK授权时为true；不代表当前设备已开始采集。",
+    )
     mode: Literal["legacy", "published"] = Field(
         title="协议运行模式", description="材料不完整时保持legacy必要登录，不启用新协议确认。"
     )
@@ -95,8 +100,9 @@ class AnalyticsPreferenceView(BaseModel):
     updated_at: str | None = Field(
         title="最后更新时间", description="最近一次许可变更的服务端时间；尚未设置为空。"
     )
-    collecting: Literal[False] = Field(
-        title="实际采集运行中", description="本期真实分析传输固定关闭，此字段始终false。"
+    collecting: bool | None = Field(
+        title="客户端采集运行状态",
+        description="无许可或通道关闭为false；已获许可的客户端SDK运行状态服务端无法推断，返回null，由本机真实SDK状态展示。",
     )
 
 

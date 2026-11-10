@@ -1,4 +1,12 @@
-# CHG-0040 测试发布与开发版上传（2026-11-10）
+# CHG-0040 审计问题修复（2026-11-10，测试发布准备）
+
+用户确认公开主体“句芽英语”、隐私联系邮箱 juyaenglish@163.com，并授权保留友盟、如实披露必要自动字段。本轮新增三份完整协议 `src/juya_api/policies/chg0040-20261110-v1.json`；只有测试环境显式设置 `JUYA_PRIVACY_DOCUMENTS_PATH=/app/src/juya_api/policies/chg0040-20261110-v1.json` 和 `JUYA_ANALYTICS_CLIENT_TRANSPORT_ENABLED=true` 才公布客户端统计能力。生产配置拒绝该开关，默认继续关闭。
+
+事件接口保留可信账号、当前协议与许可版本、五类事件、业务回执及持久去重校验；测试客户端模式的 accepted 仅表示本次事件获授权，不代表友盟已收到。collecting 在通道关闭或无许可时为 false，客户端获许可时为 null，实际运行由设备 SDK 状态显示。schema27/contract3 不变，无数据库迁移。SQLite 完整回归 754 通过、56 条环境条件跳过，ruff/mypy 通过；远程 MySQL/Redis CI 和测试部署尚待本次提交后验证。微信后台隐私声明及真机仍需按小程序仓库 docs/privacy 指引验收。
+
+---
+
+# CHG-0040 测试发布与开发版上传（2026-11-10，历史阶段）
 
 本次追加授权后代码已推送远程 test，测试 7 个服务已部署固定 API 139ad6d，全部 healthy；测试库备份后 0026→0027/contract3，原 56 张业务表原字段及行数保持，12 个非目标容器不变。官方完整 MySQL/Redis **804 通过/3 跳过**、双镜像及公网/契约复核通过。后台功能无变化，现用安装文件及公网哈希核验通过。
 
