@@ -1,0 +1,141 @@
+{
+  "api_commit": "13b5addeebfbacafc87c8eaf1bbbf1c5b08ff666",
+  "miniapp_commit": "bfd2a630b1555b4c126ec54f1d0dbce1097d22f3",
+  "environment": "test",
+  "release_id": "20261110T151955-13b5addeebfb-81a399",
+  "ci_run_id": 42837953206,
+  "ci_url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/42837953206",
+  "ci_jobs": [
+    {
+      "name": "quality",
+      "conclusion": "success"
+    },
+    {
+      "name": "images (mini, juya-miniapp-api)",
+      "conclusion": "success"
+    },
+    {
+      "name": "images (admin, juya-admin-api)",
+      "conclusion": "success"
+    }
+  ],
+  "ci_quality_counts": {
+    "passed": 807,
+    "skipped": 3
+  },
+  "artifact_config_digest": "sha256:0ad709f42786697ff1d262c88970c92f05fca0694534221b09e7bed22e5602aa",
+  "runtime_image_digest": "sha256:16bdd3d51e019d643f81ea03b95e33f1c1bdf069e957e7dede57ae6c06f05a40",
+  "runtime_digest_in_verified_official_oci_graph": true,
+  "services": [
+    {
+      "service": "mini-api",
+      "status": "running",
+      "health": "healthy",
+      "revision": "13b5addeebfbacafc87c8eaf1bbbf1c5b08ff666",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "mini-dispatcher",
+      "status": "running",
+      "health": "healthy",
+      "revision": "13b5addeebfbacafc87c8eaf1bbbf1c5b08ff666",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "service": "mini-worker",
+      "status": "running",
+      "health": "healthy",
+      "revision": "13b5addeebfbacafc87c8eaf1bbbf1c5b08ff666",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "protected_containers_unchanged": 16,
+  "production_unchanged": true,
+  "database_migration": false,
+  "schema": [
+    "0027"
+  ],
+  "contract": 3,
+  "public_policy_check": {
+    "catalog_status": 200,
+    "mode": "published",
+    "analytics_available": true,
+    "documents": [
+      {
+        "kind": "terms",
+        "status": 200,
+        "version": "chg0040-20261110-v1",
+        "utf8_bytes": 5631
+      },
+      {
+        "kind": "privacy",
+        "status": 200,
+        "version": "chg0040-20261110-v1",
+        "utf8_bytes": 12565
+      },
+      {
+        "kind": "analytics",
+        "status": 200,
+        "version": "chg0040-20261110-v1",
+        "utf8_bytes": 8598
+      }
+    ],
+    "anonymous_private_status": 401,
+    "runtime": {
+      "schema": [
+        "0027"
+      ],
+      "contract": 3,
+      "test_transport": true,
+      "policy_file_exists": true
+    }
+  },
+  "wechat_upload": false,
+  "local_public_verification": {
+    "api": "https://test-api.juyayingyu.com",
+    "catalog_status": 200,
+    "mode": "published",
+    "analytics_available": true,
+    "documents": [
+      {
+        "kind": "terms",
+        "status": 200,
+        "version": "chg0040-20261110-v1",
+        "utf8_bytes": 5631
+      },
+      {
+        "kind": "privacy",
+        "status": 200,
+        "version": "chg0040-20261110-v1",
+        "utf8_bytes": 12565
+      },
+      {
+        "kind": "analytics",
+        "status": 200,
+        "version": "chg0040-20261110-v1",
+        "utf8_bytes": 8598
+      }
+    ],
+    "health_status": 200,
+    "anonymous_private_status": 401,
+    "guest_listening_status": 200,
+    "admin_route_status": 404,
+    "openapi_capability_and_nullable_collecting": true
+  },
+  "mini_tests": {
+    "passed": 817,
+    "test_files": 136,
+    "check": "passed",
+    "main_package_bytes": 538389
+  },
+  "local_hot_update": {
+    "pid": 13580,
+    "mode": "test",
+    "api": "https://test-api.juyayingyu.com",
+    "project": "dist/dev/mp-weixin",
+    "compile_after_deployment_verified": true
+  }
+}
