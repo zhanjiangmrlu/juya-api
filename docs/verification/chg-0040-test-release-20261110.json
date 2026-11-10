@@ -1,0 +1,189 @@
+{
+  "change": "CHG-0040",
+  "environment": "test",
+  "deployed_at": "2026-11-10T21:28:08.171611+08:00",
+  "api_source": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+  "miniapp_source": "3ba60eaec1b1686ef1237afaf6f00289e4a98d82",
+  "repository_commits_before_release_docs": {
+    "juya-api": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+    "juya-miniapp": "3ba60eaec1b1686ef1237afaf6f00289e4a98d82",
+    "juya-admin": "b5d12faef642b6eb7bdf367a3223b25682c0df01",
+    "juya-cli": "45ff9c0c8f0cf4d41cf9365b31b9d35d9e38f68f"
+  },
+  "ci": {
+    "run_id": 42818356772,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/42818356772",
+    "commit": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      }
+    ],
+    "quality_counts": {
+      "passed": 804,
+      "skipped": 3
+    }
+  },
+  "initial_ci_timeout": {
+    "run_id": 42813664372,
+    "reason": "quality job exceeded former 30 minute limit",
+    "observed_passing_progress_percent": 71,
+    "retry_changes": ["quality timeout 60 minutes", "ephemeral MySQL data tmpfs 2 GiB"],
+    "all_test_commands_and_image_gates_retained": true
+  },
+  "services": [
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "revision": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "migration": {
+    "schema_before": "0026",
+    "schema_after": "0027",
+    "contract": 3,
+    "original_data_tables": 56,
+    "all_original_column_values_preserved": true,
+    "row_counts_preserved": true,
+    "new_analytics_rows": {
+      "analytics_preferences": 0,
+      "analytics_event_receipts": 0
+    },
+    "new_columns_null": true,
+    "database_downgraded": false
+  },
+  "backup": {
+    "database": "juya_test",
+    "bytes": 12428446,
+    "sha256": "21e10288fd2aa1e933f1abe5e36a3a52f001aa62b898a013f4bf77991180d650",
+    "automatic_restore": false
+  },
+  "postcheck": {
+    "readiness": {
+      "admin": 200,
+      "mini": 200
+    },
+    "auth": {
+      "admin-private": 401,
+      "mini-private": 401,
+      "privacy-private": 401,
+      "admin-other-role": 404,
+      "mini-other-role": 404
+    },
+    "guest": {
+      "/api/mini/v1/cards?limit=1": 200,
+      "/api/mini/v1/cards?has_study_note=true&limit=1": 200,
+      "/api/mini/v1/listening/home": 200,
+      "/api/mini/v1/listening/articles?limit=1": 200
+    },
+    "anonymous_policy_catalog": {
+      "status": 200,
+      "mode": "legacy",
+      "formal_material_not_fabricated": true
+    },
+    "missing_formal_document": 404,
+    "admin_openapi_matches": true,
+    "mini_openapi_matches": true,
+    "runtime": {
+      "healthy_services": 7,
+      "source": "139ad6d8680e7a540c5b43acc973c642d14ac927",
+      "protected_containers_unchanged": true,
+      "schema": "0027",
+      "contract": 3,
+      "old_tables_preserved": 56,
+      "new_analytics_tables_empty": true,
+      "actual_receiver_disabled": true
+    },
+    "status": "verified"
+  },
+  "wechat": {
+    "environment": "test",
+    "version": "1.5.0-test.20261110.201701",
+    "status": "success",
+    "source": "3ba60eaec1b1686ef1237afaf6f00289e4a98d82",
+    "test_api_and_assets": true,
+    "production_api_absent": true,
+    "sdk_absent": true,
+    "source_manifest_unchanged": true
+  },
+  "wechat_package_bytes": {
+    "total": 1365040,
+    "main": 809977
+  },
+  "admin_web": {
+    "functional_code_changed": false,
+    "redeployed": false,
+    "installed_and_public_hashes_match": true,
+    "live_source": "8516379d820610ac45d9ede4b0487c58fe45ef80"
+  },
+  "protected_containers_unchanged": 12,
+  "disk_free_bytes_after_verification": 10734415872,
+  "scope": {
+    "experience_switch": "user_manually_selects",
+    "review_submitted": false,
+    "production_deployed": false,
+    "actual_sdk_and_receiver_enabled": false,
+    "formal_policy_catalog_mode": "legacy",
+    "real_device_acceptance_complete": false
+  }
+}
