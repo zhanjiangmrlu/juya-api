@@ -145,5 +145,19 @@
         "experience_switched": false
       }
     }
+  },
+  "local_contact_retirement": {
+    "date": "2026-11-10",
+    "change": "CHG-0039",
+    "branch": "test",
+    "status": "本地开发与隔离验证完成，未推送部署上传或清理真实数据",
+    "repositories": {
+      "juya-api": "ebff355add7e7a4c3a2624389a1b2c8b15876dee",
+      "juya-admin": "8516379d820610ac45d9ede4b0487c58fe45ef80",
+      "juya-miniapp": "e4d8cf84370fba1f31a55cf3c9b741cb3b4fb673"
+    },
+    "verification": "docs/verification/contact-retirement-20261110.md",
+    "minimum_schema": "0026",
+    "code_contract": 3
   }
 }
