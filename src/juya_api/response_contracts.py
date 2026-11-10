@@ -49,12 +49,7 @@ class UserProfile(PublicModel):
     id: str
     nickname: str
     avatar_id: str | None
-    phone: str | None
-    wechat_contact: str | None
-    phone_source: str | None
-    wechat_source: str | None
     profile_version: int
-    contact_version: int
     registered_at: str
     last_login_at: str
 

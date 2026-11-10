@@ -280,7 +280,7 @@ def test_database_write_failure_rolls_back_whole_batch_then_retry_succeeds(legac
     assert cleanup(sessions, settings, apply=True)["users_cleared"] == 1
 
 
-@pytest.mark.parametrize("value", ["[]", '{"user": []}'])
+@pytest.mark.parametrize("value", ["[]", '{"user": []}', "{}", '{"user": null}'])
 def test_unexpected_receipt_shape_is_incomplete_not_silently_completed(legacy, value):
     settings, sessions, _ = legacy
     with sessions.begin() as db:

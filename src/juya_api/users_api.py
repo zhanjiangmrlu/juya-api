@@ -34,7 +34,6 @@ from .response_contracts import (
     Overview,
     Page,
 )
-from .security import lookup
 from .user_numbers import searched_user_number, user_code
 
 
@@ -127,8 +126,6 @@ def routes():
                     User.id.contains(value, autoescape=True),
                     User.user_number == searched_user_number(value),
                     User.nickname.contains(value, autoescape=True),
-                    User.phone_digest == lookup(settings, "contact:phone", value),
-                    User.wechat_digest == lookup(settings, "contact:wechat", value),
                 )
             )
         if registered == "today":

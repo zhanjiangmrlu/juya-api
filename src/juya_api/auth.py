@@ -34,6 +34,7 @@ from .response_contracts import (
     UserProfile,
     WechatLoginResponse,
 )
+from .retired_contacts import clean_login_result
 from .security import decrypt, digest, encrypt, fingerprint, lookup, token
 from .user_numbers import registered_user
 
@@ -84,12 +85,7 @@ def user_view(user: User, settings) -> dict:
         "id": user.id,
         "nickname": user.nickname,
         "avatar_id": user.avatar_id,
-        "phone": decrypt(settings, user.phone_cipher),
-        "wechat_contact": decrypt(settings, user.wechat_cipher),
-        "phone_source": user.phone_source,
-        "wechat_source": user.wechat_source,
         "profile_version": user.profile_version,
-        "contact_version": user.contact_version,
         "registered_at": timestamp(user.registered_at),
         "last_login_at": timestamp(user.last_login_at),
     }
@@ -216,7 +212,7 @@ def mini_routes() -> APIRouter:
                 raise DomainError(409, "operation_conflict", "登录操作已变化，请重新发起")
             if not previous.result_cipher:
                 raise DomainError(409, "operation_incomplete", "请重新发起登录")
-            return json.loads(decrypt(settings, previous.result_cipher) or "{}")
+            return clean_login_result(json.loads(decrypt(settings, previous.result_cipher) or "{}"))
         if previous:
             raise DomainError(409, "operation_expired", "请重新发起登录")
         insert_once(
@@ -237,7 +233,9 @@ def mini_routes() -> APIRouter:
         if operation.fingerprint != request_hash:
             raise DomainError(409, "operation_conflict", "登录操作已变化，请重新发起")
         if operation.result_cipher:
-            return json.loads(decrypt(settings, operation.result_cipher) or "{}")
+            return clean_login_result(
+                json.loads(decrypt(settings, operation.result_cipher) or "{}")
+            )
         openid = request.app.state.wechat.exchange(body.code)
         identity = lookup(settings, "openid:" + settings.wechat_app_id, openid)
         user = registered_user(db, settings.wechat_app_id, identity, now)

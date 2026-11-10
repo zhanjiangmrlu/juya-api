@@ -18444,63 +18444,10 @@
             "title": "头像素材标识",
             "description": "用户自己上传的头像媒体 ID；为空表示未设置头像。"
           },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "联系电话",
-            "description": "用户自愿提交的联系电话；未提供时为空。"
-          },
-          "wechat_contact": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式",
-            "description": "用户自愿提交的微信联系信息；未提供时为空。"
-          },
-          "phone_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "电话来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
-          "wechat_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
           "profile_version": {
             "type": "integer",
             "title": "个人资料版本",
             "description": "昵称和头像的当前版本；修改个人资料时用于并发校验。"
-          },
-          "contact_version": {
-            "type": "integer",
-            "title": "联系方式版本",
-            "description": "用户联系方式的当前版本；修改联系方式时用于并发校验。"
           },
           "registered_at": {
             "type": "string",
@@ -18540,12 +18487,7 @@
           "id",
           "nickname",
           "avatar_id",
-          "phone",
-          "wechat_contact",
-          "phone_source",
-          "wechat_source",
           "profile_version",
-          "contact_version",
           "registered_at",
           "last_login_at",
           "user_code",

@@ -3173,27 +3173,15 @@
         "tags": [
           "个人资料"
         ],
-        "summary": "修改本人联系方式",
+        "summary": "联系方式收集已停用",
+        "description": "保留旧路径兼容历史客户端；身份有效时统一返回410 contact_collection_disabled，不再保存或重放联系资料。",
         "operationId": "contact_api_mini_v1_me_contact_patch",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ContactChange"
-              }
-            }
-          },
-          "required": true,
-          "description": "请求数据，字段说明和必填约束见下方数据结构。"
-        },
         "responses": {
           "200": {
             "description": "请求成功",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserProfile"
-                }
+                "schema": {}
               }
             }
           },
@@ -3297,8 +3285,7 @@
               }
             }
           }
-        },
-        "description": "校验联系方式版本后更新本人提交的手机号或微信联系方式，并记录对应同意版本。"
+        }
       }
     },
     "/api/mini/v1/me/avatar": {
@@ -11864,56 +11851,6 @@
         ],
         "title": "场景完成学习结果"
       },
-      "ContactChange": {
-        "properties": {
-          "version": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "联系方式版本",
-            "description": "原样提交最近读取的 contact_version，用于联系方式的并发修改校验。"
-          },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 32
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "联系电话",
-            "description": "用户自愿提交的联系电话；未提供时为空。"
-          },
-          "wechat_contact": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 64
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式",
-            "description": "用户自愿提交的微信联系信息；未提供时为空。"
-          },
-          "consent_version": {
-            "type": "string",
-            "maxLength": 64,
-            "minLength": 1,
-            "title": "隐私协议版本",
-            "description": "用户本次明确同意的隐私协议版本标识。"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "version",
-          "consent_version"
-        ],
-        "title": "修改本人联系方式请求"
-      },
       "CreateFeedback": {
         "properties": {
           "text": {
@@ -15597,63 +15534,10 @@
             "title": "头像素材标识",
             "description": "用户自己上传的头像媒体 ID；为空表示未设置头像。"
           },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "联系电话",
-            "description": "用户自愿提交的联系电话；未提供时为空。"
-          },
-          "wechat_contact": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式",
-            "description": "用户自愿提交的微信联系信息；未提供时为空。"
-          },
-          "phone_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "电话来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
-          "wechat_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
           "profile_version": {
             "type": "integer",
             "title": "个人资料版本",
             "description": "昵称和头像的当前版本；修改个人资料时用于并发校验。"
-          },
-          "contact_version": {
-            "type": "integer",
-            "title": "联系方式版本",
-            "description": "用户联系方式的当前版本；修改联系方式时用于并发校验。"
           },
           "registered_at": {
             "type": "string",
@@ -15671,12 +15555,7 @@
           "id",
           "nickname",
           "avatar_id",
-          "phone",
-          "wechat_contact",
-          "phone_source",
-          "wechat_source",
           "profile_version",
-          "contact_version",
           "registered_at",
           "last_login_at"
         ],

@@ -53,8 +53,6 @@ def _clean_receipt(settings: Settings, value: str, *, login: bool) -> str | None
         if not isinstance(payload, dict):
             raise _ReceiptError
         user = payload.get("user") if login else payload
-        if login and user is None:
-            return None
         if not isinstance(user, dict):
             raise _ReceiptError
         if not any(key in user for key in CONTACT_RECEIPT_KEYS):

@@ -10,6 +10,7 @@ from .content_models import Operation
 from .dependencies import administrator, database, learner
 from .errors import DomainError
 from .response_contracts import OperationResponse
+from .retired_contacts import clean_operation_result
 from .security import decrypt, digest
 
 
@@ -26,9 +27,13 @@ def routes(role: Literal["admin", "mini"]):
         row = db.get(Operation, (role + ":" + actor.id, digest(key)))
         if not row:
             raise DomainError(404, "operation_unknown", "尚未查询到成功结果，请核对后重试")
+        if row.action == "contact.save":
+            clean_operation_result(row.action, {})
         return {
             "status": "succeeded",
-            "result": json.loads(decrypt(request.app.state.settings, row.result) or "{}"),
+            "result": clean_operation_result(
+                row.action, json.loads(decrypt(request.app.state.settings, row.result) or "{}")
+            ),
         }
 
     return router
