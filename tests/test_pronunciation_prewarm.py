@@ -486,6 +486,7 @@ def test_real_mysql_concurrent_dispatch_reserves_one_global_prewarm_slot(system)
         assert sum(bool((row.result or {}).get("admitted")) for row in db.scalars(select(Job))) == 1
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_real_mysql_foreground_promotion_races_claim_without_duplicate_synthesis(
     admin, mini, system
 ):
@@ -543,6 +544,7 @@ def test_real_mysql_foreground_promotion_races_claim_without_duplicate_synthesis
     assert mini.get(path, params=ref).json()["state"] == "ready"
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_real_mysql_running_finish_and_foreground_share_one_cache(admin, mini, system):
     import pytest
 
