@@ -6,7 +6,7 @@ API完整SQLite768通过/57条件跳过；独立socket真实MySQL juya_verify821
 
 mini完整check、137文件826测试、H5/无上传微信local构建通过。20页/三Tab、主包source483801B、预留1516590B（要求102400B）。契约测试实际编译test+旧开关true、production+true/false三产物均无SDK UUID、友盟传输域名、旧开关密钥；隔离测试SDK审计替身不代表真实传输。
 
-后台完整验证与最终总数见配套仓HANDOFF。Chrome隔离Mock HTTP测试两模块各33项/4页真实交互；另外真实临时SQLite完整Alembic0028、双API ready200、dispatcher/worker与后台/小程序H5真实联调2通过。Mock与真实证据区分如下。
+后台最终完整check、63文件317测试及build通过（配套仓HANDOFF亦可独立接续）。Chrome隔离Mock HTTP测试两模块各33项/4页真实交互；另外真实临时SQLite完整Alembic0028、双API ready200、dispatcher/worker与后台/小程序H5真实联调2通过。Mock与真实证据区分如下。
 
 ## 逐项映射
 
