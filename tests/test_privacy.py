@@ -352,17 +352,24 @@ def test_privacy_responses_are_described_for_generated_clients(system):
     assert "documents" in schema["components"]["schemas"][ref["$ref"].split("/")[-1]]["properties"]
 
 
-def test_client_sdk_authorization_is_explicit_and_requires_complete_policies(system, mini):
-    """A client SDK gets no event authorization before server capability and valid consent."""
+def test_legacy_client_transport_switch_cannot_bypass_closed_statistics(system, mini):
+    """Legacy switches never advertise collection, accept events or create receipts."""
     from juya_api.config import Settings
+    from juya_api.privacy_models import AnalyticsEventReceipt
 
     published(system)
-    assert system["mini"].get(P + "/privacy/policies").json().get("analytics_available") is False
     system["mini"].app.state.settings = Settings.model_validate(
         {**system["settings"].model_dump(), "analytics_client_transport_enabled": True}
     )
-    assert system["mini"].get(P + "/privacy/policies").json().get("analytics_available") is True
+    assert system["mini"].get(P + "/privacy/policies").json()["analytics_available"] is False
     mini.post(P + "/me/agreements", json=confirmation(), headers={"Idempotency-Key": str(uuid4())})
+    permitted = mini.put(
+        P + "/me/analytics-preference",
+        json={"enabled": True, "scope_version": "v1", "expected_revision": 0},
+        headers={"Idempotency-Key": str(uuid4())},
+    )
+    assert permitted.status_code == 200
+    assert permitted.json()["enabled"] is True and permitted.json()["collecting"] is False
     event = {
         "event_id": str(uuid4()),
         "event": "page_enter",
@@ -370,28 +377,9 @@ def test_client_sdk_authorization_is_explicit_and_requires_complete_policies(sys
         "consent_revision": 1,
         "properties": {"page_path": "pages/home/index"},
     }
-    assert mini.post(P + "/analytics/events", json=event).status_code == 403
-    permitted = mini.put(
-        P + "/me/analytics-preference",
-        json={"enabled": True, "scope_version": "v1", "expected_revision": 0},
-        headers={"Idempotency-Key": str(uuid4())},
-    )
-    assert permitted.status_code == 200
-    assert permitted.json()["collecting"] is None
-    before = mini.get(P + "/me/statistics").json()
-    assert mini.post(P + "/analytics/events", json=event).status_code == 200
-    assert mini.post(P + "/analytics/events", json=event).status_code == 200
+    assert mini.post(P + "/analytics/events", json=event).status_code == 503
     with system["sessions"]() as db:
-        from juya_api.privacy_models import AnalyticsEventReceipt
-
-        assert db.scalar(select(func.count()).select_from(AnalyticsEventReceipt)) == 1
-    assert mini.get(P + "/me/statistics").json() == before
-    system["mini"].app.state.privacy_documents = DOCS[:2]
-    assert system["mini"].get(P + "/privacy/policies").json()["analytics_available"] is False
-    assert (
-        mini.post(P + "/analytics/events", json={**event, "event_id": str(uuid4())}).status_code
-        == 503
-    )
+        assert db.scalar(select(func.count()).select_from(AnalyticsEventReceipt)) == 0
 
 
 def test_configured_release_documents_are_readable_anonymously_without_creating_users(system):

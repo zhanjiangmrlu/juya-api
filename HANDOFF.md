@@ -1,3 +1,11 @@
+# CHG0041 本地跨页免费与统计收紧（2026-11-11）
+
+现有test分支增量：统一跨页免费preview/accept/read/retry，冻结完整选择、跳过与失败分开、逐项事务审计、租约重投幂等；0028仅新增批次和明细两表，最低schema28/contract3。统计旧客户端开关固定失效，真实能力及collecting为false；新披露bundle privacy/analytics v2、terms沿用。未推送、部署、上传、修改原配置或业务库。
+
+SQLite完整768通过/57条件跳过，真实独立socket MySQL821通过/4跳过（3SQLite专用、1Redis条件），ruff/mypy通过。见[本轮接口契约](docs/implementation/chg-0041-free-batches-contract.md)。前端与浏览器配套验收仍在本轮执行中。
+
+---
+
 # CHG-0040 审计问题修复与测试发布（2026-11-10）
 
 用户确认公开主体“句芽英语”、隐私联系邮箱 juyaenglish@163.com，并授权保留友盟、如实披露必要自动字段。本轮新增三份完整协议 `src/juya_api/policies/chg0040-20261110-v1.json`；只有测试环境显式设置 `JUYA_PRIVACY_DOCUMENTS_PATH=/app/src/juya_api/policies/chg0040-20261110-v1.json` 和 `JUYA_ANALYTICS_CLIENT_TRANSPORT_ENABLED=true` 才公布客户端统计能力。生产配置拒绝该开关，默认继续关闭。

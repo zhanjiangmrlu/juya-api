@@ -40,13 +40,21 @@ def test_comment_migration_is_complete_and_frozen():
     comments = migration().COMMENTS
     assert set(comments) == (
         set(Base.metadata.tables)
-        - {"card_study_note_versions", "analytics_preferences", "analytics_event_receipts"}
+        - {
+            "card_study_note_versions",
+            "analytics_preferences",
+            "analytics_event_receipts",
+            "free_access_batches",
+            "free_access_batch_items",
+        }
     ) | {"alembic_version"}
     for name, table in Base.metadata.tables.items():
         if name in {
             "card_study_note_versions",
             "analytics_preferences",
             "analytics_event_receipts",
+            "free_access_batches",
+            "free_access_batch_items",
         }:
             continue  # New structure/comment coverage lives in migration 0026.
         assert comments[name]["table"] == table.comment

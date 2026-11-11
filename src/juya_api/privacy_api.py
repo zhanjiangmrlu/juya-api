@@ -47,6 +47,7 @@ PAGE_PATHS = {
     "pages/favorites/index",
     "sub-packages/feedback/detail",
     "sub-packages/account/policy",
+    "sub-packages/account/settings",
     "sub-packages/feedback/create",
     "pages/learning/index",
     "sub-packages/listening/topic",
@@ -221,7 +222,7 @@ def routes():
         "/analytics/events",
         response_model=AnalyticsEventReceiptView,
         summary="接收已获许可的分析事件",
-        description="验证账号许可、五类事件及持久去重，不修改学习成绩。测试客户端SDK模式仅授权本次事件，不代表第三方已收妥；未显式配置时关闭。",
+        description="验证账号许可、五类事件及持久去重，不修改学习成绩。真实统计固定关闭，旧客户端开关不可绕过；仅隔离接收器测试五事件契约。",
     )
     def receive(
         body: AnalyticsEventInput,

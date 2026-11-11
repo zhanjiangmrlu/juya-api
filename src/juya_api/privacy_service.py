@@ -58,13 +58,8 @@ def versions(request):
 
 
 def client_transport_ready(request):
-    """Advertise client SDK authorization only for an explicit complete test configuration."""
-    settings = request.app.state.settings
-    return bool(
-        settings.environment in {"local", "test"}
-        and settings.analytics_client_transport_enabled
-        and {"terms", "privacy", "analytics"} <= versions(request).keys()
-    )
+    """Keep the incompatible SDK closed regardless of legacy transport configuration."""
+    return False
 
 
 def validate_confirmation(request, confirmation):
@@ -166,7 +161,7 @@ def preference_view(row, request):
         scope_version=row.scope_version if row else "",
         revision=row.revision if row else 0,
         updated_at=timestamp(row.updated_at) if row else None,
-        collecting=None if enabled and client_transport_ready(request) else False,
+        collecting=False,
     )
 
 

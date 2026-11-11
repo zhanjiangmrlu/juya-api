@@ -117,6 +117,20 @@ def claim(sessions, job_id, now, *, settings, role=None):
             return None
         if row.attempts >= row.max_attempts:
             row.state, row.error_code, row.updated_at = "failed", "worker_interrupted", now
+            if row.kind == "free_access.batch":
+                from .free_batch_models import FreeAccessBatch, FreeAccessBatchItem
+
+                batch_id = db.scalar(
+                    select(FreeAccessBatch.id).where(FreeAccessBatch.job_id == row.id)
+                )
+                for item in db.scalars(
+                    select(FreeAccessBatchItem).where(
+                        FreeAccessBatchItem.batch_id == batch_id,
+                        FreeAccessBatchItem.status == "pending",
+                    )
+                ):
+                    item.status, item.reason = "failed", "worker_interrupted"
+                    item.message, item.completed_at = "任务多次中断，请重新核对后重试", now
             touch_import_job(db, row, now)
             return None
         if row.kind == "tts.prewarm":

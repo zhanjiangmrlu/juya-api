@@ -1025,3 +1025,35 @@ FIELD_OVERRIDES.update(
         ),
     }
 )
+
+# 跨页免费任务的新增字段保持中文文档，线缆字段名不变
+SCHEMA_TITLES.update(
+    {
+        "FreeBatchPreviewRequest": "免费设置预览请求",
+        "FreeBatchItem": "免费任务逐项快照",
+        "FreeBatchPreview": "免费设置完整预览",
+        "FreeBatchSubmit": "冻结免费集合提交",
+        "FreeBatchResult": "免费任务完整结果",
+    }
+)
+FIELD_DOCS.update(
+    {
+        "preview_token": (
+            "冻结预览凭据",
+            "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。",
+        ),
+        "applicable": ("适用数量", "此次预览可变更的完整选择数量。"),
+        "pending": ("待处理数量", "尚未生成终态回执的选择数量。"),
+        "succeeded": ("成功数量", "已与免费修改及审计同事务提交的数量。"),
+        "skipped": ("跳过数量", "确认前已展示且不会转为适用的跳过数量。"),
+        "failed": ("失败数量", "明确失败并可重新核对重试的数量。"),
+        "reason": ("处理原因码", "跳过或失败的稳定原因代码，完整解释见message。"),
+        "parent_id": ("原批次标识", "失败子集重试关联的父批次，首次任务为空。"),
+    }
+)
+
+FIELD_DOCS.update(
+    {
+        "content_id": ("稳定内容标识", "所选场景或听读文章的稳定ID，不使用页码或标题代替。"),
+    }
+)
