@@ -1,3 +1,11 @@
+# CHG0041 独立审查统一修复（2026-11-11，仅本地）
+
+R1补齐所有任务失败终态：通用fail与claim租约耗尽共用pending明细收敛，处于原管理员/Job锁与lease保护内；只归类pending，不改成功回执。真实worker外层异常临时重试耗尽和一次非临时失败、旧lease拒绝、失败子集可重试均通过。修复后SQLite完整771通过/57环境跳过，独立真实MySQL批次/jobs18通过；ruff/mypy通过。原完整MySQL821/4及Redis1为修复前主体回归证据，未将focused18冒充全量。
+
+配套后台322测试/check/build及NODE_ENV=production真实Pinia5项通过；小程序829测试/check/H5/mp-local/meta预算通过。详情见[审查修复验收](docs/verification/chg0041-review-fixes-20261111.md)。本轮不推送、部署、上传、操作原库/原服务，原生125%/微信真机/真实友盟未验边界保持。
+
+---
+
 # CHG0041 本地跨页免费与统计收紧（2026-11-11）
 
 现有test分支增量：统一跨页免费preview/accept/read/retry，冻结完整选择、跳过与失败分开、逐项事务审计、租约重投幂等；0028仅新增批次和明细两表，最低schema28/contract3。统计旧客户端开关固定失效，真实能力及collecting为false；新披露bundle privacy/analytics v2、terms沿用。未推送、部署、上传、修改原配置或业务库。

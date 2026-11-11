@@ -1,5 +1,7 @@
 # CHG0040收紧与CHG0041本地验收
 
+最新统一审查修复：API SQLite771/57、真实MySQL批次/jobs18，后台322/check/build与production Pinia5项、小程序829/check/H5/mp-local通过。R1失败终态、R2恢复首次GET失败只读围栏、R3公开Pinia及身份代际、R4允许许可文案均已RED→GREEN；具体最终命令与限制见[修复记录](chg0041-review-fixes-20261111.md)。下文原完整MySQL821/4、Redis1、视觉/联调仍为主体实现阶段证据，未宣称重新执行。
+
 范围：V1.5整合08/设计修订17，T396—T439。三仓现有test增量，无推送、部署、上传OSS/微信、生产或原配置/业务库变更。最终提交与执行日志汇总见本轮SDD task-1-report.md。
 
 API完整SQLite768通过/57条件跳过；独立socket真实MySQL juya_verify821通过/4跳过（3SQLite专用、1Redis），后补独立RedisDB15/Celery1通过，均停止私有实例。ruff/mypy95源文件通过。实际本地8292打开的browser.db已只读备份，仅私有副本0027→0028；58旧表/911行全部原列摘要不变，原文件SHA不变，仅新增批次/明细两表。

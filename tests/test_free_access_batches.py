@@ -1,5 +1,6 @@
 """Cross-page free tasks freeze previews and commit each content receipt atomically."""
 
+import pytest
 from sqlalchemy import func, select
 
 from juya_api.access_models import AccessHistory
@@ -224,4 +225,69 @@ def test_exhausted_worker_receipt_has_no_unclassified_pending_items(admin, syste
         system["time"][0] += timedelta(minutes=6)
     result = admin.get(P + "/" + accepted["id"]).json()
     assert result["state"] == "failed"
+    assert result["pending"] == 0 and result["failed"] == 1
+
+
+@pytest.mark.parametrize("temporary", [True, False])
+def test_outer_worker_failure_settles_pending_and_preserves_success_for_retry(
+    admin, system, monkeypatch, temporary
+):
+    """Every terminal worker failure closes pending receipts in the same fenced transaction."""
+    from datetime import timedelta
+
+    from juya_api import free_batches
+    from juya_api.errors import DomainError
+    from juya_api.worker import run_job
+
+    payload = content(admin)
+    cards = [publish(admin, draft(admin, {**payload, "name": str(i)})) for i in range(2)]
+    accepted = submit(admin, preview(admin, [x["id"] for x in cards]))
+    original, calls = free_batches.scene_lock, 0
+
+    def fail_after_first(db):
+        nonlocal calls
+        calls += 1
+        if calls > 1:
+            if temporary:
+                raise RuntimeError("isolated catalog failure")
+            raise DomainError(403, "catalog_unavailable", "目录暂不可操作")
+        return original(db)
+
+    monkeypatch.setattr(free_batches, "scene_lock", fail_after_first)
+    for _ in range(3 if temporary else 1):
+        run_job(
+            system["settings"], system["sessions"], accepted["job_id"], clock=admin.app.state.clock
+        )
+        system["time"][0] += timedelta(seconds=31)
+    result = admin.get(P + "/" + accepted["id"]).json()
+    assert result["state"] == "failed"
+    assert (result["succeeded"], result["failed"], result["pending"]) == (1, 1, 0)
+    monkeypatch.setattr(free_batches, "scene_lock", original)
+    run_job(system["settings"], system["sessions"], accepted["job_id"], clock=admin.app.state.clock)
+    assert admin.get(P + "/" + accepted["id"]).json() == result
+    failed = [item["content_id"] for item in result["items"] if item["status"] == "failed"]
+    retried = submit(admin, preview(admin, failed), path=P + "/" + accepted["id"] + "/retry")
+    process_jobs(admin)
+    assert admin.get(P + "/" + retried["id"]).json()["succeeded"] == 1
+    assert admin.get(P + "/" + accepted["id"]).json() == result
+
+
+def test_stale_failure_lease_cannot_close_new_worker_pending_receipts(admin, system):
+    """Failure settlement keeps the original job lease fence before touching item receipts."""
+    from datetime import timedelta
+
+    from juya_api.jobs import claim, fail
+
+    card = publish(admin, draft(admin))
+    accepted = submit(admin, preview(admin, [card["id"]]))
+    now = admin.app.state.clock
+    old = claim(system["sessions"], accepted["job_id"], now(), settings=system["settings"])
+    system["time"][0] += timedelta(minutes=6)
+    current = claim(system["sessions"], accepted["job_id"], now(), settings=system["settings"])
+    assert fail(system["sessions"], accepted["job_id"], old["lease"], now(), "old_failure") is False
+    assert admin.get(P + "/" + accepted["id"]).json()["pending"] == 1
+    assert (
+        fail(system["sessions"], accepted["job_id"], current["lease"], now(), "task_failed") is True
+    )
+    result = admin.get(P + "/" + accepted["id"]).json()
     assert result["pending"] == 0 and result["failed"] == 1
