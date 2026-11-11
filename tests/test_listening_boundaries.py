@@ -1,5 +1,7 @@
 """Authorization, stable queue, cloud task leases and shared learning invariants."""
 
+import pytest
+
 from tests.content_helpers import key, picture
 from tests.test_listening import A, M, article, policy, post, publish, topic
 
@@ -298,6 +300,7 @@ def test_deleted_imported_article_has_no_active_candidate_reference(admin, syste
         assert db.get(ListeningJob, row["timeline"]["job_id"]).state == "cancelled"
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_confirmed_context_lemma_and_exact_position_override_dictionary(admin, mini, system):
     from datetime import date
 

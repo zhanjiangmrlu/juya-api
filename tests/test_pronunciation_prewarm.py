@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 
+import pytest
 from sqlalchemy import select
 
 from juya_api.job_models import Job
@@ -61,6 +62,7 @@ def test_publish_accepts_one_idempotent_warmup_and_rolls_back_with_publication(a
     assert len(jobs(system, "pronunciation.prewarm")) == 1
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_warmup_exact_utf16_context_readings_and_foreground_promotion(admin, mini, system):
     from .test_learning_access import change, user_id
 
@@ -220,6 +222,7 @@ def test_offline_aggregate_and_child_skip_without_spending_budget(admin, system)
         assert all(db.get(Job, c.id).result.get("skipped") for c in children)
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_running_warmup_is_shared_and_foreground_observes_finished_audio(admin, mini, system):
     from .test_learning_access import change, user_id
 

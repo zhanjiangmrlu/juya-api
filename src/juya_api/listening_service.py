@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from sqlalchemy import and_, case, func, select
 
+from . import learning_features
 from .access_service import authorization, preview_token, read_preview
 from .content_models import Media
 from .database import timestamp
@@ -139,7 +140,7 @@ def access_snapshot(db, user_id, now):
 
 
 def access(db, user_id, article, now, *, snapshot=None):
-    """Compute current publication and explicit free or active-grant permissions."""
+    """Compute publication and free-only permissions while retaining dormant grants."""
     grant, catalog_revision = (
         snapshot if snapshot is not None else access_snapshot(db, user_id, now)
     )
@@ -147,35 +148,67 @@ def access(db, user_id, article, now, *, snapshot=None):
         article and article.status == "published" and article.version_id and not article.deleted_at
     )
     free = bool(available and article.is_free)
-    can_learn = bool(available and (free or grant["status"] == "active"))
+    can_learn = bool(
+        available
+        and (
+            free
+            or (learning_features.LEARNING_AUTHORIZATION_ENABLED and grant["status"] == "active")
+        )
+    )
     return {
         "can_learn": can_learn,
-        "can_lookup": bool(can_learn and grant["status"] == "active"),
+        "can_lookup": bool(
+            learning_features.IN_APP_DICTIONARY_ENABLED
+            and can_learn
+            and grant["status"] == "active"
+        ),
         "is_free": free,
         "reason": None
         if can_learn
-        else ("content_unavailable" if not available else "learning_authorization_required"),
+        else (
+            "content_unavailable"
+            if not available
+            else (
+                "learning_authorization_required"
+                if learning_features.LEARNING_AUTHORIZATION_ENABLED
+                else "content_not_open"
+            )
+        ),
         "version": (
             f"{article.free_revision if article else 0}:"
             f"{catalog_revision}:"
-            f"{grant['revision']}:{grant['status']}"
+            f"{grant['revision']}:{grant['status']}:{learning_features.permission_mode()}"
         ),
         "server_now": timestamp(now),
-        "expires_at": grant["expires_at"],
+        "expires_at": grant["expires_at"]
+        if learning_features.LEARNING_AUTHORIZATION_ENABLED
+        else None,
     }
 
 
 def published(db, user_id, article_id, now, version_id=None, *, lookup=False, lock=False):
+    """Fence current content, resources and dictionary access using the same live policy."""
     if lock:
         catalog_lock(db, shared=True)
         now = db.info.get("clock", lambda: now)()
     article = require_article(db, article_id)
     permission = access(db, user_id, article, now)
     if not permission["can_lookup" if lookup else "can_learn"]:
+        code = (
+            (
+                "lookup_authorization_required"
+                if learning_features.IN_APP_DICTIONARY_ENABLED
+                else "lookup_unavailable"
+            )
+            if lookup
+            else permission["reason"]
+        )
         raise DomainError(
             403,
-            "lookup_authorization_required" if lookup else permission["reason"],
-            "点词查询需学习授权" if lookup else "此听读文章暂不可学习",
+            code,
+            "暂未开放"
+            if code in {"lookup_unavailable", "content_not_open"}
+            else ("点词查询需学习授权" if lookup else "此听读文章暂不可学习"),
         )
     if version_id and version_id != article.version_id:
         raise DomainError(409, "listening_version_changed", "发布版本已更新，请重新打开文章")
@@ -968,7 +1001,9 @@ def categories_progress(db, user_id, now, *, snapshot=None):
             "revision": owner.revision,
             "total_articles": total,
             "completed_articles": completed if user_id else None,
-            "restricted_articles": 0 if grant["status"] == "active" else restricted,
+            "restricted_articles": 0
+            if (learning_features.LEARNING_AUTHORIZATION_ENABLED and grant["status"] == "active")
+            else restricted,
             "thumbnail_url": thumbnails.get(owner.id),
         }
         for owner, total, completed, restricted in db.execute(

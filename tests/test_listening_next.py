@@ -7,6 +7,7 @@ from tests.test_learning_access import change, user_id
 from tests.test_listening import post
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_next_queue_uses_free_first_order_without_changing_admin_order(admin, mini):
     """学习队列应与免费优先列表一致，并保留管理端的组内排序"""
     owner = category(admin)
@@ -27,6 +28,7 @@ def test_next_queue_uses_free_first_order_without_changing_admin_order(admin, mi
 
 
 @pytest.mark.parametrize("grant_active", [False, True])
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_frozen_next_rechecks_access_and_skips_locked_article(admin, mini, grant_active):
     """冻结顺序内后续免费资格变化后，逐篇复核权限，不扩权也不漏掉可读文章"""
     owner = category(admin)

@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 
+import pytest
 from sqlalchemy import update
 
 from tests.content_helpers import key
@@ -9,6 +10,7 @@ from tests.test_learning_access import change, user_id
 from tests.test_listening import A, M, article, policy, post, topic
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_direct_m_ten_to_one_zero_and_all_authorization_states(admin, mini, system):
     from juya_api.models import AdminSession, MiniSession
 

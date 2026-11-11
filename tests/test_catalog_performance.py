@@ -268,6 +268,7 @@ def test_listening_home_continuation_sql_does_not_grow_per_history(admin, mini, 
 
 
 @pytest.mark.parametrize("change", ["revoke", "expire"])
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_listening_batch_access_and_flags_remain_user_and_request_scoped(
     admin, mini, system, change
 ):

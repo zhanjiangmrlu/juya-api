@@ -22815,12 +22815,12 @@
           "can_learn": {
             "type": "boolean",
             "title": "允许学习",
-            "description": "当前内容可用且为免费内容，或用户具有有效学习授权时为 true。"
+            "description": "当前内容已发布且标记免费时为 true；学习授权暂停期间不增加访问权限。"
           },
           "can_lookup": {
             "type": "boolean",
             "title": "允许点词查询",
-            "description": "当前内容可用且用户具有有效学习授权时为 true。"
+            "description": "内置查词暂停期间恒为 false，正文使用系统选词。"
           },
           "is_free": {
             "type": "boolean",
