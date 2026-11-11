@@ -8,6 +8,15 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture
+def legacy_learning_features(monkeypatch):
+    """Explicitly exercise retained grant and dictionary implementations for restoration."""
+    from juya_api import learning_features
+
+    monkeypatch.setattr(learning_features, "LEARNING_AUTHORIZATION_ENABLED", True)
+    monkeypatch.setattr(learning_features, "IN_APP_DICTIONARY_ENABLED", True)
+
+
+@pytest.fixture
 def system(tmp_path):
     try:
         from juya_api.admin import create_app as admin_app

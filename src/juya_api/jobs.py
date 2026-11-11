@@ -117,6 +117,7 @@ def claim(sessions, job_id, now, *, settings, role=None):
             return None
         if row.attempts >= row.max_attempts:
             row.state, row.error_code, row.updated_at = "failed", "worker_interrupted", now
+            settle_failed_items(db, row, now, "worker_interrupted")
             touch_import_job(db, row, now)
             return None
         if row.kind == "tts.prewarm":
@@ -177,8 +178,27 @@ def fail(sessions, job_id, lease, now, code, *, temporary=False, apply=None):
         row.lease, row.lease_expires_at = None, None
         if apply:
             apply(db, row)
+        if not retry:
+            settle_failed_items(db, row, now, code)
         touch_import_job(db, row, now)
         return True
+
+
+def settle_failed_items(db, job, now, code):
+    """Close only pending free receipts inside the caller's fenced terminal transaction."""
+    if job.kind != "free_access.batch" or job.state != "failed":
+        return
+    from .free_batch_models import FreeAccessBatch, FreeAccessBatchItem
+
+    batch_id = db.scalar(select(FreeAccessBatch.id).where(FreeAccessBatch.job_id == job.id))
+    items = db.scalars(
+        select(FreeAccessBatchItem)
+        .where(FreeAccessBatchItem.batch_id == batch_id, FreeAccessBatchItem.status == "pending")
+        .with_for_update()
+    )
+    for item in items:
+        item.status, item.reason = "failed", code
+        item.message, item.completed_at = "任务处理未完成，请重新核对后重试", now
 
 
 def lock_admin_job(db, job_id, *, role=None):

@@ -159,7 +159,12 @@ def run_job(settings, sessions, job_id, *, clock=None, tts=None):
     if not job:
         return
     try:
-        if job["kind"] == "media.decode":
+        if job["kind"] == "free_access.batch":
+            from .free_batches import run_batch
+
+            run_batch(settings, sessions, job, now)
+            return
+        elif job["kind"] == "media.decode":
             result, apply = prepare_media(settings, sessions, job["payload"])
         elif job["kind"] == "import.parse":
             from .import_service import prepare_parse

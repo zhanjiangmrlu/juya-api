@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 
 from sqlalchemy import select
 
+from . import learning_features
 from .access_models import FreePolicy, LearningAuthorization
 from .content_models import Card, SettingCounter
 from .database import timestamp
@@ -62,7 +63,7 @@ def learning_access_snapshot(db, user_id, now):
 
 
 def learning_access(db, user_id, card_id, now, *, snapshot=None, card=None):
-    """Require live publication and either an explicit free flag or active grant."""
+    """Require publication and explicit free access while learning grants are paused."""
     grant, catalog_revision = (
         snapshot if snapshot is not None else learning_access_snapshot(db, user_id, now)
     )
@@ -71,20 +72,34 @@ def learning_access(db, user_id, card_id, now, *, snapshot=None, card=None):
         card and not card.deleted_at and card.status == "published" and card.current_version_id
     )
     free = bool(published and card.is_free)
-    learn = published and (free or grant["status"] == "active")
+    learn = published and (
+        free or (learning_features.LEARNING_AUTHORIZATION_ENABLED and grant["status"] == "active")
+    )
     return {
         "can_learn": bool(learn),
-        "can_lookup": bool(published and grant["status"] == "active"),
+        "can_lookup": bool(
+            learning_features.IN_APP_DICTIONARY_ENABLED and learn and grant["status"] == "active"
+        ),
         "is_free": free,
         "reason": None
         if learn
-        else ("learning_authorization_required" if published else "content_unavailable"),
+        else (
+            (
+                "learning_authorization_required"
+                if learning_features.LEARNING_AUTHORIZATION_ENABLED
+                else "content_not_open"
+            )
+            if published
+            else "content_unavailable"
+        ),
         "version": (
             f"{card.free_revision if card else 0}:{grant['revision']}:"
-            f"{catalog_revision}:{grant['status']}"
+            f"{catalog_revision}:{grant['status']}:{learning_features.permission_mode()}"
         ),
         "server_now": timestamp(now),
-        "expires_at": grant["expires_at"],
+        "expires_at": grant["expires_at"]
+        if learning_features.LEARNING_AUTHORIZATION_ENABLED
+        else None,
     }
 
 
@@ -104,10 +119,21 @@ def require_access(db, user_id, card_id, now, *, lookup=False, lock=False):
 
         published_card(db, card_id)
     if not result["can_lookup" if lookup else "can_learn"]:
+        code = (
+            (
+                "lookup_authorization_required"
+                if learning_features.IN_APP_DICTIONARY_ENABLED
+                else "lookup_unavailable"
+            )
+            if lookup
+            else result["reason"]
+        )
         raise DomainError(
             403,
-            "lookup_authorization_required" if lookup else "learning_authorization_required",
-            "点词查询需学习授权" if lookup else "此场景需学习授权",
+            code,
+            "暂未开放"
+            if code in {"lookup_unavailable", "content_not_open"}
+            else ("点词查询需学习授权" if lookup else "此场景需学习授权"),
         )
     return result
 

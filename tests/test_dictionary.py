@@ -73,6 +73,7 @@ def local_lexicon(system, tmp_path):
     return target, data
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_exact_context_works_unconfigured_and_duplicate_spellings_keep_their_meanings(admin, mini):
     card = scenario(admin)
     first = mini.get(path(card), params=reference(card))
@@ -90,6 +91,7 @@ def test_exact_context_works_unconfigured_and_duplicate_spellings_keep_their_mea
     assert second.json()["definitions"][0]["meaning"] == "另一处含义"
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_empty_context_falls_back_to_explicit_lemma_without_copying_lemma_ipa(
     admin, mini, local_lexicon
 ):
@@ -109,6 +111,7 @@ def test_empty_context_falls_back_to_explicit_lemma_without_copying_lemma_ipa(
     }
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_actual_missing_is_distinct_from_unconfigured_and_broken_data(
     admin, mini, system, local_lexicon
 ):
@@ -132,6 +135,7 @@ def test_actual_missing_is_distinct_from_unconfigured_and_broken_data(
     assert mini.get(path(card), params=reference(card)).json()["source"] == "context"
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_full_token_boundaries_share_abbreviations_apostrophes_hyphens_and_utf16(
     admin, mini, local_lexicon
 ):
@@ -163,6 +167,7 @@ def test_full_token_boundaries_share_abbreviations_apostrophes_hyphens_and_utf16
         )
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_context_requires_unique_exact_source_and_never_guesses_by_spelling(
     admin, mini, system, local_lexicon
 ):
@@ -181,6 +186,7 @@ def test_context_requires_unique_exact_source_and_never_guesses_by_spelling(
     assert result["definitions"][0]["meaning"] == "去"
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_dictionary_and_speech_reject_other_role_stale_version_and_offline(admin, mini):
     card = scenario(admin)
     body = reference(card)
@@ -205,6 +211,7 @@ def test_dictionary_and_speech_reject_other_role_stale_version_and_offline(admin
     assert mini.post(path(card) + "/pronunciation", json=body, headers=key()).status_code == 410
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_original_word_speech_uses_existing_jobs_budget_cache_and_live_grants(
     admin, mini, system, local_lexicon
 ):
@@ -270,6 +277,7 @@ def test_original_word_speech_uses_existing_jobs_budget_cache_and_live_grants(
     assert mini.get(fresh_url).status_code == 410
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_exact_original_context_reading_separates_homograph_cache_and_lemma_never_replaces_original(
     admin, mini, system
 ):
@@ -336,6 +344,7 @@ def test_local_data_casefold_reload_and_invalid_replacement_never_returns_old_di
         gateway.lookup("went")
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_lemma_context_never_copies_lemma_reading_or_phonetic_to_clicked_word(admin, mini, system):
     from juya_api.content_models import CardVersion
 
@@ -352,6 +361,7 @@ def test_lemma_context_never_copies_lemma_reading_or_phonetic_to_clicked_word(ad
     assert result["phonetic"] == ""
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_speech_grants_reject_other_purpose_old_version_tampering_and_logout(admin, mini, system):
     from juya_api.worker import run_job
 
@@ -400,6 +410,7 @@ def test_speech_grants_reject_other_purpose_old_version_tampering_and_logout(adm
     assert mini.get(fresh).status_code == 401
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_dictionary_speech_reuses_provider_attempt_budget_and_retry_cooldown(admin, mini, system):
     from juya_api.errors import DomainError
     from juya_api.worker import run_job
@@ -439,6 +450,7 @@ def test_dictionary_speech_reuses_provider_attempt_budget_and_retry_cooldown(adm
 
 
 @pytest.mark.parametrize("non_ascii", ["İ", "ı", "ſ", "K"])
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_python_casefold_cannot_authorize_tokens_absent_from_javascript_tokenizer(
     admin, mini, local_lexicon, non_ascii
 ):
@@ -476,6 +488,7 @@ def ready_speech(admin, mini, system):
     return voice, body
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_new_session_for_same_user_cannot_reuse_previous_sessions_speech_grant(admin, mini, system):
     voice, body = ready_speech(admin, mini, system)
     original = mini.get(voice, params=body).json()["url"]
@@ -502,6 +515,7 @@ def test_new_session_for_same_user_cannot_reuse_previous_sessions_speech_grant(a
     assert mini.get(original).status_code == 200
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_natural_session_expiry_revokes_a_grant_before_its_own_five_minute_expiry(
     admin, mini, system
 ):

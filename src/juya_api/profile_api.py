@@ -1,8 +1,7 @@
-"""Explicit personal display/contact editing with separate optimistic versions."""
+"""Explicit personal display editing and a retired contact endpoint."""
 
 import hashlib
 import json
-import re
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, File, Request, UploadFile
@@ -14,15 +13,16 @@ from .content_models import Media
 from .dependencies import database, learner, operation_key
 from .errors import DomainError
 from .media_api import deliver, media_view, retry_media, save_media
-from .models import Consent, MiniSession, User
+from .models import MiniSession, User
 from .response_contracts import (
     AvatarUpload,
     AvatarURL,
     ClientConfiguration,
+    ErrorResponse,
     MediaMetadata,
     UserProfile,
 )
-from .security import decrypt, digest, encrypt, lookup
+from .security import decrypt, digest, encrypt
 from .transactions import operate
 
 
@@ -31,14 +31,6 @@ class ProfileChange(BaseModel):
     version: int = Field(ge=1)
     nickname: str | None = Field(default=None, max_length=80)
     avatar_id: str | None = Field(default=None, max_length=36)
-
-
-class ContactChange(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    version: int = Field(ge=1)
-    phone: str | None = Field(default=None, max_length=32)
-    wechat_contact: str | None = Field(default=None, max_length=64)
-    consent_version: str = Field(min_length=1, max_length=64)
 
 
 def routes():
@@ -89,83 +81,10 @@ def routes():
             db, user, "mini", key, "profile.save", body.model_dump(exclude_unset=True), now, execute
         )
 
-    @router.patch("/me/contact", response_model=UserProfile)
-    def contact(
-        body: ContactChange,
-        request: Request,
-        user=Depends(learner),
-        key: str = Depends(operation_key),
-        db: Session = Depends(database, scope="function"),
-    ):
-        now, settings = request.app.state.clock(), request.app.state.settings
-
-        def execute():
-            if body.version != user.contact_version:
-                raise DomainError(409, "contact_changed", "联系方式已变化，请重新获取并核对")
-            changed = []
-            values = {
-                "phone": (body.phone or "").strip(),
-                "wechat_contact": (body.wechat_contact or "").strip(),
-            }
-            for name, cipher_name in [
-                ("phone", "phone_cipher"),
-                ("wechat_contact", "wechat_cipher"),
-            ]:
-                if name not in body.model_fields_set:
-                    continue
-                old = decrypt(settings, getattr(user, cipher_name)) or ""
-                value = values[name]
-                if old and not value:
-                    raise DomainError(
-                        422,
-                        "contact_removal_rejected",
-                        "已有联系方式不能通过清空删除，请保留或修改",
-                        [{"field": name}],
-                    )
-                if value == old:
-                    continue
-                if value and name == "phone" and not re.fullmatch(r"1[3-9][0-9]{9}", value):
-                    raise DomainError(
-                        422, "phone_invalid", "请输入11位大陆手机号", [{"field": name}]
-                    )
-                if (
-                    value
-                    and name == "wechat_contact"
-                    and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{5,19}", value)
-                ):
-                    raise DomainError(
-                        422,
-                        "wechat_contact_invalid",
-                        "请填写6–20位微信号，以字母开头",
-                        [{"field": name}],
-                    )
-                changed.append((name, cipher_name, value))
-            for name, cipher_name, value in changed:
-                prefix = "phone" if name == "phone" else "wechat"
-                setattr(user, cipher_name, encrypt(settings, value) if value else None)
-                setattr(
-                    user,
-                    prefix + "_digest",
-                    lookup(settings, "contact:" + prefix, value) if value else None,
-                )
-                setattr(user, prefix + "_source", "user_entered_unverified")
-                db.add(
-                    Consent(
-                        user_id=user.id,
-                        purpose="contact." + prefix,
-                        version=body.consent_version,
-                        accepted_at=now,
-                    )
-                )
-            if changed:
-                user.contact_version += 1
-                user.contact_updated_at = now
-            db.flush()
-            return user_view(user, settings)
-
-        return operate(
-            db, user, "mini", key, "contact.save", body.model_dump(exclude_unset=True), now, execute
-        )
+    @router.patch("/me/contact", responses={410: {"model": ErrorResponse}})
+    def contact(user=Depends(learner)):
+        """停用旧联系方式提交，不解析正文或重放历史保存结果"""
+        raise DomainError(410, "contact_collection_disabled", "联系方式收集功能已停用")
 
     @router.post("/me/avatar", status_code=201, response_model=AvatarUpload)
     def upload_avatar(

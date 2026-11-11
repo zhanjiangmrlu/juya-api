@@ -6,6 +6,802 @@
     "description": "句芽英语小程序接口文档。需登录的接口使用 Authorization: Bearer <业务令牌>；写请求按接口要求携带 Idempotency-Key。字段名、路径、枚举值和错误码为程序调用标识，保留原值。可空、必填、长度和数值限制以各字段的类型及约束为准。"
   },
   "paths": {
+    "/api/mini/v1/privacy/policies": {
+      "get": {
+        "tags": [
+          "协议与可选统计"
+        ],
+        "summary": "读取当前公开协议",
+        "description": "匿名读取完整发布的正式协议；材料不全时返回legacy，不虚构正式正文。",
+        "operationId": "policies_api_mini_v1_privacy_policies_get",
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyCatalog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mini/v1/privacy/policies/{kind}": {
+      "get": {
+        "tags": [
+          "协议与可选统计"
+        ],
+        "summary": "读取公开协议正文",
+        "description": "匿名读取指定种类及版本的已发布协议，版本不存在时返回不可用。",
+        "operationId": "policy_api_mini_v1_privacy_policies__kind__get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "文件类型",
+              "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
+            },
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "数据版本",
+              "description": "当前数据快照或对象版本，写入时按原值提交用于一致性校验。"
+            },
+            "description": "当前数据快照或对象版本，写入时按原值提交用于一致性校验。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDocument"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        }
+      }
+    },
+    "/api/mini/v1/me/privacy": {
+      "get": {
+        "tags": [
+          "协议与可选统计"
+        ],
+        "summary": "读取本人协议与统计许可",
+        "description": "按当前可信业务身份返回协议确认及独立统计许可，许可不代表实际采集已运行。",
+        "operationId": "state_api_mini_v1_me_privacy_get",
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mini/v1/me/agreements": {
+      "post": {
+        "tags": [
+          "协议与可选统计"
+        ],
+        "summary": "确认本人当前协议",
+        "description": "版本校验后保存明确确认及来源，确认标识和幂等键防止重复记录。",
+        "operationId": "confirm_api_mini_v1_me_agreements_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgreementConfirmation"
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgreementState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mini/v1/me/analytics-preference": {
+      "put": {
+        "tags": [
+          "协议与可选统计"
+        ],
+        "summary": "修改本人可选统计许可",
+        "description": "独立于必要登录，按许可修订号和持久幂等键保存；关闭不要求当前披露版本。",
+        "operationId": "update_api_mini_v1_me_analytics_preference_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyticsPreferenceInput"
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsPreferenceView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mini/v1/analytics/events": {
+      "post": {
+        "tags": [
+          "协议与可选统计"
+        ],
+        "summary": "接收已获许可的分析事件",
+        "description": "验证账号许可、五类事件及持久去重，不修改学习成绩。真实统计固定关闭，旧客户端开关不可绕过；仅隔离接收器测试五事件契约。",
+        "operationId": "receive_api_mini_v1_analytics_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyticsEventInput"
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsEventReceiptView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/mini/v1/learning-access": {
       "get": {
         "tags": [
@@ -3173,27 +3969,15 @@
         "tags": [
           "个人资料"
         ],
-        "summary": "修改本人联系方式",
+        "summary": "联系方式收集已停用",
+        "description": "保留旧路径兼容历史客户端；身份有效时统一返回410 contact_collection_disabled，不再保存或重放联系资料。",
         "operationId": "contact_api_mini_v1_me_contact_patch",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ContactChange"
-              }
-            }
-          },
-          "required": true,
-          "description": "请求数据，字段说明和必填约束见下方数据结构。"
-        },
         "responses": {
           "200": {
             "description": "请求成功",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserProfile"
-                }
+                "schema": {}
               }
             }
           },
@@ -3297,8 +4081,7 @@
               }
             }
           }
-        },
-        "description": "校验联系方式版本后更新本人提交的手机号或微信联系方式，并记录对应同意版本。"
+        }
       }
     },
     "/api/mini/v1/me/avatar": {
@@ -11104,6 +11887,312 @@
   },
   "components": {
     "schemas": {
+      "AcceptedAgreement": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "数据版本",
+            "description": "当前数据快照或对象版本，写入时按原值提交用于一致性校验。"
+          },
+          "accepted_at": {
+            "type": "string",
+            "title": "服务端接受时间",
+            "description": "服务端保存明确确认的时间。"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "来源信息",
+            "description": "当前对象的正文出处、反馈入口、学习队列或词典结果来源。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "accepted_at",
+          "source"
+        ],
+        "title": "本人已确认协议"
+      },
+      "AgreementConfirmation": {
+        "properties": {
+          "confirmation_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 16,
+            "title": "协议确认标识",
+            "description": "本次明确确认的稳定编号，重试保持不变并安全关联可信账号。"
+          },
+          "terms_version": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "用户协议版本",
+            "description": "用户实际阅读并确认的已发布用户协议版本。"
+          },
+          "privacy_version": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "隐私指引版本",
+            "description": "用户实际阅读并确认的已发布隐私保护指引版本。"
+          },
+          "client_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "客户端确认时间",
+            "description": "用户主动确认的客户端时间，不替代服务端接受时间。"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "来源信息",
+            "description": "当前对象的正文出处、反馈入口、学习队列或词典结果来源。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmation_id",
+          "terms_version",
+          "privacy_version",
+          "client_confirmed_at",
+          "source"
+        ],
+        "title": "明确协议确认"
+      },
+      "AgreementState": {
+        "properties": {
+          "current": {
+            "type": "boolean",
+            "title": "当前版本已确认",
+            "description": "本人已确认当前发布的用户协议及隐私指引。"
+          },
+          "accepted": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AcceptedAgreement"
+            },
+            "type": "object",
+            "title": "已确认记录",
+            "description": "按协议种类列出本人确认记录。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current",
+          "accepted"
+        ],
+        "title": "本人协议确认状态"
+      },
+      "AnalyticsChoice": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "学习权限策略已启用",
+            "description": "服务端统一学习权限策略的启用状态。"
+          },
+          "scope_version": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "统计披露版本",
+            "description": "用户实际展示并明确允许的可选统计范围版本。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "scope_version"
+        ],
+        "title": "独立统计选择"
+      },
+      "AnalyticsEventInput": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 16,
+            "title": "唯一事件标识",
+            "description": "同一事件的重试去重标识，重试保持不变。"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "page_enter",
+              "content_open",
+              "audio_play",
+              "favorite_change",
+              "learning_complete"
+            ],
+            "title": "统计事件类型",
+            "description": "仅允许页面进入、内容打开、实际播放成功、收藏变更和完成成功。"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "事件发生时间",
+            "description": "事件实际发生时间，必须处于当前许可有效时间范围。"
+          },
+          "consent_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "统计许可修订号",
+            "description": "事件产生时的当前账号许可代次；撤回或换号后不得继承。"
+          },
+          "properties": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "maxProperties": 8,
+            "title": "必要事件引用",
+            "description": "仅接受页面、内容及结果等白名单引用，不接受用户输入或身份凭据。"
+          },
+          "operation_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "业务成功回执键",
+            "description": "收藏或完成事件对应的本人已成功业务操作，仅校验不执行业务。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "event",
+          "occurred_at",
+          "consent_revision"
+        ],
+        "title": "获准统计事件"
+      },
+      "AnalyticsEventReceiptView": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "已读事件标识",
+            "description": "用户本次已查看到的反馈事件 ID，用于推进已读位置。"
+          },
+          "accepted": {
+            "type": "boolean",
+            "const": true,
+            "title": "已接收",
+            "description": "已在有效许可范围内持久接收；不表示友盟真实接收。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "accepted"
+        ],
+        "title": "事件接收收据"
+      },
+      "AnalyticsPreferenceInput": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "学习权限策略已启用",
+            "description": "服务端统一学习权限策略的启用状态。"
+          },
+          "scope_version": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "统计披露版本",
+            "description": "用户实际展示并明确允许的可选统计范围版本。"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "预期许可修订号",
+            "description": "基于本人最新许可状态提交，并发变更须重新核对。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "scope_version",
+          "expected_revision"
+        ],
+        "title": "统计许可变更请求"
+      },
+      "AnalyticsPreferenceView": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "学习权限策略已启用",
+            "description": "服务端统一学习权限策略的启用状态。"
+          },
+          "scope_version": {
+            "type": "string",
+            "title": "统计披露版本",
+            "description": "用户实际展示并明确允许的可选统计范围版本。"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "修订号",
+            "description": "当前对象的乐观锁版本；修改时提交最近读取的值，防止覆盖并发更新。"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "最后更新时间",
+            "description": "该资源、记录或状态最近一次更新的时间。"
+          },
+          "collecting": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "客户端采集运行状态",
+            "description": "无许可或通道关闭为false；已获许可的客户端SDK运行状态服务端无法推断，返回null，由本机真实SDK状态展示。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "scope_version",
+          "revision",
+          "updated_at",
+          "collecting"
+        ],
+        "title": "本人可选统计许可"
+      },
       "ArticleDetail": {
         "properties": {
           "audio_duration_seconds": {
@@ -11863,56 +12952,6 @@
           "statistics"
         ],
         "title": "场景完成学习结果"
-      },
-      "ContactChange": {
-        "properties": {
-          "version": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "联系方式版本",
-            "description": "原样提交最近读取的 contact_version，用于联系方式的并发修改校验。"
-          },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 32
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "联系电话",
-            "description": "用户自愿提交的联系电话；未提供时为空。"
-          },
-          "wechat_contact": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 64
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式",
-            "description": "用户自愿提交的微信联系信息；未提供时为空。"
-          },
-          "consent_version": {
-            "type": "string",
-            "maxLength": 64,
-            "minLength": 1,
-            "title": "隐私协议版本",
-            "description": "用户本次明确同意的隐私协议版本标识。"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "version",
-          "consent_version"
-        ],
-        "title": "修改本人联系方式请求"
       },
       "CreateFeedback": {
         "properties": {
@@ -13064,12 +14103,12 @@
           "can_learn": {
             "type": "boolean",
             "title": "允许学习",
-            "description": "当前内容可用且为免费内容，或用户具有有效学习授权时为 true。"
+            "description": "当前内容已发布且标记免费时为 true；学习授权暂停期间不增加访问权限。"
           },
           "can_lookup": {
             "type": "boolean",
             "title": "允许点词查询",
-            "description": "当前内容可用且用户具有有效学习授权时为 true。"
+            "description": "内置查词暂停期间恒为 false，正文使用系统选词。"
           },
           "is_free": {
             "type": "boolean",
@@ -13085,8 +14124,8 @@
                 "type": "null"
               }
             ],
-            "title": "权限受限原因",
-            "description": "learning_authorization_required 为需要授权，content_unavailable 为内容不可用。"
+            "title": "处理原因码",
+            "description": "跳过或失败的稳定原因代码，完整解释见message。"
           },
           "version": {
             "type": "string",
@@ -14221,6 +15260,102 @@
           "state"
         ],
         "title": "本人场景记录摘要"
+      },
+      "PolicyCatalog": {
+        "properties": {
+          "analytics_available": {
+            "type": "boolean",
+            "title": "测试统计授权是否可用",
+            "description": "仅完整披露且显式启用测试客户端SDK授权时为true；不代表当前设备已开始采集。",
+            "default": false
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "legacy",
+              "published"
+            ],
+            "title": "处理模式",
+            "description": "当前对象的导入或预览模式，具体取值以所在模型为准。"
+          },
+          "server_now": {
+            "type": "string",
+            "title": "服务端当前时间",
+            "description": "计算本次权限和有效期时使用的服务端时间。"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyDocument"
+            },
+            "type": "array",
+            "title": "已发布文档",
+            "description": "完整发布的文档列表；未配置时为空。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "server_now",
+          "documents"
+        ],
+        "title": "公开协议目录"
+      },
+      "PolicyDocument": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "terms",
+              "privacy",
+              "analytics"
+            ],
+            "title": "文件类型",
+            "description": "上传或处理的文件类别，例如 image、audio、study_note（PDF）、zip、docx。"
+          },
+          "version": {
+            "type": "string",
+            "title": "数据版本",
+            "description": "当前数据快照或对象版本，写入时按原值提交用于一致性校验。"
+          },
+          "title": {
+            "type": "string",
+            "title": "正文标题",
+            "description": "向用户展示的正式文档标题。"
+          },
+          "content": {
+            "type": "string",
+            "title": "场景内容",
+            "description": "场景的名称、配图、音频、对话、词汇和语块资料。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "version",
+          "title",
+          "content"
+        ],
+        "title": "已发布正式协议正文"
+      },
+      "PrivacyState": {
+        "properties": {
+          "agreements": {
+            "$ref": "#/components/schemas/AgreementState",
+            "title": "本人协议状态",
+            "description": "独立于会话的正式协议确认记录。"
+          },
+          "analytics": {
+            "$ref": "#/components/schemas/AnalyticsPreferenceView",
+            "title": "独立统计许可",
+            "description": "账号统计选择及实际采集运行状态。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agreements",
+          "analytics"
+        ],
+        "title": "本人隐私状态"
       },
       "ProfileChange": {
         "properties": {
@@ -15597,63 +16732,10 @@
             "title": "头像素材标识",
             "description": "用户自己上传的头像媒体 ID；为空表示未设置头像。"
           },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "联系电话",
-            "description": "用户自愿提交的联系电话；未提供时为空。"
-          },
-          "wechat_contact": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式",
-            "description": "用户自愿提交的微信联系信息；未提供时为空。"
-          },
-          "phone_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "电话来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
-          "wechat_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
           "profile_version": {
             "type": "integer",
             "title": "个人资料版本",
             "description": "昵称和头像的当前版本；修改个人资料时用于并发校验。"
-          },
-          "contact_version": {
-            "type": "integer",
-            "title": "联系方式版本",
-            "description": "用户联系方式的当前版本；修改联系方式时用于并发校验。"
           },
           "registered_at": {
             "type": "string",
@@ -15671,12 +16753,7 @@
           "id",
           "nickname",
           "avatar_id",
-          "phone",
-          "wechat_contact",
-          "phone_source",
-          "wechat_source",
           "profile_version",
-          "contact_version",
           "registered_at",
           "last_login_at"
         ],
@@ -15896,6 +16973,30 @@
             "minLength": 1,
             "title": "隐私协议版本",
             "description": "用户本次明确同意的隐私协议版本标识。"
+          },
+          "agreement_confirmation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgreementConfirmation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "当前协议确认",
+            "description": "明确展示并确认的用户协议和隐私指引记录；不以登录成功代替明确确认。"
+          },
+          "analytics_choice": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyticsChoice"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "独立统计选择",
+            "description": "本次明确选择及实际展示的统计披露版本；拒绝不影响必要登录。"
           }
         },
         "type": "object",

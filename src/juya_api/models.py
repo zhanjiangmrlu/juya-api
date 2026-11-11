@@ -137,12 +137,22 @@ class LoginOperation(Base):
 
 class Consent(Base):
     __tablename__ = "consents"
-    __table_args__ = {"comment": "用户协议和隐私授权同意记录"}
+    __table_args__ = (
+        UniqueConstraint("user_id", "purpose", "confirmation_id", name="uq_consent_confirmation"),
+        {"comment": "用户协议和隐私授权同意记录"},
+    )
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=identifier, comment="记录内部标识"
     )
     user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id"), index=True, comment="所属用户内部标识，关联users.id"
+    )
+    confirmation_id: Mapped[str | None] = mapped_column(
+        String(64), comment="匿名明确确认记录的关联编号"
+    )
+    source: Mapped[str | None] = mapped_column(String(64), comment="用户明确确认的入口来源")
+    client_confirmed_at: Mapped[datetime | None] = mapped_column(
+        UTCDateTime, comment="客户端确认时间，不代替服务端接受时间"
     )
     purpose: Mapped[str] = mapped_column(String(32), comment="用户同意的授权或协议用途")
     version: Mapped[str] = mapped_column(String(64), comment="用户接受的协议版本标识")
@@ -177,3 +187,6 @@ class Audit(Base):
     occurred_at: Mapped[datetime] = mapped_column(
         UTCDateTime, default=utc_now, comment="操作发生时间（UTC，微秒精度）"
     )
+
+
+from .privacy_models import AnalyticsEventReceipt, AnalyticsPreference  # noqa: E402, F401

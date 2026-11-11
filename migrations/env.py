@@ -12,6 +12,7 @@ from juya_api import (  # noqa: F401
     content_models,
     discovery_models,
     feedback_models,
+    free_batch_models,
     import_models,
     job_models,
     learning_models,

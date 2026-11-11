@@ -318,6 +318,7 @@ def test_cancel_failed_replacement_restores_valid_unpublished_attachment(admin):
 
 
 @pytest.mark.parametrize("change", ["free_closed", "revoke", "offline", "delete", "session"])
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_study_note_ticket_rechecks_current_permission_for_all_http_methods(
     admin, mini, system, change
 ):
@@ -874,6 +875,7 @@ def test_resaving_pending_note_tracks_fallback_content_and_ignores_equivalent_up
     assert cancelled["study_note"]["attachment"]["id"] == c["id"]
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_pdf_ticket_requires_issuing_bearer_on_every_read(admin, mini):
     from .test_auth import login
     from .test_learning_access import change as authorize

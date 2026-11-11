@@ -1,0 +1,206 @@
+{
+  "environment": "test",
+  "api_source": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+  "ci": {
+    "run_id": 42985382145,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/42985382145",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      }
+    ],
+    "quality_counts": {
+      "passed": 834,
+      "skipped": 3
+    }
+  },
+  "services": [
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "health": "healthy",
+      "revision": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "data": {
+    "schema_before": "0028",
+    "schema_after": "0028",
+    "contract": 3,
+    "migration_executed": false,
+    "authorization_rows_preserved": true,
+    "all_original_tables_unchanged": true,
+    "table_count": 60
+  },
+  "backup": {
+    "database": "juya_test",
+    "bytes": 12735973,
+    "sha256": "50ec3d26087a357fc37f778263e33c7d4f3178b75329e0eff17eb9398eb33ecd"
+  },
+  "protected_containers_unchanged": 12,
+  "migration_executed": false,
+  "experience_version_switched": false,
+  "miniapp": {
+    "version": "1.5.0-test.20261111.170119",
+    "environment": "test",
+    "status": "success",
+    "source": "1dfa0d39e33afa23614ec59f7200da377d519b19",
+    "package": "dist/test-release/d34c6831-013d-4d63-a258-1ba407383644",
+    "pages": 20,
+    "tabs": 3,
+    "settings_registered": true,
+    "test_api_present": true,
+    "production_api_present": false,
+    "sdk_network_present": false,
+    "update_manager_present": true,
+    "official_receipt_sha256": "4ca119c3de88311a5864b1765eba593ed535598c15000378e9b2323f6df93d50",
+    "experience_version_switched": false
+  },
+  "public_postcheck": {
+    "readiness": {
+      "admin": 200,
+      "mini": 200
+    },
+    "auth": {
+      "admin-private": 401,
+      "mini-private": 401,
+      "privacy-private": 401,
+      "admin-other-role": 404,
+      "mini-other-role": 404
+    },
+    "guest": {
+      "/api/mini/v1/cards?limit=1": 200,
+      "/api/mini/v1/cards?has_study_note=true&limit=1": 200,
+      "/api/mini/v1/listening/home": 200,
+      "/api/mini/v1/listening/articles?limit=1": 200
+    },
+    "anonymous_policy_catalog": {
+      "status": 200,
+      "mode": "published",
+      "analytics_available": false,
+      "documents": [
+        {
+          "kind": "terms",
+          "version": "chg0040-20261110-v1",
+          "status": 200
+        },
+        {
+          "kind": "privacy",
+          "version": "chg0041-20261111-v2",
+          "status": 200
+        },
+        {
+          "kind": "analytics",
+          "version": "chg0041-20261111-v2",
+          "status": 200
+        }
+      ]
+    },
+    "batch_authentication": 401,
+    "admin_openapi_matches": true,
+    "mini_openapi_matches": true,
+    "free_only_public_checks": {
+      "scene": {
+        "summaries_checked": 15,
+        "details": [
+          {
+            "free": true,
+            "status": 200
+          }
+        ]
+      },
+      "listening": {
+        "summaries_checked": 11,
+        "details": [
+          {
+            "free": true,
+            "status": 200
+          }
+        ]
+      }
+    },
+    "runtime": {
+      "healthy_services": 7,
+      "source": "81f877673d42aa616d8f0e3f29f331f5333834f0",
+      "protected_containers_unchanged": true,
+      "schema": "0028",
+      "contract": 3,
+      "data_invariants": {
+        "schema_before": "0028",
+        "schema_after": "0028",
+        "contract": 3,
+        "migration_executed": false,
+        "authorization_rows_preserved": true,
+        "all_original_tables_unchanged": true,
+        "table_count": 60
+      },
+      "actual_receiver_disabled": true,
+      "authorization_and_dictionary_disabled": true,
+      "read_only_policy_probe": {
+        "active_accounts_checked": 1,
+        "read_only_access_checks": 4,
+        "authorization_and_dictionary_disabled": true,
+        "actual_receiver_disabled": true
+      }
+    },
+    "status": "verified"
+  }
+}

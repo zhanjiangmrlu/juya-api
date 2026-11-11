@@ -38,18 +38,39 @@ def test_comment_migration_is_complete_and_frozen():
     from juya_api.database import Base
 
     comments = migration().COMMENTS
-    assert set(comments) == (set(Base.metadata.tables) - {"card_study_note_versions"}) | {
-        "alembic_version"
-    }
+    assert set(comments) == (
+        set(Base.metadata.tables)
+        - {
+            "card_study_note_versions",
+            "analytics_preferences",
+            "analytics_event_receipts",
+            "free_access_batches",
+            "free_access_batch_items",
+        }
+    ) | {"alembic_version"}
     for name, table in Base.metadata.tables.items():
-        if name == "card_study_note_versions":
+        if name in {
+            "card_study_note_versions",
+            "analytics_preferences",
+            "analytics_event_receipts",
+            "free_access_batches",
+            "free_access_batch_items",
+        }:
             continue  # New structure/comment coverage lives in migration 0026.
         assert comments[name]["table"] == table.comment
         assert comments[name]["columns"] == {
             c.name: c.comment
             for c in table.columns
             if c.name
-            not in {"study_note", "study_note_version_id", "current_study_note_version_id"}
+            not in {
+                "study_note",
+                "study_note_version_id",
+                "current_study_note_version_id",
+            }
+            and not (
+                name == "consents"
+                and c.name in {"confirmation_id", "source", "client_confirmed_at"}
+            )
         }
 
 

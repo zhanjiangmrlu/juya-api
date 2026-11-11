@@ -1717,6 +1717,553 @@
         }
       }
     },
+    "/api/admin/v1/free-access-batches/preview": {
+      "post": {
+        "tags": [
+          "跨页免费设置"
+        ],
+        "summary": "预览跨页免费集合",
+        "description": "重读完整选择的发布及权限状态，不写业务；冻结适用和跳过名单供明确确认",
+        "operationId": "preview_api_admin_v1_free_access_batches_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeBatchPreviewRequest"
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreeBatchPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/v1/free-access-batches": {
+      "post": {
+        "tags": [
+          "跨页免费设置"
+        ],
+        "summary": "接受跨页免费任务",
+        "description": "按原操作键接受已展示适用集合，逐项执行并保留完整回执",
+        "operationId": "create_api_admin_v1_free_access_batches_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeBatchSubmit"
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreeBatchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/v1/free-access-batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "跨页免费设置"
+        ],
+        "summary": "查询免费任务完整结果",
+        "description": "仅原管理员可查成功、跳过、失败及待处理名单；未知先查原任务",
+        "operationId": "read_api_admin_v1_free_access_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "批次标识",
+              "description": "本次导入、发布或管理操作批次的 ID。"
+            },
+            "description": "本次导入、发布或管理操作批次的 ID。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreeBatchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        }
+      }
+    },
+    "/api/admin/v1/free-access-batches/{batch_id}/retry": {
+      "post": {
+        "tags": [
+          "跨页免费设置"
+        ],
+        "summary": "重试原任务失败子集",
+        "description": "仅接受重新预览确认的原失败项，保留父子批次及全部历史",
+        "operationId": "retry_api_admin_v1_free_access_batches__batch_id__retry_post",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "批次标识",
+              "description": "本次导入、发布或管理操作批次的 ID。"
+            },
+            "description": "本次导入、发布或管理操作批次的 ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeBatchSubmit"
+              }
+            }
+          },
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreeBatchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        }
+      }
+    },
     "/api/admin/v1/auth/login": {
       "post": {
         "tags": [
@@ -18444,63 +18991,10 @@
             "title": "头像素材标识",
             "description": "用户自己上传的头像媒体 ID；为空表示未设置头像。"
           },
-          "phone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "联系电话",
-            "description": "用户自愿提交的联系电话；未提供时为空。"
-          },
-          "wechat_contact": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式",
-            "description": "用户自愿提交的微信联系信息；未提供时为空。"
-          },
-          "phone_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "电话来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
-          "wechat_source": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "微信联系方式来源",
-            "description": "user_entered_unverified 表示用户自行填写且未经验证；未记录时为空。"
-          },
           "profile_version": {
             "type": "integer",
             "title": "个人资料版本",
             "description": "昵称和头像的当前版本；修改个人资料时用于并发校验。"
-          },
-          "contact_version": {
-            "type": "integer",
-            "title": "联系方式版本",
-            "description": "用户联系方式的当前版本；修改联系方式时用于并发校验。"
           },
           "registered_at": {
             "type": "string",
@@ -18540,12 +19034,7 @@
           "id",
           "nickname",
           "avatar_id",
-          "phone",
-          "wechat_contact",
-          "phone_source",
-          "wechat_source",
           "profile_version",
-          "contact_version",
           "registered_at",
           "last_login_at",
           "user_code",
@@ -18890,8 +19379,8 @@
           },
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           },
           "errors": {
             "items": {
@@ -20110,8 +20599,8 @@
             },
             "type": "array",
             "maxItems": 10,
-            "title": "跳过的选择项",
-            "description": "本次已核对但不执行管理操作的场景快照。"
+            "title": "跳过数量",
+            "description": "确认前已展示且不会转为适用的跳过数量。"
           }
         },
         "additionalProperties": false,
@@ -21032,6 +21521,312 @@
         ],
         "title": "修改单个内容免费设置请求"
       },
+      "FreeBatchItem": {
+        "properties": {
+          "content_id": {
+            "type": "string",
+            "title": "稳定内容标识",
+            "description": "所选场景或听读文章的稳定ID，不使用页码或标题代替。"
+          },
+          "name": {
+            "type": "string",
+            "title": "名称",
+            "description": "当前场景、分类、主题或文件的显示名称。"
+          },
+          "version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "发布版本标识",
+            "description": "绑定此次学习或操作的不可变内容发布版本 ID。"
+          },
+          "free_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "免费标记修订号",
+            "description": "单个内容免费标记的修订号，修改免费状态时用于并发校验。"
+          },
+          "is_free": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "免费标记",
+            "description": "内容是否标记为免费；实际可学习性仍取决于发布状态和实时权限。"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "skipped",
+              "failed"
+            ],
+            "title": "业务状态",
+            "description": "当前对象或操作的业务状态，取值以所在模型约束为准。"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "处理原因码",
+            "description": "跳过或失败的稳定原因代码，完整解释见message。"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "中文提示",
+            "description": "供界面展示的操作结果或错误说明。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_id",
+          "name",
+          "status"
+        ],
+        "title": "免费任务逐项快照"
+      },
+      "FreeBatchPreview": {
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "scene",
+              "listening"
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "免费标记",
+            "description": "内容是否标记为免费；实际可学习性仍取决于发布状态和实时权限。"
+          },
+          "total": {
+            "type": "integer",
+            "title": "总条目数",
+            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
+          },
+          "applicable": {
+            "type": "integer",
+            "title": "适用数量",
+            "description": "此次预览可变更的完整选择数量。"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "跳过数量",
+            "description": "确认前已展示且不会转为适用的跳过数量。"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FreeBatchItem"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "preview_token": {
+            "type": "string",
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_type",
+          "is_free",
+          "total",
+          "applicable",
+          "skipped",
+          "items",
+          "preview_token"
+        ],
+        "title": "免费设置完整预览"
+      },
+      "FreeBatchPreviewRequest": {
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "scene",
+              "listening"
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "明确选择的内容标识集合",
+            "description": "按稳定ID去重，不受本页十条或调度每轮五十的限制"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "免费标记",
+            "description": "内容是否标记为免费；实际可学习性仍取决于发布状态和实时权限。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_type",
+          "ids",
+          "is_free"
+        ],
+        "title": "免费设置预览请求"
+      },
+      "FreeBatchResult": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "资源标识",
+            "description": "当前对象的唯一标识；具体对象类型由所在模型确定。"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "异步任务标识",
+            "description": "处理当前资源或操作的持久异步任务 ID；未创建任务时可为空。"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "原批次标识",
+            "description": "失败子集重试关联的父批次，首次任务为空。"
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "scene",
+              "listening"
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "免费标记",
+            "description": "内容是否标记为免费；实际可学习性仍取决于发布状态和实时权限。"
+          },
+          "state": {
+            "type": "string",
+            "title": "当前状态",
+            "description": "当前资源处理状态或用户学习状态，具体结构以所在模型为准。"
+          },
+          "total": {
+            "type": "integer",
+            "title": "总条目数",
+            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
+          },
+          "pending": {
+            "type": "integer",
+            "title": "待处理数量",
+            "description": "尚未生成终态回执的选择数量。"
+          },
+          "succeeded": {
+            "type": "integer",
+            "title": "成功数量",
+            "description": "已与免费修改及审计同事务提交的数量。"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "跳过数量",
+            "description": "确认前已展示且不会转为适用的跳过数量。"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "失败数量",
+            "description": "明确失败并可重新核对重试的数量。"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "创建时间",
+            "description": "该资源或记录的创建时间。"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FreeBatchItem"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "parent_id",
+          "content_type",
+          "is_free",
+          "state",
+          "total",
+          "pending",
+          "succeeded",
+          "skipped",
+          "failed",
+          "created_at",
+          "items"
+        ],
+        "title": "免费任务完整结果"
+      },
+      "FreeBatchSubmit": {
+        "properties": {
+          "preview_token": {
+            "type": "string",
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FreeBatchItem"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preview_token",
+          "items"
+        ],
+        "title": "冻结免费集合提交"
+      },
       "FreeCount": {
         "properties": {
           "free_count": {
@@ -21169,8 +21964,8 @@
           },
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           }
         },
         "type": "object",
@@ -21235,8 +22030,8 @@
         "properties": {
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           },
           "free_count": {
             "type": "integer",
@@ -21354,8 +22149,8 @@
           },
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           }
         },
         "type": "object",
@@ -21662,8 +22457,8 @@
           },
           "parent_id": {
             "type": "string",
-            "title": "父文件标识",
-            "description": "ZIP 内文件对应的根 ZIP 文件 ID；顶层上传文件使用空字符串。"
+            "title": "原批次标识",
+            "description": "失败子集重试关联的父批次，首次任务为空。"
           },
           "progress": {
             "anyOf": [
@@ -21920,8 +22715,8 @@
         "properties": {
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           },
           "candidate_ids": {
             "items": {
@@ -22020,12 +22815,12 @@
           "can_learn": {
             "type": "boolean",
             "title": "允许学习",
-            "description": "当前内容可用且为免费内容，或用户具有有效学习授权时为 true。"
+            "description": "当前内容已发布且标记免费时为 true；学习授权暂停期间不增加访问权限。"
           },
           "can_lookup": {
             "type": "boolean",
             "title": "允许点词查询",
-            "description": "当前内容可用且用户具有有效学习授权时为 true。"
+            "description": "内置查词暂停期间恒为 false，正文使用系统选词。"
           },
           "is_free": {
             "type": "boolean",
@@ -22041,8 +22836,8 @@
                 "type": "null"
               }
             ],
-            "title": "权限受限原因",
-            "description": "learning_authorization_required 为需要授权，content_unavailable 为内容不可用。"
+            "title": "处理原因码",
+            "description": "跳过或失败的稳定原因代码，完整解释见message。"
           },
           "version": {
             "type": "string",
@@ -22385,8 +23180,8 @@
         "properties": {
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           },
           "submit_action": {
             "type": "string",
@@ -23390,8 +24185,8 @@
                 "type": "null"
               }
             ],
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           }
         },
         "additionalProperties": false,
@@ -24284,8 +25079,8 @@
           },
           "parent_id": {
             "type": "string",
-            "title": "父文件标识",
-            "description": "ZIP 内文件对应的根 ZIP 文件 ID；顶层上传文件使用空字符串。"
+            "title": "原批次标识",
+            "description": "失败子集重试关联的父批次，首次任务为空。"
           }
         },
         "type": "object",
@@ -25252,8 +26047,8 @@
             "type": "string",
             "maxLength": 20000,
             "minLength": 1,
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           }
         },
         "additionalProperties": false,
@@ -25282,8 +26077,8 @@
         "properties": {
           "preview_token": {
             "type": "string",
-            "title": "预览确认凭据",
-            "description": "服务端签发的预览快照凭据，确认操作时按原值提交。"
+            "title": "冻结预览凭据",
+            "description": "绑定操作者、内容类型、目标状态和完整已展示集合的防篡改凭据。"
           }
         },
         "additionalProperties": false,

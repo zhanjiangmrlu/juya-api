@@ -11,6 +11,7 @@ from sqlalchemy import text
 
 from . import (
     access_models,  # noqa: F401
+    free_batch_models,  # noqa: F401
     job_models,  # noqa: F401
 )
 from .config import Settings

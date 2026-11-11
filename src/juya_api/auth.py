@@ -27,6 +27,14 @@ from .models import (
     User,
 )
 from .persistence import insert_once
+from .privacy_contracts import AgreementConfirmation, AnalyticsChoice, AnalyticsPreferenceInput
+from .privacy_service import (
+    change_preference,
+    preference,
+    save_confirmation,
+    validate_confirmation,
+    versions,
+)
 from .response_contracts import (
     AdminLoginResponse,
     AdminSessionResponse,
@@ -34,6 +42,7 @@ from .response_contracts import (
     UserProfile,
     WechatLoginResponse,
 )
+from .retired_contacts import clean_login_result
 from .security import decrypt, digest, encrypt, fingerprint, lookup, token
 from .user_numbers import registered_user
 
@@ -84,12 +93,7 @@ def user_view(user: User, settings) -> dict:
         "id": user.id,
         "nickname": user.nickname,
         "avatar_id": user.avatar_id,
-        "phone": decrypt(settings, user.phone_cipher),
-        "wechat_contact": decrypt(settings, user.wechat_cipher),
-        "phone_source": user.phone_source,
-        "wechat_source": user.wechat_source,
         "profile_version": user.profile_version,
-        "contact_version": user.contact_version,
         "registered_at": timestamp(user.registered_at),
         "last_login_at": timestamp(user.last_login_at),
     }
@@ -104,6 +108,8 @@ class WechatLogin(BaseModel):
     code: str = Field(min_length=1, max_length=512)
     consent: Literal[True]
     consent_version: str = Field(min_length=1, max_length=64)
+    agreement_confirmation: AgreementConfirmation | None = None
+    analytics_choice: AnalyticsChoice | None = None
 
 
 def admin_routes() -> APIRouter:
@@ -209,14 +215,17 @@ def mini_routes() -> APIRouter:
         db: Session = Depends(database, scope="function"),
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
-        key_hash, request_hash = digest(key), fingerprint(body.model_dump())
+        key_hash, request_hash = (
+            digest(key),
+            fingerprint(body.model_dump(mode="json", exclude_none=True)),
+        )
         previous = db.get(LoginOperation, key_hash)
         if previous and previous.expires_at > now:
             if previous.fingerprint != request_hash:
                 raise DomainError(409, "operation_conflict", "登录操作已变化，请重新发起")
             if not previous.result_cipher:
                 raise DomainError(409, "operation_incomplete", "请重新发起登录")
-            return json.loads(decrypt(settings, previous.result_cipher) or "{}")
+            return clean_login_result(json.loads(decrypt(settings, previous.result_cipher) or "{}"))
         if previous:
             raise DomainError(409, "operation_expired", "请重新发起登录")
         insert_once(
@@ -237,7 +246,10 @@ def mini_routes() -> APIRouter:
         if operation.fingerprint != request_hash:
             raise DomainError(409, "operation_conflict", "登录操作已变化，请重新发起")
         if operation.result_cipher:
-            return json.loads(decrypt(settings, operation.result_cipher) or "{}")
+            return clean_login_result(
+                json.loads(decrypt(settings, operation.result_cipher) or "{}")
+            )
+        validate_confirmation(request, body.agreement_confirmation)
         openid = request.app.state.wechat.exchange(body.code)
         identity = lookup(settings, "openid:" + settings.wechat_app_id, openid)
         user = registered_user(db, settings.wechat_app_id, identity, now)
@@ -258,6 +270,26 @@ def mini_routes() -> APIRouter:
                 accepted_at=now,
             )
         )
+        if body.agreement_confirmation:
+            save_confirmation(db, user.id, body.agreement_confirmation, now)
+        if body.analytics_choice:
+            choice = body.analytics_choice
+            row = preference(db, user.id, now, lock=True)
+            valid = (
+                choice.scope_version and versions(request).get("analytics") == choice.scope_version
+            )
+            enabled = bool(choice.enabled and valid and body.agreement_confirmation)
+            change_preference(
+                db,
+                request,
+                user.id,
+                AnalyticsPreferenceInput(
+                    enabled=enabled,
+                    scope_version=choice.scope_version,
+                    expected_revision=row.revision,
+                ),
+                now,
+            )
         result = {
             "access_token": credential,
             "expires_at": timestamp(now + timedelta(days=settings.session_days)),

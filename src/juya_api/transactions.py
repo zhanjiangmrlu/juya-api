@@ -7,6 +7,7 @@ from sqlalchemy import select
 from .content_models import Operation
 from .errors import DomainError
 from .models import Administrator, User
+from .retired_contacts import clean_operation_result
 from .security import decrypt, digest, encrypt, fingerprint, lookup
 
 
@@ -33,7 +34,9 @@ def previous_result(db, actor, role: str, key: str, action: str, payload):
     if previous:
         if previous.fingerprint != request_hash:
             raise DomainError(409, "operation_conflict", "操作内容已变化，请重新确认")
-        return json.loads(decrypt(settings, previous.result) or "{}")
+        return clean_operation_result(
+            action, json.loads(decrypt(settings, previous.result) or "{}")
+        )
     return None
 
 

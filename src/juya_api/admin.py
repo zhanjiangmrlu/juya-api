@@ -9,6 +9,7 @@ from .content_api import admin_routes as content_routes
 from .feedback_api import routes as feedback_routes
 from .feedback_safety import FeedbackSafetyGateway
 from .free_access import routes as free_access_routes
+from .free_batches import routes as free_batch_routes
 from .import_api import routes as import_routes
 from .list_thumbnails import ListThumbnails
 from .listening_api import admin_routes as listening_routes
@@ -34,6 +35,7 @@ def create_app(
     app.state.list_thumbnails = ListThumbnails()
     app.include_router(access_routes())
     app.include_router(free_access_routes())
+    app.include_router(free_batch_routes())
     app.include_router(admin_routes())
     app.include_router(content_routes())
     app.include_router(action_routes())

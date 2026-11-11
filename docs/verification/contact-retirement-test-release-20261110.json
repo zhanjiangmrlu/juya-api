@@ -1,0 +1,225 @@
+{
+  "change": "CHG-0039",
+  "environment": "test",
+  "deployed_at": "2026-11-10T17:07:22.479166+08:00",
+  "source_commits": {
+    "juya-api": "db13c6648f32eef87f344e8839701299b834fea8",
+    "juya-admin": "8516379d820610ac45d9ede4b0487c58fe45ef80",
+    "juya-miniapp": "e4d8cf84370fba1f31a55cf3c9b741cb3b4fb673"
+  },
+  "ci": {
+    "run_id": 42783078457,
+    "commit": "db13c6648f32eef87f344e8839701299b834fea8",
+    "quality_counts": {
+      "passed": 780,
+      "skipped": 3
+    },
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "deployment": {
+    "phase": "test-ready",
+    "status": "complete",
+    "time": 1794301642.4791658,
+    "commit": "db13c6648f32eef87f344e8839701299b834fea8",
+    "completed": [
+      {
+        "project": "juya-admin-api",
+        "release_id": "20261110T085749-db13c6648f32-3b3cf3",
+        "commit": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "project": "juya-miniapp-api",
+        "release_id": "20261110T090136-db13c6648f32-027746",
+        "commit": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "project": "juya-admin",
+        "release_id": "20261110T083103-8516379d8206-725372",
+        "commit": "8516379d820610ac45d9ede4b0487c58fe45ef80",
+        "public_hashes_match": true
+      }
+    ],
+    "services": [
+      {
+        "name": "/juya-rebuild-test-admin-admin-api-1",
+        "id": "1e2387e371735ec270530dc288cea1672b3e825e607035923f21d027dbb36cdb",
+        "image": "sha256:3b0ad40595e5ea4ac135e61b6d726a5c36fecf38f5d78dcef565683d37c48b00",
+        "started_at": "2026-11-10T09:03:31.28757123Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-admin",
+        "service": "admin-api",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+        "id": "478778ccdc3d72e3d97beac8f1c9f2531553f8d16a181891ad694c88473c2122",
+        "image": "sha256:3b0ad40595e5ea4ac135e61b6d726a5c36fecf38f5d78dcef565683d37c48b00",
+        "started_at": "2026-11-10T09:03:48.44764144Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-admin",
+        "service": "admin-dispatcher",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "name": "/juya-rebuild-test-admin-admin-worker-1",
+        "id": "35ff17112038ec0b3a82d076c4aab139e7c060c0dad7e76a64869f921ec3c8c9",
+        "image": "sha256:3b0ad40595e5ea4ac135e61b6d726a5c36fecf38f5d78dcef565683d37c48b00",
+        "started_at": "2026-11-10T09:03:48.227290971Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-admin",
+        "service": "admin-worker",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "name": "/juya-rebuild-test-listening-listening-worker-1",
+        "id": "35435c3a3a39ae0cba71dd8367b0737dc5136171967feac2fcfd55f3adbea293",
+        "image": "sha256:3b0ad40595e5ea4ac135e61b6d726a5c36fecf38f5d78dcef565683d37c48b00",
+        "started_at": "2026-11-10T09:06:28.248530174Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-listening",
+        "service": "listening-worker",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "name": "/juya-rebuild-test-mini-mini-api-1",
+        "id": "eca0fdf8b5dab759921c49861f09c3a3f24edf8f4e2dd88c5d9544c9c7441cb9",
+        "image": "sha256:4ec7e2f01c2adb52eed90803a350c727a2a33b8a79f29df47d02c4233b224c12",
+        "started_at": "2026-11-10T09:05:36.124719149Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-mini",
+        "service": "mini-api",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+        "id": "18c304b4f291ce6ebb14e0c33ca6b4099d8b65c6fd55669fd38da597dc4c66f7",
+        "image": "sha256:4ec7e2f01c2adb52eed90803a350c727a2a33b8a79f29df47d02c4233b224c12",
+        "started_at": "2026-11-10T09:05:53.199360639Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-mini",
+        "service": "mini-dispatcher",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      },
+      {
+        "name": "/juya-rebuild-test-mini-mini-worker-1",
+        "id": "405e4fa8b87f43466b632bc2c17178768bab3e7c9bb04bc5f100b14c010215c6",
+        "image": "sha256:4ec7e2f01c2adb52eed90803a350c727a2a33b8a79f29df47d02c4233b224c12",
+        "started_at": "2026-11-10T09:05:53.709041037Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "oom": false,
+        "project": "juya-rebuild-test-mini",
+        "service": "mini-worker",
+        "revision": "db13c6648f32eef87f344e8839701299b834fea8"
+      }
+    ],
+    "schema": "0026",
+    "contract": 3,
+    "production_and_infrastructure_unchanged": true
+  },
+  "data": {
+    "schema": "0026",
+    "contract": 3,
+    "tables": 56,
+    "all_original_columns_and_rows_preserved": true,
+    "migration": false,
+    "database_restored": false
+  },
+  "public_checks": {
+    "readiness": {
+      "admin": 200,
+      "mini": 200
+    },
+    "private_auth": {
+      "admin-private": 401,
+      "mini-private": 401,
+      "admin-other-role": 404,
+      "mini-other-role": 404
+    },
+    "guest": {
+      "cards": 200,
+      "notes": 200,
+      "listening_home": 200,
+      "listening_articles": 200,
+      "invalid_identity_rejected": true
+    },
+    "admin_reads": {},
+    "admin_public_hashes_match": true,
+    "runtime": {
+      "openapi_hashes": {
+        "admin": "b062d91139672659de3a2a7c4c0a4026c04dd3682b92c4655862947b879faf75",
+        "mini": "6025b70c59ad7c35f993ef2239d4e09b5e36180a428454578f5e68cf042d19fd"
+      },
+      "healthy_services": 7,
+      "protected_containers_unchanged": true,
+      "data": {
+        "schema": "0026",
+        "contract": 3,
+        "tables": 56,
+        "all_original_columns_and_rows_preserved": true,
+        "migration": false,
+        "database_restored": false
+      }
+    },
+    "retirement_runtime_probe": {
+      "new_profile_fields_verified": true,
+      "no_contact_decryption": true,
+      "authenticated_endpoint_410": true,
+      "probe": "in-container function invocation, no database mutation"
+    },
+    "admin_authenticated_check": "not attempted: designated file has no clearly matched test admin credentials",
+    "status": "verified"
+  },
+  "wechat": {
+    "status": "success",
+    "version": "1.5.0-test.20261110.163037",
+    "source": "e4d8cf84370fba1f31a55cf3c9b741cb3b4fb673",
+    "experience_switched": false,
+    "production_changed": false
+  },
+  "free_bytes": 2454642688,
+  "boundaries": {
+    "production_and_other_12_containers_unchanged": true,
+    "migration": false,
+    "historical_contact_cleanup": false,
+    "review_submitted": false,
+    "experience_switched": false
+  },
+  "temporary_cleanup": {
+    "scope": "only this task verified duplicate artifact image archives",
+    "files": 2,
+    "bytes": 506182819
+  }
+}

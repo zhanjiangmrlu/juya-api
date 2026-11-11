@@ -165,6 +165,7 @@ def test_free_learning_retains_audio_but_blocks_body_dictionary(admin, mini):
     assert detail["access"]["can_lookup"] is False
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_revocation_blocks_old_media_and_completion_but_allows_unfavorite(admin, mini):
     card = cards(admin, 1)[0]
     uid = user_id(mini)
@@ -189,6 +190,7 @@ def test_revocation_blocks_old_media_and_completion_but_allows_unfavorite(admin,
     assert mini.get("/api/mini/v1/me/statistics").json()["completed_cards"] == 0
 
 
+@pytest.mark.usefixtures("legacy_learning_features")
 def test_free_preset_speech_and_active_body_lookup_have_distinct_permissions(admin, mini):
     from .test_dictionary import scenario
 

@@ -37,8 +37,8 @@ def test_verified_identity_creates_one_contact_optional_account(system):
     assert first["user"]["id"] == second["user"]["id"]
     assert first["user"]["registered_at"] == second["user"]["registered_at"]
     assert first["user"]["nickname"] == "学习者"
-    assert first["user"]["phone"] is None
-    assert first["user"]["wechat_contact"] is None
+    assert "phone" not in first["user"]
+    assert "wechat_contact" not in first["user"]
     assert first["access_token"] != second["access_token"]
     assert "openid" not in str(first)
     assert "session_key" not in str(first)

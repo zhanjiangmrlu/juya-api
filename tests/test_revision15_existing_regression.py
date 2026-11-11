@@ -79,9 +79,7 @@ def test_first_registration_uses_beijing_midnight_and_relogin_does_not_move_it(s
     assert listing["statistical_date"] == today["statistical_date"]
     assert listing["total"] == today["new_users_today"]
     assert [item["id"] for item in listing["items"]] == [after["id"]]
-    assert all(
-        item["phone"] is None and item["wechat_contact"] is None for item in listing["items"]
-    )
+    assert all("phone" not in item and "wechat_contact" not in item for item in listing["items"])
     assert listing["items"][0]["statistics"]["completed_cards"] == 0
     assert yesterday["updated_at"] != today["updated_at"]
 

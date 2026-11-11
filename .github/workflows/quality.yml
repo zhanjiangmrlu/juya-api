@@ -12,8 +12,8 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-24.04
-    # Full MySQL/Redis checks take 15–17 minutes; allow room for added regressions.
-    timeout-minutes: 30
+    # Hosted-runner I/O can push full MySQL/Redis verification beyond 30 minutes.
+    timeout-minutes: 60
     services:
       mysql:
         image: mysql:8.4
@@ -21,7 +21,9 @@ jobs:
           MYSQL_ROOT_PASSWORD: ci-disposable-password
           MYSQL_DATABASE: juya_verify
         ports: [3306:3306]
+        # This is a disposable CI database; retain real constraints and transactions.
         options: >-
+          --tmpfs /var/lib/mysql:rw,nosuid,size=2g
           --health-cmd="mysqladmin ping -h127.0.0.1 --silent"
           --health-interval=10s --health-timeout=5s --health-retries=15
       redis:
