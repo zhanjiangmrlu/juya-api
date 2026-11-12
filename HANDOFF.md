@@ -1,3 +1,13 @@
+# CHG0042 按需登录与资源保护（2026-11-12，仅本地test）
+
+用户已确认方案并继续暂停授权/内置查词。API a568e61、小程序b918c30完成：撤销首页首次/每日自动告知；游客免费图文、原图和PDF入口元数据可读，全文音频/预置发音/PDF须点击后登录。游客无预取、资源票据和发音任务；登录后只读恢复，二次点击才执行。旧public保护票据全身份拒绝，私票据逐次验mini会话，显式Bearer必须匹配；原图public保持。非免费仍“暂未开放”，动态高亮/查词/授权UI及真实SDK继续关闭，UpdateManager保留。
+
+最终API完整SQLite798通过/57条件跳过、真实隔离MySQL相关184及资源18通过（不相加），ruff/format/mypy/OpenAPI通过；小程序142文件855测试/check/H5/无上传微信local/meta/预算通过；后台check/322测试/build通过。多实例政策读取和迟到登录问题RED→GREEN修复，独立任务及跨仓审查无未解决重要问题。
+
+原账号、授权、成绩、收藏、进度、免费名单及数据/配置保留，无迁移、新增埋点或sample.txt修改；没有push、部署、上传微信/OSS。真实前后端浏览器联调、微信身份/真机、抓包、原生100%/125%缩放和截图尚未验，不能用单测/编译冒充。设计、实施计划与API验收分别见docs/superpowers/specs/2026-11-12-chg0042-on-demand-resource-login-design.md、docs/superpowers/plans/2026-11-12-chg0042-resource-login.md、docs/verification/chg0042-resource-login-api-20261112.md；配套小程序docs/verification/chg0042-resource-login-20261112.md。
+
+---
+
 # 小程序横向布局与授权展示修复包（2026-11-11）
 
 用户反馈测试画面后，小程序test补丁1413ad4修复听读横向溢出/换行、列表顶部未授权及笔记卡片授权可学残留，共用播放器去除普通暂停时的高亮/尾迹提示；140文件844测试、check、H5/微信构建及浏览器320/390/430边界验证通过。

@@ -1,6 +1,6 @@
 # CHG0042 按需登录实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 游客免费图文不受阻，音频、预置发音和PDF须主动点击后登录
 
@@ -31,11 +31,11 @@ Files: `src/juya_api/{public_resources,media_api,media_permissions,listening_api
 
 Consumes: 现有optional/required mini身份与权限；Produces: 既有路由在音频/PDF/发音无身份时401，旧public票据拒绝，免费图文仍200；响应字段尽量保持，不新增capability体系
 
-- [ ] 先写并运行RED：游客免费图文/PDF入口元数据保留，音频/PDF/发音签发及GET/HEAD/Range拒绝；旧票据拒绝且无副作用
-- [ ] 按真实媒体kind和当前mini会话统一校验；维持免费/发布/版本校验；旧public protected grants废止，图片有效
-- [ ] 权限version追加资源登录策略；调整原guest音频测试为明确旧功能夹具或新预期，不削弱矩阵
-- [ ] 运行专项、全量SQLite及独立MySQL相关测试，ruff/format/mypy/OpenAPI；如契约未变不人为重生成
-- [ ] 提交API实现，独立复核并处理重要发现
+- [x] 先写并运行RED：游客免费图文/PDF入口元数据保留，音频/PDF/发音签发及GET/HEAD/Range拒绝；旧票据拒绝且无副作用
+- [x] 按真实媒体kind和当前mini会话统一校验；维持免费/发布/版本校验；旧public protected grants废止，图片有效
+- [x] 权限version追加资源登录策略；调整原guest音频测试为明确旧功能夹具或新预期，不削弱矩阵
+- [x] 运行专项、全量SQLite及独立MySQL相关测试，ruff/format/mypy/OpenAPI；如契约未变不人为重生成
+- [x] 提交API实现，独立复核并处理重要发现
 
 ## Task 2 小程序按需触发与恢复
 
@@ -43,16 +43,22 @@ Files: `src/App.vue`、`src/pages/home/index.vue`、`src/services/{consent-coord
 
 Consumes: 任务1既有路由401语义，既有公开免费详情元数据；Produces: 新音频/PDF登录来源，主动提示且无游客预取，登录后只读恢复和二次点击执行
 
-- [ ] 先写RED：首页全部进入路径无自动提示，政策失败不降级伪同意；游客音频/词发音/PDF点击前零请求
-- [ ] 去掉自动告知调用链和每日判断用途，保留历史确认和设置入口；主动入口按需加载正式政策，失败可重试/浏览
-- [ ] 添加全文音频/预置发音/PDF来源，复用弹窗视觉，修正“游客可播放”旧文案；SDK保持硬关闭
-- [ ] 游客不建自动音频准备任务，不预取/设置src；登录后恢复不自动执行旧操作；401停止/清理保护资源但保留图文及来源
-- [ ] 测取消/迟到/失效/换号/政策返回/二次点击、静态色带与宽度保持；全量test/check、H5及无上传微信构建/meta/预算
-- [ ] 提交小程序实现，独立复核并处理重要发现
+- [x] 先写RED：首页全部进入路径无自动提示，政策失败不降级伪同意；游客音频/词发音/PDF点击前零请求
+- [x] 去掉自动告知调用链和每日判断用途，保留历史确认和设置入口；主动入口按需加载正式政策，失败可重试/浏览
+- [x] 添加全文音频/预置发音/PDF来源，复用弹窗视觉，修正“游客可播放”旧文案；SDK保持硬关闭
+- [x] 游客不建自动音频准备任务，不预取/设置src；登录后恢复不自动执行旧操作；401停止/清理保护资源但保留图文及来源
+- [x] 测取消/迟到/失效/换号/政策返回/二次点击、静态色带与宽度保持；全量test/check、H5及无上传微信构建/meta/预算
+- [x] 提交小程序实现，独立复核并处理重要发现
 
 ## Task 3 集成与交付
 
-- [ ] API/小程序接口边界组合回归，检查实际微信产物无自动登录/游客预取路径、无SDK上报域名
-- [ ] 后台check/test/build保持跨页免费与选择框规则，不造业务数据；记录浏览器/缩放与真机尚未验证的边界
-- [ ] 全分支独立审查，修复重要问题并做针对性RED/GREEN与相关回归
-- [ ] 更新HANDOFF/验收记录及需求SHA；提交本地test，不推送。报告所有真实结果与待真机项
+- [x] API/小程序接口边界组合回归，检查实际微信产物无自动登录/游客预取路径、无SDK上报域名
+- [x] 后台check/test/build保持跨页免费与选择框规则，不造业务数据；记录浏览器/缩放与真机尚未验证的边界
+- [x] 全分支独立审查，修复重要问题并做针对性RED/GREEN与相关回归
+- [x] 更新HANDOFF/验收记录及需求SHA；提交本地test，不推送。报告所有真实结果与待真机项
+
+## 执行结果（2026-11-12）
+
+API a568e61：完整SQLite798通过/57环境跳过，隔离MySQL相关184及最终资源18通过（交叠不累计）；ruff/format/mypy/OpenAPI通过。小程序b918c30：142文件855测试，check/H5/微信无上传构建/meta/预算通过；后台check/322测试/build通过。两任务独立审查及跨仓最终审查无未解决Critical/Important；多实例政策加载、迟到登录、真实kind及异身份票据回归已完成。
+
+接口组合由真实API隔离测试、小程序组件/原生产物执行及跨仓源码复核验证，本轮未运行真实API+浏览器端到端；微信身份、iOS/Android真机、抓包、后台原生100%/125%缩放和截图待后续验收，不能将上述勾选当作这些人工结果已通过。全程仅test本地，无迁移、推送、部署或上传。
