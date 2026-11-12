@@ -33,7 +33,7 @@ from .dependencies import (
 from .errors import DomainError
 from .job_models import Job
 from .jobs import enqueue
-from .media_permissions import summary_thumbnail
+from .media_permissions import require_bound_bearer, require_resource_login, summary_thumbnail
 from .models import MiniSession, identifier
 from .response_contracts import MediaMetadata, ResourceURL, UploadConfiguration
 from .security import digest, token
@@ -555,7 +555,10 @@ def mini_routes():
             card, version = published_card(db, card_id, version_id)
             if purpose == "content" and not version_id:
                 raise DomainError(422, "version_required", "请刷新后重新获取资源")
-            scene_medium(db, request, card_id, version.id, media_id, purpose, study_note_version_id)
+            medium = scene_medium(
+                db, request, card_id, version.id, media_id, purpose, study_note_version_id
+            )
+            require_resource_login(medium, user)
             return public_issue(
                 request,
                 "scene",
@@ -621,6 +624,7 @@ def mini_routes():
         session = db.get(MiniSession, ticket.session_digest)
         if not session or session.expires_at <= now or session.user_id != ticket.user_id:
             raise DomainError(401, "login_required", "请主动登录后继续")
+        require_bound_bearer(request, ticket.session_digest, "login_required")
         if ticket.purpose == "summary":
             summary_thumbnail(
                 db, ticket.user_id, ticket.card_id, ticket.media_id, ticket.version_id

@@ -1,0 +1,206 @@
+{
+  "date": "2026-11-12",
+  "environment": "test",
+  "source_commit": "c3f70c322352cce6abd5aaf3a8f8fc1fa2c11f4f",
+  "branch": "test",
+  "ci": {
+    "run_id": 43167801142,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/43167801142",
+    "quality": {
+      "passed": 852,
+      "skipped": 3
+    },
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "releases": [
+    {
+      "project": "juya-admin-api",
+      "release_id": "20261112T065210-c3f70c322352-e27321",
+      "commit": "c3f70c322352cce6abd5aaf3a8f8fc1fa2c11f4f"
+    },
+    {
+      "project": "juya-miniapp-api",
+      "release_id": "20261112T065637-c3f70c322352-dbd83e",
+      "commit": "c3f70c322352cce6abd5aaf3a8f8fc1fa2c11f4f"
+    }
+  ],
+  "service_health": {
+    "count": 7,
+    "healthy": 7,
+    "restarts": 0,
+    "oom": false
+  },
+  "preservation": {
+    "schema": "0028",
+    "contract": 3,
+    "tables": 60,
+    "all_original_fields_rows_preserved": true,
+    "database_restored": false,
+    "migration_executed": false
+  },
+  "database_backup": {
+    "sha256": "48e2ad4b33373a36f4288734b04231388213112d0db3a186df245d1013a4c8d1",
+    "bytes": 12815776,
+    "local_copy_hash_verified": true
+  },
+  "resource_checks": {
+    "checks": [
+      {
+        "check": "scene-list",
+        "status": 200
+      },
+      {
+        "check": "free-scene-detail",
+        "status": 200
+      },
+      {
+        "check": "guest-scene-audio",
+        "status": 401
+      },
+      {
+        "check": "guest-scene-pdf",
+        "status": 401
+      },
+      {
+        "check": "guest-scene-pronunciation-GET",
+        "status": 401
+      },
+      {
+        "check": "guest-scene-pronunciation-POST",
+        "status": 401
+      },
+      {
+        "check": "free-scene-image-ticket",
+        "status": 200
+      },
+      {
+        "check": "free-scene-image",
+        "status": 200
+      },
+      {
+        "check": "nonfree-scene-detail",
+        "status": 403
+      },
+      {
+        "check": "listening-list",
+        "status": 200
+      },
+      {
+        "check": "free-listening-detail",
+        "status": 200
+      },
+      {
+        "check": "guest-listening-audio-ticket",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-audio-GET",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-audio-HEAD",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-audio-GET-range",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-pronunciation-GET",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-pronunciation-POST",
+        "status": 401
+      }
+    ],
+    "count": 17,
+    "permission_version_updated": true,
+    "lookup_paused": true,
+    "protected_resources_require_login": true,
+    "free_text_and_scene_picture_open": true,
+    "no_login_or_content_mutation_requested": true
+  },
+  "public_checks": [
+    {
+      "url": "https://test-api.juyayingyu.com/health/ready",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "url": "https://test-admin-api.juyayingyu.com/health/ready",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/listening/home",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/cards?limit=2",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/cards?has_study_note=true&limit=2",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/me/statistics",
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/admin/v1/auth/session",
+      "status": 404,
+      "expected": 404
+    }
+  ],
+  "ordinary_public_checks": [
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/listening/home",
+      "status": 200,
+      "maintenance_header": false
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/cards?limit=2",
+      "status": 200,
+      "maintenance_header": false
+    }
+  ],
+  "policy": {
+    "published": true,
+    "analytics_available": false,
+    "documents_match_source": true
+  },
+  "maintenance": {
+    "removed": true,
+    "configuration_restored_exactly": true
+  },
+  "finalization": {
+    "native_test_finalize_complete": true,
+    "current_and_previous_retained": true
+  },
+  "protected_containers": 12,
+  "production_unchanged": true,
+  "admin_frontend_unchanged": true,
+  "miniapp_upload_performed": false,
+  "new_analytics_events": false,
+  "sample_txt_changed": false,
+  "manual_device_validation": "pending"
+}

@@ -43,6 +43,7 @@ from .listening_models import (
 )
 from .listening_timeline import body_tokens, timeline_view, validate_words
 from .media_api import deliver, deliver_thumbnail
+from .media_permissions import require_resource_login
 from .models import User
 from .pronunciation import configuration, status
 from .pronunciation import request as request_speech
@@ -1320,7 +1321,9 @@ def mini_routes():
         _, version = service.published(
             db, user.id if user else None, article_id, request.app.state.clock(), version_id
         )
-        return deliver(media.controlled_media(db, version.payload, media_id), request)
+        medium = media.controlled_media(db, version.payload, media_id)
+        require_resource_login(medium, user)
+        return deliver(medium, request)
 
     @router.get("/articles/{article_id}/thumbnail")
     def thumbnail(
@@ -1331,9 +1334,9 @@ def mini_routes():
         db: Session = Depends(database, scope="function"),
     ):
         version = service.thumbnail_version(db, article_id, version_id)
-        return deliver_thumbnail(
-            media.controlled_media(db, version.payload, "", thumbnail=True), request
-        )
+        medium = media.controlled_media(db, version.payload, "", thumbnail=True)
+        require_resource_login(medium, user)
+        return deliver_thumbnail(medium, request)
 
     @router.get("/articles/{article_id}/thumbnail-ticket", response_model=C.TicketResult)
     def thumbnail_ticket(
@@ -1345,6 +1348,7 @@ def mini_routes():
     ):
         version = service.thumbnail_version(db, article_id, version_id)
         thumbnail_medium = media.controlled_media(db, version.payload, "", thumbnail=True)
+        require_resource_login(thumbnail_medium, user)
         return media.issue_ticket(
             request,
             user.id if user else None,
@@ -1366,7 +1370,8 @@ def mini_routes():
         _, version = service.published(
             db, user.id if user else None, article_id, request.app.state.clock(), body.version_id
         )
-        media.controlled_media(db, version.payload, body.media_id)
+        medium = media.controlled_media(db, version.payload, body.media_id)
+        require_resource_login(medium, user)
         # No durable mutation: credential refresh must remain short-lived even for receipt replay.
         return media.issue_ticket(
             request, user.id if user else None, article_id, body.version_id, body.media_id

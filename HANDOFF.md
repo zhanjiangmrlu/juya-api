@@ -1,3 +1,23 @@
+# CHG0042 测试 API 已部署（2026-11-12）
+
+用户新增授权后，API test 已推送远程，固定 c3f70c3（功能 a568e61）部署测试双 API 和配套 Worker/dispatcher/独立听读 Worker 共7服务，全部 healthy、0 restart、无 OOM。官方真实 MySQL/Redis 852通过/3项SQLite专用跳过，双镜像摘要及身份校验通过；公网17项资源检查验证免费正文/图片公开、非免费暂未开放、游客音频/PDF/预置发音需登录，权限版本含resource-login1、查词继续关闭。
+
+juya_test 已停写备份并另存本地校验，无迁移/恢复/降级；0028/contract3、60张原业务表全部字段/行数/指纹保持，12个非目标容器保持。临时维护配置精确恢复，两套test API原生finalize完成，当前及回滚版本保留。生产及后台前端未改，本轮未上传小程序；本地测试环境扫码可继续验收，真机/真实微信登录播放仍待验。无新增埋点，sample.txt未改。详见[测试API发布验收](docs/verification/chg0042-test-api-deploy-20261112.md)及无密钥JSON回执。
+
+下方“仅本地/未推送部署”为此前实施阶段的历史记录。
+
+---
+
+# CHG0042 按需登录与资源保护（2026-11-12，仅本地test）
+
+用户已确认方案并继续暂停授权/内置查词。API a568e61、小程序b918c30完成：撤销首页首次/每日自动告知；游客免费图文、原图和PDF入口元数据可读，全文音频/预置发音/PDF须点击后登录。游客无预取、资源票据和发音任务；登录后只读恢复，二次点击才执行。旧public保护票据全身份拒绝，私票据逐次验mini会话，显式Bearer必须匹配；原图public保持。非免费仍“暂未开放”，动态高亮/查词/授权UI及真实SDK继续关闭，UpdateManager保留。
+
+最终API完整SQLite798通过/57条件跳过、真实隔离MySQL相关184及资源18通过（不相加），ruff/format/mypy/OpenAPI通过；小程序142文件855测试/check/H5/无上传微信local/meta/预算通过；后台check/322测试/build通过。多实例政策读取和迟到登录问题RED→GREEN修复，独立任务及跨仓审查无未解决重要问题。
+
+原账号、授权、成绩、收藏、进度、免费名单及数据/配置保留，无迁移、新增埋点或sample.txt修改；没有push、部署、上传微信/OSS。真实前后端浏览器联调、微信身份/真机、抓包、原生100%/125%缩放和截图尚未验，不能用单测/编译冒充。设计、实施计划与API验收分别见docs/superpowers/specs/2026-11-12-chg0042-on-demand-resource-login-design.md、docs/superpowers/plans/2026-11-12-chg0042-resource-login.md、docs/verification/chg0042-resource-login-api-20261112.md；配套小程序docs/verification/chg0042-resource-login-20261112.md。
+
+---
+
 # API与后台生产同步（2026-11-11）
 
 用户本轮授权后，两仓test已合入release并推送。固定API e6d3d9d、后台b136667已部署生产；官方CI834通过/3SQLite专用跳过、双镜像成功，7服务healthy。生产库及配置服务器/本机双份校验备份后，0026→0028/contract3；56原业务表全部原字段/行数/摘要三阶段保持，授权、账号、学习历史、内容/素材保留，未清理历史联系方式。12非目标容器不变。

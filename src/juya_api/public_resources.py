@@ -19,6 +19,7 @@ from .database import timestamp
 from .dependencies import database
 from .errors import DomainError
 from .media_api import deliver, deliver_thumbnail, playback_medium
+from .media_permissions import require_public_image
 from .security import decrypt, encrypt
 
 PREFIX = "pub1_"
@@ -128,65 +129,6 @@ def scene_medium(db, request, card_id, version_id, media_id, purpose, note_versi
     return playback_medium(db, medium)
 
 
-def speech_state(db, request, domain, identifier, word_id, ref, *, create=False):
-    """Resolve only published preset words, sharing cache, deduplication and cooldown."""
-    from .pronunciation import reference, request_for_owner, status
-
-    if domain == "scene":
-        require_access(db, None, identifier, request.app.state.clock(), lock=create)
-        word, reading, config, cache_key = reference(
-            db,
-            request.app.state.settings,
-            "mini",
-            identifier,
-            word_id,
-            ref.version_id,
-            ref.revision,
-        )
-    else:
-        from .listening_pronunciation import reference as listening_reference
-
-        word, reading, config, cache_key = listening_reference(
-            db,
-            request.app.state.settings,
-            "mini",
-            None,
-            identifier,
-            word_id,
-            ref.version_id,
-            ref.revision,
-            now=request.app.state.clock(),
-            lock=create,
-        )
-    value = (
-        request_for_owner(
-            db,
-            request.app.state.settings,
-            "public-pronunciation",
-            "mini",
-            word,
-            reading,
-            config,
-            cache_key,
-            request.app.state.clock(),
-        )
-        if create
-        else status(db, cache_key)
-    )
-    if value["state"] == "ready":
-        grant = issue(
-            request,
-            domain,
-            identifier,
-            ref.version_id,
-            "word",
-            word_id=word_id,
-            cache_key=cache_key,
-        )
-        return {**value, "url": grant["url"]}
-    return value
-
-
 def routes():
     router = APIRouter(prefix="/api/mini/v1/public/resources", tags=["public controlled resources"])
 
@@ -200,40 +142,12 @@ def routes():
     ):
         data = read(request, credential)
         domain, purpose = data["purpose"].split(":")
-        if purpose == "word":
-            from .pronunciation import reference, status
-            from .pronunciation_models import Pronunciation
-
-            if domain == "scene":
-                require_access(db, None, data["id"], request.app.state.clock())
-                _, _, _, cache_key = reference(
-                    db,
-                    request.app.state.settings,
-                    "mini",
-                    data["id"],
-                    data["word_id"],
-                    data["version_id"],
-                )
-            else:
-                from .listening_pronunciation import reference as listening_reference
-
-                _, _, _, cache_key = listening_reference(
-                    db,
-                    request.app.state.settings,
-                    "mini",
-                    None,
-                    data["id"],
-                    data["word_id"],
-                    data["version_id"],
-                    now=request.app.state.clock(),
-                )
-            if cache_key != data.get("cache_key"):
-                raise DomainError(409, "pronunciation_changed", "词汇读音已变化，请重新试听")
-            cache = db.get(Pronunciation, cache_key)
-            medium = db.get(Media, cache.media_id) if cache and cache.media_id else None
-            if not medium or medium.state != "ready" or status(db, cache_key)["state"] != "ready":
-                raise DomainError(404, "speech_missing", "发音暂不可用")
-        elif domain == "scene":
+        if purpose in {"word", "study_note"}:
+            raise DomainError(401, "public_resource_expired", "资源地址已失效，请重新获取")
+        referenced = db.get(Media, data["media_id"])
+        if referenced is not None:
+            require_public_image(referenced)
+        if domain == "scene":
             medium = scene_medium(
                 db,
                 request,
@@ -255,6 +169,7 @@ def routes():
             medium = listening_media.controlled_media(
                 db, version.payload, data["media_id"], thumbnail=purpose == "summary"
             )
+        require_public_image(medium)
         if (domain == "listening" and purpose == "summary") or thumbnail is not None:
             return deliver_thumbnail(medium, request)
         return deliver(medium, request)
