@@ -12,6 +12,7 @@ from .content_models import Media
 from .dependencies import ADMIN_COOKIE, administrator, database, operation_key, optional_learner
 from .errors import DomainError
 from .media_api import deliver
+from .media_permissions import require_bound_bearer
 from .models import AdminSession, MiniSession
 from .pronunciation import import_reference, reference, status
 from .pronunciation import request as request_speech
@@ -99,9 +100,7 @@ def routes(role):
     ):
         settings, now = request.app.state.settings, request.app.state.clock()
         if actor is None:
-            from .public_resources import speech_state
-
-            return speech_state(db, request, "scene", card_id, word_id, body, create=True)
+            raise DomainError(401, "unauthenticated", "请主动登录后继续")
         if role == "mini":
             require_access(db, actor.id, card_id, request.app.state.clock())
         word, reading, config, cache_key = reference(
@@ -133,9 +132,7 @@ def routes(role):
     ):
         ref = SpeechReference(version_id=version_id, revision=revision)
         if actor is None:
-            from .public_resources import speech_state
-
-            return speech_state(db, request, "scene", card_id, word_id, ref)
+            raise DomainError(401, "unauthenticated", "请主动登录后继续")
         if role == "mini":
             require_access(db, actor.id, card_id, request.app.state.clock())
         _, _, _, cache_key = reference(
@@ -255,6 +252,8 @@ def routes(role):
         actor_id = getattr(session, "admin_id" if role == "admin" else "user_id", None)
         if not session or session.expires_at <= now or actor_id != payload.get("actor"):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
+        if role == "mini":
+            require_bound_bearer(request, payload["session"], "speech_session_expired")
         if role == "admin" and payload["session"] != session_digest(request, role):
             raise DomainError(401, "speech_session_expired", "请重新登录后试听")
         listening = payload.get("listening_context")

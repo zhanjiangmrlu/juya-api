@@ -72,9 +72,7 @@ def routes(role):
     ):
         """Refresh references inside the receipt transaction before starting synthesis."""
         if actor is None:
-            from .public_resources import speech_state
-
-            return speech_state(db, request, "listening", article_id, word_id, ref, create=create)
+            raise DomainError(401, "unauthenticated", "请主动登录后继续")
         args = (
             db,
             request.app.state.settings,

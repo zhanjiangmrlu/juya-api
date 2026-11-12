@@ -160,7 +160,7 @@ def test_public_scene_tickets_recheck_free_and_expiry_for_each_request(admin, sy
     card = publish(admin, draft(admin))
     guest = system["mini"]
     response = guest.get(
-        P + f"/cards/{card['id']}/media/{card['content']['audio_id']}/url",
+        P + f"/cards/{card['id']}/media/{card['content']['image_id']}/url",
         params={"version_id": card["current_version_id"]},
     )
     assert response.status_code == 200, response.text
@@ -183,15 +183,15 @@ def test_public_scene_tickets_recheck_free_and_expiry_for_each_request(admin, sy
     assert fetch().status_code == 401
 
 
-def test_public_note_ticket_is_version_bound_and_restricted_summary_is_thumbnail_only(
-    admin, system
+def test_private_note_ticket_is_version_bound_and_restricted_summary_is_thumbnail_only(
+    admin, mini, system
 ):
     medium = upload(admin)
     process_jobs(admin)
     card = publish(
         admin, save_note(admin, draft(admin), {"action": "set", "media_id": medium["id"]})
     )
-    guest = system["mini"]
+    guest = mini
     note = guest.get(P + f"/cards/{card['id']}").json()["study_note"]
     path = P + f"/cards/{card['id']}/media/{note['media_id']}/url"
     result = guest.get(
@@ -215,10 +215,10 @@ def test_public_note_ticket_is_version_bound_and_restricted_summary_is_thumbnail
     assert guest.get(P + "/cards?has_study_note=true").json()["total"] == 0
 
 
-def test_public_listening_tickets_recheck_current_version_and_free(admin, system):
+def test_private_listening_tickets_recheck_current_version_and_free(admin, mini, system):
     live = publish_article(admin, article(admin))
     policy(admin, 1)
-    guest = system["mini"]
+    guest = mini
     response = guest.post(
         M + f"/articles/{live['id']}/media-ticket",
         json={"version_id": live["version_id"], "media_id": live["payload"]["audio_id"]},
@@ -232,40 +232,33 @@ def test_public_listening_tickets_recheck_current_version_and_free(admin, system
     assert guest.head(url).status_code == 403
 
 
-def test_guest_pronunciation_uses_shared_jobs_without_users_or_personal_operations(admin, system):
+def test_guest_pronunciation_rejects_without_users_jobs_or_personal_operations(admin, system):
     card = publish(admin, draft(admin))
     guest = system["mini"]
     before = personal_counts(system)
+    with system["sessions"]() as db:
+        jobs_before = db.scalar(select(func.count()).select_from(Job))
     path = P + f"/cards/{card['id']}/words/word-1/pronunciation"
     body = {"version_id": card["current_version_id"]}
-    response = guest.post(path, json=body, headers=key())
-    assert response.status_code == 200, response.text
-    first = response.json()
-    assert first["state"] == "processing"
-    assert guest.post(path, json=body, headers=key()).json()["job_id"] == first["job_id"]
+    for response in [guest.get(path, params=body), guest.post(path, json=body, headers=key())]:
+        assert response.status_code == 401, response.text
+        assert response.json()["error"]["code"] == "unauthenticated"
     with system["sessions"]() as db:
-        job = db.get(Job, first["job_id"])
-        assert (job.owner_kind, job.owner_id) == ("mini", "public-pronunciation")
-    assert guest.post(path, json={**body, "text": "arbitrary"}, headers=key()).status_code == 422
-    assert (
-        guest.post(path.replace("word-1", "invented"), json=body, headers=key()).status_code == 404
-    )
-    assert guest.post(path, json={"revision": 1}, headers=key()).status_code == 422
-    set_free(admin, card["id"], False)
-    assert guest.get(path, params=body).status_code == 403
+        assert db.scalar(select(func.count()).select_from(Job)) == jobs_before
     assert personal_counts(system) == before
 
 
-def test_public_speech_worker_ready_delivery_dedup_cooldown_and_live_revocation(admin, system):
+def test_private_speech_worker_ready_delivery_dedup_cooldown_and_live_revocation(
+    admin, mini, system
+):
     from juya_api.worker import run_job
     from tests.content_helpers import recording
 
     card = publish(admin, draft(admin))
-    guest = system["mini"]
+    guest = mini
     path = P + f"/cards/{card['id']}/words/word-1/pronunciation"
     body = {"version_id": card["current_version_id"]}
     assert guest.get(path, params=body).json()["state"] in {"missing", "processing"}
-    before = personal_counts(system)
     job_id = guest.post(path, json=body, headers=key()).json()["job_id"]
     calls = []
 
@@ -279,7 +272,7 @@ def test_public_speech_worker_ready_delivery_dedup_cooldown_and_live_revocation(
     )
     ready = guest.get(path, params=body).json()
     assert ready["state"] == "ready" and calls == ["coffee"]
-    assert ready["url"].startswith(P + "/public/resources/pub1_")
+    assert ready["url"].startswith(P + "/pronunciation/")
     for method, headers, status in [
         ("GET", {}, 200),
         ("HEAD", {}, 200),
@@ -294,10 +287,11 @@ def test_public_speech_worker_ready_delivery_dedup_cooldown_and_live_revocation(
         assert (
             guest.request(method, ready["url"], headers={"Range": "bytes=0-3"}).status_code == 403
         )
-    assert personal_counts(system) == before
 
 
-def test_guest_listening_preset_speech_never_accepts_body_positions_or_draft_words(admin, system):
+def test_private_listening_preset_speech_never_accepts_body_positions_or_draft_words(
+    admin, mini, system
+):
     from juya_api.worker import run_job
     from tests.content_helpers import recording
 
@@ -318,10 +312,9 @@ def test_guest_listening_preset_speech_never_accepts_body_positions_or_draft_wor
     assert changed.status_code == 200, changed.text
     live = publish_article(admin, changed.json())
     policy(admin, 1)
-    guest = system["mini"]
+    guest = mini
     path = M + f"/articles/{live['id']}/words/preset-rest/pronunciation"
     ref = {"version_id": live["version_id"]}
-    before = personal_counts(system)
     response = guest.post(path, json=ref, headers=key())
     assert response.status_code == 200, response.text
     job_id = response.json()["job_id"]
@@ -342,7 +335,6 @@ def test_guest_listening_preset_speech_never_accepts_body_positions_or_draft_wor
     assert guest.get(path, params={"revision": live["revision"]}).status_code == 422
     set_free(admin, live["id"], False, listening=True)
     assert guest.head(ready["url"]).status_code == 403
-    assert personal_counts(system) == before
 
 
 def test_raw_valid_token_is_an_invalid_supplied_authorization(admin, mini, system):
@@ -360,7 +352,7 @@ def test_public_ticket_rejects_sealed_wrong_purpose_and_format_without_private_f
 
     card = publish(admin, draft(admin))
     params = {"version_id": card["current_version_id"]}
-    path = P + f"/cards/{card['id']}/media/{card['content']['audio_id']}/url"
+    path = P + f"/cards/{card['id']}/media/{card['content']['image_id']}/url"
     private = mini.get(path, params=params).json()["url"]
     mini.headers.pop("Authorization")
     public = mini.get(path, params=params).json()["url"]
@@ -378,11 +370,11 @@ def test_public_ticket_rejects_sealed_wrong_purpose_and_format_without_private_f
 
 
 @pytest.mark.parametrize("action", ["offline", "delete", "replace"])
-def test_public_scene_and_listening_urls_revoke_on_publication_change(admin, system, action):
+def test_private_scene_and_listening_urls_revoke_on_publication_change(admin, mini, system, action):
     card = publish(admin, draft(admin))
     live = publish_article(admin, article(admin))
     policy(admin, 1)
-    guest = system["mini"]
+    guest = mini
     card_url = guest.get(
         P + f"/cards/{card['id']}/media/{card['content']['audio_id']}/url",
         params={"version_id": card["current_version_id"]},
@@ -508,18 +500,29 @@ def test_guest_current_summary_and_owned_history_remain_separate(admin, mini, sy
     assert mini.get(P + "/cards").status_code == 200
 
 
-def test_public_pronunciation_worker_never_looks_up_a_user(admin, system):
+def test_legacy_public_pronunciation_worker_never_looks_up_a_user(admin, system):
     from juya_api.worker import run_job
     from tests.content_helpers import recording
 
     card = publish(admin, draft(admin))
     system["settings"].tts_voice_type += 1  # independent cache key, not publication prewarm
-    guest = system["mini"]
-    path = P + f"/cards/{card['id']}/words/word-1/pronunciation"
-    ref = {"version_id": card["current_version_id"]}
-    assert guest.get(path, params=ref).json()["state"] == "missing"
-    job_id = guest.post(path, json=ref, headers=key()).json()["job_id"]
-    assert guest.get(path, params=ref).json()["state"] == "processing"
+    from juya_api.pronunciation import reference, request_for_owner
+
+    with system["sessions"].begin() as db:
+        word, reading, config, cache_key = reference(
+            db, system["settings"], "mini", card["id"], "word-1", card["current_version_id"]
+        )
+        job_id = request_for_owner(
+            db,
+            system["settings"],
+            "public-pronunciation",
+            "mini",
+            word,
+            reading,
+            config,
+            cache_key,
+            system["time"][0],
+        )["job_id"]
     statements = []
 
     def capture(conn, cursor, statement, parameters, context, executemany):
@@ -541,7 +544,6 @@ def test_public_pronunciation_worker_never_looks_up_a_user(admin, system):
         )
     finally:
         event.remove(system["engine"], "before_cursor_execute", capture)
-    assert guest.get(path, params=ref).json()["state"] == "ready"
     assert not any("from users" in statement for statement in statements)
     with system["sessions"]() as db:
         assert db.get(Job, job_id).state == "succeeded"
@@ -555,7 +557,7 @@ def test_public_grant_malformed_media_reference_is_rejected_without_server_error
     card = publish(admin, draft(admin))
     guest = system["mini"]
     url = guest.get(
-        P + f"/cards/{card['id']}/media/{card['content']['audio_id']}/url",
+        P + f"/cards/{card['id']}/media/{card['content']['image_id']}/url",
         params={"version_id": card["current_version_id"]},
     ).json()["url"]
     data = json.loads(decrypt(system["settings"], url.rsplit("pub1_", 1)[1]))
@@ -569,12 +571,12 @@ def test_public_grant_malformed_media_reference_is_rejected_without_server_error
         assert response.status_code == 401, response.text
 
 
-def test_public_speech_failed_job_obeys_shared_cooldown_without_personal_receipt(admin, system):
+def test_private_speech_failed_job_obeys_shared_cooldown(admin, mini, system):
     from juya_api.errors import DomainError
     from juya_api.worker import run_job
 
     card = publish(admin, draft(admin))
-    guest = system["mini"]
+    guest = mini
     ref = {"version_id": card["current_version_id"]}
     path = P + f"/cards/{card['id']}/words/word-1/pronunciation"
     job_id = guest.post(path, json=ref, headers=key()).json()["job_id"]

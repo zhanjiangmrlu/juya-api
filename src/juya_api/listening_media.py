@@ -9,6 +9,7 @@ from .content_models import Media
 from .database import timestamp
 from .errors import DomainError
 from .media_api import decoded_audio, decoded_image, playback_medium
+from .media_permissions import require_bound_bearer
 from .models import MiniSession, identifier
 from .security import decrypt, digest, encrypt
 from .storage import ObjectStorage
@@ -177,9 +178,7 @@ def read_ticket(db, request, credential):
         session = db.get(MiniSession, data["session"])
         if not session or session.expires_at <= now or session.user_id != data["user_id"]:
             raise ValueError("invalid session")
-        bearer = request.headers.get("Authorization")
-        if bearer and digest(bearer.removeprefix("Bearer ")) != data["session"]:
-            raise ValueError("different session")
+        require_bound_bearer(request, data["session"], "listening_media_ticket_invalid")
     except Exception:
         raise DomainError(401, "listening_media_ticket_invalid", "请重新获取资源") from None
     return data

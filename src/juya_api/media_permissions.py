@@ -3,6 +3,7 @@
 from .content_models import Card, CardVersion, Media
 from .errors import DomainError
 from .learning_models import Completion, Favorite
+from .security import digest
 
 
 def summary_thumbnail(db, user_id: str, card_id: str, media_id: str, version_id=None):
@@ -19,3 +20,24 @@ def summary_thumbnail(db, user_id: str, card_id: str, media_id: str, version_id=
     if not image or image.thumbnail_id != media_id:
         raise DomainError(404, "media_missing", "历史记录仅保留安全缩略图")
     return version
+
+
+def require_resource_login(medium, user):
+    """Require a trusted learner for actual non-image media, independent of purpose."""
+    if user is None and medium.kind not in {"image", "thumbnail"}:
+        raise DomainError(401, "unauthenticated", "请主动登录后继续")
+
+
+def require_public_image(medium):
+    """Retire old public audio/PDF grants, including forged summary references."""
+    if medium.kind not in {"image", "thumbnail"}:
+        raise DomainError(401, "public_resource_expired", "资源地址已失效，请重新获取")
+
+
+def require_bound_bearer(request, expected, code):
+    """Allow native signed URLs, but reject a supplied identity from another session."""
+    authorization = request.headers.get("Authorization", "")
+    if authorization:
+        scheme, _, bearer = authorization.partition(" ")
+        if scheme != "Bearer" or not bearer or digest(bearer) != expected:
+            raise DomainError(401, code, "请主动登录后继续")

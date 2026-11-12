@@ -521,3 +521,10 @@ API完整SQLite555通过/43环境依赖跳过，最后超长词元隔离补丁�
 ## 2026-11-11 CHG0041 审查统一修复
 
 R1共享失败终态收敛覆盖fail/claim，真实worker外层临时耗尽、非临时失败及旧lease保护回归。完整SQLite771/57、真实MySQL批次/jobs18、ruff/mypy通过。配套后台R2/R3只读恢复围栏与公开Pinia身份代际、mini R4允许许可文案均通过完整322/829测试及构建；未扩大操作范围。
+
+
+## 2026-11-12 CHG0042 API按需登录保护（仅本地）
+
+Task1在test完成：免费图文、原图和有效PDF入口元数据继续公开，全文音频/PDF/预置发音需可信mini登录；旧public保护票据全部失效，实际kind防止purpose伪造。原生私票据逐次验证原会话和当前免费/发布/版本，显式身份必须匹配；权限version包含resource-login1，授权/内置查词继续false。无迁移或历史数据清理。
+
+主矩阵9项、显式异身份3项、缩略图真实kind2项均观察RED后GREEN；最终完整SQLite798通过/57环境跳过，真实隔离juya_verify相关批次184通过及最终资源矩阵18通过（交叠批次不相加），最终受影响专项85通过。Ruff/format/mypy、OpenAPI导出无差异与diff-check通过；主体独立审查及缩略图定点复核无重要发现。详见[API验收](../verification/chg0042-resource-login-api-20261112.md)及[接口契约](chg-0042-resource-login-contract.md)。未推送、部署、上传、操作原配置/服务/业务数据；真机及跨端集成由整体任务另记。
