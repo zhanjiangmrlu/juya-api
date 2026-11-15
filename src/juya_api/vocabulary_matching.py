@@ -211,7 +211,9 @@ def word_forms(english):
     if base.endswith("ie"):
         forms.update({base + "d", base[:-2] + "ying"})
     elif base.endswith("e"):
-        forms.update({base + "d", base[:-1] + "ing"})
+        # Retain e where dropping it produces another verb’s participle.
+        stem = base if base in {"dye", "singe"} else base[:-1]
+        forms.update({base + "d", stem + "ing"})
     elif consonant_y:
         forms.update({base[:-1] + "ied", base + "ing"})
     else:

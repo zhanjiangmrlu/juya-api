@@ -91,5 +91,21 @@
   {"body":"We say redoed.","term":"redo","reason":"source_unmatched"},
   {"body":"We say logos.","term":"logo","quote":"logos","codepoint":7,"utf16":7},
   {"body":"We say avocados.","term":"avocado","quote":"avocados","codepoint":7,"utf16":7},
-  {"body":"We say logoes.","term":"logo","reason":"source_unmatched"}
+  {"body":"We say logoes.","term":"logo","reason":"source_unmatched"},
+  {"body":"We say dyeing.","term":"dye","quote":"dyeing","codepoint":7,"utf16":7},
+  {"body":"We say dye.","term":"dyeing","quote":"dye","codepoint":7,"utf16":7},
+  {"body":"We say dying.","term":"dye","reason":"source_unmatched"},
+  {"body":"We say dye.","term":"dying","reason":"source_unmatched"},
+  {"body":"We say dying.","term":"die","quote":"dying","codepoint":7,"utf16":7},
+  {"body":"We say die.","term":"dying","quote":"die","codepoint":7,"utf16":7},
+  {"body":"We say dyeing.","term":"die","reason":"source_unmatched"},
+  {"body":"We say die.","term":"dyeing","reason":"source_unmatched"},
+  {"body":"We say singeing.","term":"singe","quote":"singeing","codepoint":7,"utf16":7},
+  {"body":"We say singe.","term":"singeing","quote":"singe","codepoint":7,"utf16":7},
+  {"body":"We say singing.","term":"singe","reason":"source_unmatched"},
+  {"body":"We say singe.","term":"singing","reason":"source_unmatched"},
+  {"body":"We say singing.","term":"sing","quote":"singing","codepoint":7,"utf16":7},
+  {"body":"We say sing.","term":"singing","quote":"sing","codepoint":7,"utf16":7},
+  {"body":"We say singeing.","term":"sing","reason":"source_unmatched"},
+  {"body":"We say sing.","term":"singeing","reason":"source_unmatched"}
 ]

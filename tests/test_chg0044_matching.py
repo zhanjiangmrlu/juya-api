@@ -294,10 +294,17 @@ def test_listening_final_publication_blocks_other_lemmas_participles(admin):
 
     owner = category(admin)
     row = article(admin, owner["id"])
-    for term, allowed in [("hop", False), ("hope", True)]:
+    for term, sentence, allowed in [
+        ("hop", "I am hoping.", False),
+        ("dye", "The plant is dying.", False),
+        ("singe", "They are singing.", False),
+        ("hope", "I am hoping.", True),
+        ("dye", "She is dyeing the fabric.", True),
+        ("singe", "The flame is singeing the paper.", True),
+    ]:
         payload = {
             **row["payload"],
-            "body_en": "I am hoping.",
+            "body_en": sentence,
             "vocabulary": [{"id": "word", "english": term, "meaning": "释义"}],
         }
         response = admin.put(
@@ -311,6 +318,8 @@ def test_listening_final_publication_blocks_other_lemmas_participles(admin):
             f"{A}/articles/{row['id']}/publish", headers=key(), json={"revision": row["revision"]}
         )
         assert published.status_code == (200 if allowed else 422), published.text
+        if allowed:
+            row = published.json()
 
 
 def test_optional_listening_vocabulary_checks_meaning_even_after_auto_matching(admin):
