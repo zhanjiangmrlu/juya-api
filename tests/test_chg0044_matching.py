@@ -1,3 +1,8 @@
+import json
+from pathlib import Path
+
+import pytest
+
 from juya_api.content_contracts import SceneContent
 from juya_api.content_service import normalize
 from juya_api.listening_vocabulary import resolve_vocabulary_sources
@@ -150,34 +155,33 @@ def test_derived_auto_source_never_changes_listening_import_identity():
     assert canonical_payload(payload) == canonical_payload(resolved)
 
 
-def test_both_adapters_match_shared_client_source_examples():
-    import json
-    from pathlib import Path
-
-    for case in json.loads(
-        (Path(__file__).parent / "fixtures/vocabulary-matching-v1.json").read_text()
-    ):
-        word = {
-            "id": "w",
-            "english": case["term"],
-            "meaning": "释义",
-            "source_hint": case.get("hint", ""),
-        }
-        scene = normalize(
-            SceneContent.model_validate(
-                {"dialogue": [{"id": "a", "english": case["body"]}], "vocabulary": [word]}
-            )
-        )["vocabulary"][0]
-        article = {"body_en": case["body"], "vocabulary": [dict(word)]}
-        resolve_vocabulary_sources(article)
-        listening = article["vocabulary"][0]
-        if "reason" in case:
-            assert scene["source_reason"] == listening["source_reason"] == case["reason"]
-            assert scene["source"] is None and listening["source"] is None
-        else:
-            assert scene["source"]["quote"] == listening["source"]["word"] == case["quote"]
-            assert scene["source"]["start"] == case["utf16"]
-            assert listening["source"]["word_start"] == case["codepoint"]
+@pytest.mark.parametrize(
+    "case",
+    json.loads((Path(__file__).parent / "fixtures/vocabulary-matching-v1.json").read_text()),
+    ids=lambda case: case["term"] + "-" + case.get("quote", case["body"]),
+)
+def test_both_adapters_match_shared_client_source_examples(case):
+    word = {
+        "id": "w",
+        "english": case["term"],
+        "meaning": "释义",
+        "source_hint": case.get("hint", ""),
+    }
+    scene = normalize(
+        SceneContent.model_validate(
+            {"dialogue": [{"id": "a", "english": case["body"]}], "vocabulary": [word]}
+        )
+    )["vocabulary"][0]
+    article = {"body_en": case["body"], "vocabulary": [dict(word)]}
+    resolve_vocabulary_sources(article)
+    listening = article["vocabulary"][0]
+    if "reason" in case:
+        assert scene["source_reason"] == listening["source_reason"] == case["reason"]
+        assert scene["source"] is None and listening["source"] is None
+    else:
+        assert scene["source"]["quote"] == listening["source"]["word"] == case["quote"]
+        assert scene["source"]["start"] == case["utf16"]
+        assert listening["source"]["word_start"] == case["codepoint"]
 
 
 def test_preview_and_publication_recompute_reliable_legacy_scene_source(admin, system):
@@ -319,3 +323,49 @@ def test_optional_listening_vocabulary_checks_meaning_even_after_auto_matching(a
         f"{A}/articles/{row['id']}/publish", headers=key(), json={"revision": row["revision"]}
     )
     assert result.status_code == 422 and "vocabulary:" in result.text
+
+
+def test_regular_words_survive_scene_and_listening_edit_and_publish(admin):
+    from .content_helpers import content, draft, key, publish
+    from .test_integration06 import A, article, category
+    from .test_integration06 import publish as publish_listening
+
+    pairs = [
+        ("photo", "photos"),
+        ("video", "videos"),
+        ("radio", "radios"),
+        ("answer", "answered"),
+        ("remember", "remembered"),
+        ("develop", "developing"),
+    ]
+    line = "We saw photos, videos and radios. They answered, remembered and are developing."
+    words = [{"id": term, "english": term, "meaning": "释义"} for term, _ in pairs]
+    expected = [actual for _, actual in pairs]
+
+    scene = draft(admin, content(admin))
+    scene_body = scene["content"]
+    scene_body["dialogue"][0]["english"] = line
+    scene_body["vocabulary"] = words
+    edited = admin.put(
+        f"/api/admin/v1/cards/{scene['id']}",
+        headers=key(),
+        json={"revision": scene["draft_revision"], "content": scene_body},
+    )
+    assert edited.status_code == 200, edited.text
+    live = publish(admin, edited.json())
+    assert [w["source"]["quote"] for w in live["content"]["vocabulary"]] == expected
+
+    owner = category(admin)
+    hearing = article(admin, owner["id"])
+    response = admin.put(
+        f"{A}/articles/{hearing['id']}",
+        headers=key(),
+        json={
+            "revision": hearing["revision"],
+            "category_id": owner["id"],
+            "payload": {**hearing["payload"], "body_en": line, "vocabulary": words},
+        },
+    )
+    assert response.status_code == 200, response.text
+    published = publish_listening(admin, response.json())
+    assert [w["source"]["word"] for w in published["payload"]["vocabulary"]] == expected

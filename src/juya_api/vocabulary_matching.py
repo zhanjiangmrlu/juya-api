@@ -16,6 +16,8 @@ IRREGULAR_FORMS = {
     "teach": "taught teaching",
     "study": "studies studied studying",
     "be": "am is are was were been being",
+    "begin": "began begun beginning",
+    "forget": "forgot forgotten forgetting",
     "go": "goes went gone going",
     "do": "does did done doing",
     "have": "has had having",
@@ -100,10 +102,68 @@ COMPARABLE = set(
 )
 
 
+# Most nouns ending in -o take -s. These common exceptions take -es or allow both.
+O_ES = {"echo", "embargo", "hero", "potato", "tomato", "veto"}
+O_S_OR_ES = {
+    "buffalo",
+    "cargo",
+    "domino",
+    "flamingo",
+    "mango",
+    "mosquito",
+    "tornado",
+    "torpedo",
+    "volcano",
+}
+
+# Regular multisyllable verbs usually keep their final consonant, as in "answered".
+# A stressed final syllable accounts for the double consonant in these exceptions.
+STRESSED_FINAL = {
+    "admit",
+    "commit",
+    "compel",
+    "concur",
+    "confer",
+    "control",
+    "defer",
+    "demur",
+    "deter",
+    "emit",
+    "equip",
+    "excel",
+    "expel",
+    "impel",
+    "incur",
+    "infer",
+    "occur",
+    "omit",
+    "patrol",
+    "permit",
+    "prefer",
+    "propel",
+    "rebel",
+    "recur",
+    "refer",
+    "regret",
+    "remit",
+    "repel",
+    "submit",
+    "transfer",
+    "transmit",
+}
+
+
 @lru_cache(maxsize=4096)
 def word_forms(english):
     """生成可自动对应的常见词形；english 为文档中的英文词条"""
     base = english.strip().casefold().replace("’", "'")
+    consonant_y = bool(re.search(r"[^aeiou]y$", base))
+    if consonant_y:
+        plural = base[:-1] + "ies"
+    elif re.search(r"(?:s|x|z|ch|sh)$", base) or base in O_ES:
+        plural = base + "es"
+    else:
+        plural = base + "s"
     if base in IRREGULAR_FORMS:
         forms = {base, *IRREGULAR_FORMS[base].split()}
         if base not in {
@@ -123,55 +183,23 @@ def word_forms(english):
             "tooth",
             "mouse",
         }:
-            plural = (
-                base[:-1] + "ies"
-                if re.search(r"[^aeiou]y$", base)
-                else base + ("es" if re.search(r"(?:s|x|z|ch|sh|o)$", base) else "s")
-            )
             forms.add(plural)
             if not any(word.endswith("ing") for word in forms):
                 forms.add(base + "ing")
         return forms
-    consonant_y = bool(re.search(r"[^aeiou]y$", base))
-    plural = (
-        base[:-1] + "ies"
-        if consonant_y
-        else base + ("es" if re.search(r"(?:s|x|z|ch|sh|o)$", base) else "s")
-    )
     forms = {base, plural}
+    if base in O_S_OR_ES:
+        forms.add(base + "es")
     if base.endswith("ie"):
         forms.update({base + "d", base[:-2] + "ying"})
     elif base.endswith("e"):
         forms.update({base + "d", base[:-1] + "ing"})
     elif consonant_y:
         forms.update({base[:-1] + "ied", base + "ing"})
-    elif re.search(r"[aeiou][bcdfgklmnprstvz]$", base) and not re.search(r"[aeiou]{2}.$", base):
-        # Stress in multisyllable verbs is lexical. Only bind attested endings here.
-        if re.fullmatch(r"[^aeiou]*[aeiou][bcdfgklmnprstvz]", base) or base in {
-            "admit",
-            "commit",
-            "control",
-            "occur",
-            "prefer",
-            "regret",
-            "submit",
-        }:
-            stem = base + base[-1]
-            forms.update({stem + "ed", stem + "ing"})
-        elif base in {
-            "benefit",
-            "deliver",
-            "enter",
-            "happen",
-            "limit",
-            "listen",
-            "offer",
-            "open",
-            "visit",
-        }:
-            forms.update({base + "ed", base + "ing"})
     else:
-        forms.update({base + "ed", base + "ing"})
+        short_vowel = re.fullmatch(r"[^aeiou]*[aeiou][bcdfgklmnprstvz]", base)
+        stem = base + base[-1] if short_vowel or base in STRESSED_FINAL else base
+        forms.update({stem + "ed", stem + "ing"})
     if base in COMPARABLE:
         if re.search(r"[^aeiou]y$", base):
             forms.update({base[:-1] + "ier", base[:-1] + "iest"})
