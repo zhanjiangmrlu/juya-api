@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import JSON, Boolean, CheckConstraint, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base, UTCDateTime
@@ -11,6 +11,9 @@ from .models import identifier
 
 class ImportBatch(Base):
     __tablename__ = "import_batches"
+    removed_count: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0", comment="人工移除的候选卡片累计数量"
+    )
     __table_args__ = {"comment": "场景资料导入批次与软删除状态"}
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=identifier, comment="记录内部标识"
@@ -73,7 +76,12 @@ class ImportFile(Base):
 
 class ImportItem(Base):
     __tablename__ = "import_items"
+    content_type: Mapped[str | None] = mapped_column(String(16), comment="候选拟发布分类")
+    type_origin: Mapped[str | None] = mapped_column(String(16), comment="分类值来源")
+    type_raw: Mapped[list | None] = mapped_column(JSON, comment="文件中原始分类文字")
+    duplicate_detail: Mapped[dict | None] = mapped_column(JSON, comment="重复判定及来源快照")
     __table_args__ = (
+        CheckConstraint("content_type IN ('illustrated','intensive')", name="ck_import_item_type"),
         UniqueConstraint("source_file_id", "source_index", name="uq_import_source_section"),
         {"comment": "场景导入候选内容与逐项保存结果"},
     )

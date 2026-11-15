@@ -1,12 +1,12 @@
 """Publication invariants shared by both APIs, imports and background workers."""
 
-import re
 from datetime import timedelta
 
 from sqlalchemy import func, select
 
 from .content_contracts import SceneContent
 from .content_models import Card, CardDraft, CardVersion, Media, Preview, SettingCounter
+from .content_types import bind, type_issues
 from .database import timestamp
 from .errors import DomainError
 from .job_models import Job
@@ -23,23 +23,23 @@ from .study_notes import (
     published_note,
     selection_view,
 )
+from .vocabulary_matching import matching_spans, normalized_quote, resolve_words
 
 
-def source_candidates(dialogue: list[dict], english: str) -> list[dict]:
-    """Find full-word/phrase occurrences and return JavaScript-compatible UTF-16 ranges."""
-    if not english.strip():
-        return []
-    expression = re.compile(r"(?<!\w)" + re.escape(english.strip()) + r"(?!\w)", re.I)
+def source_candidates(dialogue: list[dict], english: str, hint="") -> list[dict]:
+    """Return actual forms with JavaScript UTF-16 coordinates in the original line."""
     matches = []
     for line in dialogue:
         text = line["english"]
-        for match in expression.finditer(text):
+        if hint and normalized_quote(hint) != normalized_quote(text):
+            continue
+        for start, end in matching_spans(text, english):
             matches.append(
                 {
                     "line_id": line["id"],
-                    "start": len(text[: match.start()].encode("utf-16-le")) // 2,
-                    "end": len(text[: match.end()].encode("utf-16-le")) // 2,
-                    "quote": match.group(),
+                    "start": len(text[:start].encode("utf-16-le")) // 2,
+                    "end": len(text[:end].encode("utf-16-le")) // 2,
+                    "quote": text[start:end],
                     "sentence": text,
                 }
             )
@@ -47,16 +47,29 @@ def source_candidates(dialogue: list[dict], english: str) -> list[dict]:
 
 
 def normalize(content: SceneContent) -> dict:
-    """Drop empty optional chunks and bind only unambiguous vocabulary occurrences."""
     value = content.model_dump(mode="json")
     value["name"] = value["name"].strip()
     value["title_en"] = value["title_en"].strip()
     value["chunks"] = [c for c in value["chunks"] if c["english"].strip() or c["chinese"].strip()]
+
+    return resolved_scene(value)
+
+
+def resolved_scene(payload):
+    value = {**payload, "vocabulary": [dict(word) for word in payload.get("vocabulary", [])]}
+
+    def candidates(word):
+        hint = word.get("source_hint", "")
+        rows = source_candidates(value["dialogue"], word["english"], hint)
+        return [{k: v for k, v in row.items() if k != "sentence"} for row in rows], any(
+            normalized_quote(line["english"]) == normalized_quote(hint)
+            for line in value["dialogue"]
+        )
+
+    resolve_words(value["vocabulary"], candidates)
     for word in value["vocabulary"]:
-        if word["source"] is None:
-            candidates = source_candidates(value["dialogue"], word["english"])
-            if len(candidates) == 1:
-                word["source"] = {k: candidates[0][k] for k in ["line_id", "start", "end", "quote"]}
+        if not word.get("source_hint"):
+            word.pop("source_hint", None)
     return value
 
 
@@ -125,6 +138,12 @@ def validate_publication(db, content: dict) -> list[dict]:
                 valid = (
                     bool(source["quote"])
                     and quote == source["quote"]
+                    and any(
+                        s["start"] == source["start"] and s["end"] == source["end"]
+                        for s in source_candidates(
+                            [lines[source["line_id"]]], word["english"], word.get("source_hint", "")
+                        )
+                    )
                     and source["end"] * 2 <= len(encoded)
                 )
             except UnicodeDecodeError:
@@ -169,17 +188,34 @@ def revision_matches(draft: CardDraft | None, revision: int) -> CardDraft:
     return draft
 
 
+def candidate_issues(db, draft, card, content):
+    return (
+        validate_publication(db, content)
+        + note_issues(db, draft.study_note, card)
+        + type_issues(
+            db,
+            draft.content_type,
+            draft.study_note,
+            card,
+        )
+    )
+
+
 def card_view(db, card: Card) -> dict:
     """Render editable content and its independent configured free flag."""
     draft = db.get(CardDraft, card.id)
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
     assert draft is not None
+    content = resolved_scene(draft.payload)
     display = current.payload if current and card.status != "draft" else draft.payload
     display_image = db.get(Media, display["image_id"]) if display["image_id"] else None
     return {
         "study_note": selection_view(db, draft.study_note, card),
         "published_study_note": note_metadata(db, card),
         "id": card.id,
+        "content_type": card.published_content_type if current else draft.content_type,
+        "draft_content_type": draft.content_type,
+        "published_content_type": card.published_content_type,
         "display_name": display["name"],
         "display_title_en": display.get("title_en", ""),
         "display_image_id": display["image_id"],
@@ -189,15 +225,16 @@ def card_view(db, card: Card) -> dict:
         "draft_revision": draft.revision,
         "is_free": card.is_free,
         "free_revision": card.free_revision,
-        "content": draft.payload,
+        "content": content,
         "sort_order": card.sort_order,
         "updated_at": timestamp(draft.updated_at),
         "has_unpublished_changes": current is None
-        or current.content_hash != fingerprint(draft.payload)
+        or draft.content_type != card.published_content_type
+        or current.content_hash != fingerprint(content)
         or effective_media_id(db, draft.study_note, card)
         != (published_note(db, card).media_id if published_note(db, card) else None)
         or bool(note_issues(db, draft.study_note, card)),
-        "issues": validate_publication(db, draft.payload) + note_issues(db, draft.study_note, card),
+        "issues": candidate_issues(db, draft, card, content),
     }
 
 
@@ -255,7 +292,8 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
     assert draft is not None
     revision_matches(draft, revision)
     preview = db.get(Preview, preview_id)
-    content_hash = candidate_fingerprint(db, draft, card)
+    content = resolved_scene(draft.payload)
+    content_hash = candidate_fingerprint(db, draft, card, content)
     if (
         not preview
         or preview.admin_id != admin_id
@@ -265,10 +303,10 @@ def reviewed_candidate(db, card, admin_id, revision, preview_id, now):
         raise DomainError(409, "preview_required", "请重新预览并确认发布")
     if preview.draft_revision != draft.revision or preview.content_hash != content_hash:
         raise DomainError(409, "preview_changed", "预览资料已变化，请重新核对")
-    issues = validate_publication(db, draft.payload) + note_issues(db, draft.study_note, card)
+    issues = candidate_issues(db, draft, card, content)
     if issues:
         raise DomainError(422, "publication_invalid", "请先补充发布资料", issues)
-    return draft, fingerprint(draft.payload)
+    return draft, content
 
 
 def publish_version(
@@ -281,7 +319,9 @@ def publish_version(
     draft_row = db.get(CardDraft, card.id)
     if draft_row is not None:
         db.refresh(draft_row)
-    draft, content_hash = reviewed_candidate(db, card, admin_id, revision, preview_id, now)
+    draft, content = reviewed_candidate(db, card, admin_id, revision, preview_id, now)
+    content_hash = fingerprint(content)
+    draft.payload = content
     was_published = card.status == "published"
     current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
     changed = not current or current.content_hash != content_hash
@@ -303,6 +343,9 @@ def publish_version(
         db.flush()
         card.current_version_id, card.status = version.id, "published"
     note_changed = publish_note(db, card, draft, now)
+    type_changed = (
+        bind(db, card, draft.content_type, admin_id, now) if draft.content_type else False
+    )
     if not was_published or changed:
         first = db.scalar(
             select(func.min(Card.sort_order)).where(
@@ -311,7 +354,7 @@ def publish_version(
         )
         card.sort_order = (first if first is not None else 1) - 1
         advance_catalog(db)
-    elif note_changed:
+    elif note_changed or type_changed:
         advance_catalog(db)
     from .pronunciation import enqueue_prewarm
 
@@ -335,23 +378,25 @@ def make_preview(db, card: Card, admin_id: str, revision: int, now):
     draft = db.get(CardDraft, card.id)
     assert draft is not None
     revision_matches(draft, revision)
-    issues = validate_publication(db, draft.payload) + note_issues(db, draft.study_note, card)
+    content = resolved_scene(draft.payload)
+    issues = candidate_issues(db, draft, card, content)
     if issues:
         raise DomainError(422, "publication_invalid", "请先补充发布资料", issues)
     preview = Preview(
         card_id=card.id,
         admin_id=admin_id,
         draft_revision=draft.revision,
-        content_hash=candidate_fingerprint(db, draft, card),
+        content_hash=candidate_fingerprint(db, draft, card, content),
         expires_at=now + timedelta(minutes=30),
     )
     db.add(preview)
     db.flush()
     return {
         "study_note": selection_view(db, draft.study_note, card),
+        "content_type": draft.content_type,
         "preview_id": preview.id,
         "revision": draft.revision,
-        "content": draft.payload,
+        "content": content,
         "expires_at": timestamp(preview.expires_at),
         "mode": "draft",
     }
@@ -378,7 +423,7 @@ def candidate_media_ready(db, content, admin_id):
             raise DomainError(409, "media_processing", "请等待素材处理完成，再保存草稿")
 
 
-def create_candidate(db, content, admin_id, now, *, study_note=None):
+def create_candidate(db, content, admin_id, now, *, study_note=None, content_type=None):
     """Create a new stable card and candidate using the same rules for manual/import entry."""
     candidate_media_ready(db, content, admin_id)
     card = Card(sort_order=(db.scalar(select(func.max(Card.sort_order))) or 0) + 1, created_at=now)
@@ -388,6 +433,7 @@ def create_candidate(db, content, admin_id, now, *, study_note=None):
         CardDraft(
             card_id=card.id,
             revision=1,
+            content_type=content_type,
             payload=normalize(content),
             updated_at=now,
             study_note=change_selection(db, None, study_note, admin_id, card),
@@ -408,6 +454,8 @@ def save_candidate(
     *,
     study_note=None,
     preserve_equivalent_body=False,
+    content_type=None,
+    update_type=False,
 ):
     """An import update can only replace the explicitly confirmed current candidate."""
     catalog_lock(db)
@@ -418,16 +466,18 @@ def save_candidate(
         db.refresh(draft_row)
     draft = revision_matches(draft_row, revision)
     candidate_media_ready(db, content, admin_id)
+    if update_type:
+        draft.content_type = content_type
     draft.study_note = change_selection(db, draft.study_note, study_note, admin_id, card)
     candidate = normalize(content)
     if preserve_equivalent_body:
         # Reimported DOCX/media get fresh generated IDs even when every byte is unchanged.
         # Resolve equivalence under the same version lock used to save the target.
-        from .import_service import content_hash
+        from .import_service import semantic_hash
 
         current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
         for baseline in [draft.payload, *([current.payload] if current else [])]:
-            if content_hash(db, candidate) == content_hash(db, baseline):
+            if semantic_hash(db, candidate) == semantic_hash(db, baseline):
                 candidate = baseline
                 break
     draft.payload = candidate

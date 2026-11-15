@@ -212,7 +212,11 @@ def test_deleted_article_no_longer_blocks_reimport(admin, reupload):
         batch = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), package())
     else:
         batch = admin.get(A + f"/imports/{duplicate['id']}").json()
-        assert batch["revision"] > duplicate["revision"]
+        assert batch["counts"]["savable"] == 0
+        assert batch["candidates"][0]["state"] == "duplicate"
+        detail = admin.get(A + f"/imports/{batch['id']}/duplicates").json()["items"][0]
+        assert detail["target_id"] == old_id and not detail["target_available"]
+        return
     candidate = batch["candidates"][0]
     assert candidate["state"] == "incomplete"
     assert candidate["duplicate_of"] is None

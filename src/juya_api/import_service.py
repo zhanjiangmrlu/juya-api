@@ -10,11 +10,12 @@ from uuid import NAMESPACE_URL, uuid5
 from sqlalchemy import func, or_, select
 
 from .content_contracts import SceneContent, StudyNoteChange
-from .content_models import Card, CardDraft, Media
+from .content_models import Card, CardDraft, CardVersion, Media
 from .content_service import (
     create_candidate,
     normalize,
     require_card,
+    resolved_scene,
     save_candidate,
     validate_publication,
 )
@@ -29,6 +30,7 @@ from .security import fingerprint
 from .storage import ObjectStorage
 from .study_notes import PDF_ERROR_MESSAGES
 from .transactions import actor_lock
+from .vocabulary_matching import normalized_quote
 from .zip_names import import_file_name, readable_zip_name
 
 INVALID_SOURCE_ERRORS = {
@@ -136,6 +138,122 @@ def content_hash(db, content, study_note=None):
             else [],
         }
     return fingerprint(value)
+
+
+def semantic_hash(db, payload, study_note=None):
+    # Match source data, independently of generated positions, algorithm status and type.
+    content = copy.deepcopy(payload)
+    for word in content["vocabulary"]:
+        word.pop("source_reason", None)
+        hint = word.get("source_hint", "")
+        if not hint or any(
+            normalized_quote(line["english"]) == normalized_quote(hint)
+            for line in content["dialogue"]
+        ):
+            word.pop("source_hint", None)
+        word["source"] = None
+    note = study_note or {}
+    if note.get("action") == "keep" and note.get("media_id"):
+        note = {"action": "set", "media_id": note["media_id"]}
+    return fingerprint({"version": 3, "material": content_hash(db, content, note)})
+
+
+def scene_receipt(db, item, reason, kind, target_id):
+    from .import_duplicates import receipt
+
+    source = db.get(ImportFile, item.source_file_id)
+    origin = source_view(db, item)
+    path = import_file_name(db, source) if source else ""
+    return receipt(
+        item.id,
+        origin["source_zip_name"] or path,
+        path,
+        item.content.get("name", ""),
+        item.content.get("title_en", ""),
+        reason,
+        kind,
+        target_id,
+    )
+
+
+def classify_scene(db, item):
+    if item.duplicate_detail or item.saved_card_id or not item.readable or item.target_card_id:
+        return
+    identity = find_identity(db, item)
+    hashes = {
+        content_hash(db, item.content, item.study_note),
+        semantic_hash(db, item.content, item.study_note),
+    }
+    if identity and identity.content_hash in hashes:
+        item.duplicate_detail = scene_receipt(
+            db, item, "existing_content", "scene_card", identity.card_id
+        )
+        return
+    hashed = semantic_hash(db, item.content, item.study_note)
+    previous = db.scalars(
+        select(ImportItem)
+        .where(
+            ImportItem.id != item.id,
+            ImportItem.readable.is_(True),
+            ImportItem.content["name"].as_string() == item.content.get("name", ""),
+            (ImportItem.saved_card_id.is_not(None))
+            | ((ImportItem.batch_id == item.batch_id) & (ImportItem.position < item.position)),
+        )
+        .order_by(ImportItem.position, ImportItem.id)
+    )
+    for other in previous:
+        if other.duplicate_detail or semantic_hash(db, other.content, other.study_note) != hashed:
+            continue
+        if other.saved_card_id:
+            if live_card(db, other.saved_card_id):
+                item.duplicate_detail = scene_receipt(
+                    db, item, "existing_content", "scene_card", other.saved_card_id
+                )
+                return
+        elif other.batch_id == item.batch_id:
+            src = source_view(db, item)
+            kept = source_view(db, other)
+            same = (src["source_zip_id"] or item.source_file_id) == (
+                kept["source_zip_id"] or other.source_file_id
+            )
+            item.duplicate_detail = scene_receipt(
+                db, item, "same_package" if same else "cross_package", "scene_candidate", other.id
+            )
+            return
+
+    name = item.content.get("name", "")
+    candidates = db.execute(
+        select(Card, CardDraft)
+        .join(CardDraft)
+        .outerjoin(CardVersion, CardVersion.id == Card.current_version_id)
+        .where(
+            Card.deleted_at.is_(None),
+            or_(
+                CardDraft.payload["name"].as_string() == name,
+                CardVersion.payload["name"].as_string() == name,
+            ),
+        )
+        .order_by(Card.id)
+    )
+    from .study_notes import published_note
+
+    for card, draft in candidates:
+        current = db.get(CardVersion, card.current_version_id) if card.current_version_id else None
+        note = published_note(db, card)
+        published_selection = {"action": "set", "media_id": note.media_id} if note else None
+        draft_selection = draft.study_note or published_selection
+        if (draft_selection or {}).get("action") == "keep" and not (draft_selection or {}).get(
+            "media_id"
+        ):
+            draft_selection = published_selection
+        versions = [(draft.payload, draft_selection)]
+        if current:
+            versions.append((current.payload, published_selection))
+        if any(semantic_hash(db, payload, selection) == hashed for payload, selection in versions):
+            item.duplicate_detail = scene_receipt(
+                db, item, "existing_content", "scene_card", card.id
+            )
+            return
 
 
 def object_key(db, item):
@@ -309,14 +427,19 @@ def item_view(db, item):
     job = item_job(db, item)
     saved_card = live_card(db, item.saved_card_id)
     image = db.get(Media, item.content["image_id"]) if item.content["image_id"] else None
-    hashed = content_hash(db, item.content, item.study_note)
+    hashes = {
+        content_hash(db, item.content, item.study_note),
+        semantic_hash(db, item.content, item.study_note),
+    }
     identity = find_identity(db, item)
     issues = [
         i
         for i in item.parser_issues
-        if i["code"] != "title_en_conflict" or not item.content.get("title_en", "").strip()
+        if (i["code"] != "title_en_conflict" or not item.content.get("title_en", "").strip())
+        and (i["code"] != "content_type_unknown" or not item.content_type)
     ]
-    issues += validate_publication(db, item.content)
+    content = resolved_scene(item.content)
+    issues += validate_publication(db, content)
     from .study_notes import note_issues, project_selection, selection_view
 
     target = live_card(db, item.target_card_id) if item.target_card_id else saved_card
@@ -326,8 +449,13 @@ def item_view(db, item):
         db, target_draft.study_note if target_draft else None, staged, target
     )
     selection = import_note_selection(selection, staged)
+    from .content_types import type_issues
+
+    issues += type_issues(db, item.content_type, selection, target)
     issues += note_issues(db, selection, target)
-    if not item.readable:
+    if item.duplicate_detail:
+        state = "duplicate"
+    elif not item.readable:
         state = "unreadable"
     elif job and job.state in {"queued", "running", "retry"}:
         state = "saving"
@@ -338,17 +466,17 @@ def item_view(db, item):
         and job.result
         and job.result.get("skipped")
         and saved_card
-        and item.last_saved_hash == hashed
+        and item.last_saved_hash in hashes
         and not item.target_card_id
     ):
         state = "duplicate"
     elif (
         saved_card
-        and item.last_saved_hash == hashed
+        and item.last_saved_hash in hashes
         and (not item.target_card_id or item.target_card_id == item.saved_card_id)
     ):
         state = "saved"
-    elif identity and identity.content_hash == hashed and not item.target_card_id:
+    elif identity and identity.content_hash in hashes and not item.target_card_id:
         state = "duplicate"
     else:
         state = "ready" if not issues else "incomplete"
@@ -358,7 +486,10 @@ def item_view(db, item):
         ),
         "id": item.id,
         "revision": item.revision,
-        "content": item.content,
+        "content_type": item.content_type,
+        "type_raw": item.type_raw or [],
+        "type_origin": item.type_origin,
+        "content": content,
         "thumbnail_id": image.thumbnail_id if image and image.state == "ready" else None,
         "selected": item.selected,
         "readable": item.readable,
@@ -370,7 +501,13 @@ def item_view(db, item):
         "target_revision": item.target_revision,
         "saved_card_id": item.saved_card_id,
         "saved_draft_revision": item.saved_draft_revision,
-        "suggested_target_id": identity.card_id if identity else None,
+        "suggested_target_id": identity.card_id
+        if identity
+        else (
+            item.duplicate_detail["target_id"]
+            if item.duplicate_detail and item.duplicate_detail["target_kind"] == "scene_card"
+            else None
+        ),
         "job_id": item.job_id,
         "error_code": job.error_code if job and job.state == "failed" else None,
     }
@@ -447,6 +584,7 @@ def batch_view(db, batch, settings):
         "updated_at": timestamp(max(naive_utc(value) for value in moments if value)),
         "resumable": resumable and batch.mode != "single",
         "stage": stage,
+        "removed_count": batch.removed_count,
         "source_names": [value["name"] for value in file_values if not value["parent_id"]],
         "files": file_values,
         "items": item_values,
@@ -511,6 +649,10 @@ def confirmation(db, batch, item_ids=None):
             not i["selected"] and i["readable"] and i["state"] != "duplicate" for i in values
         ),
         "unreadable": sum(not i["readable"] for i in values),
+        "removed": batch.removed_count,
+        "failed": sum(i["state"] == "failed" for i in values),
+        "failed_files": sum(file_view(db, f)["state"] == "failed" for f in files),
+        "package_count": sum(f.kind == "zip" and not f.parent_id for f in files),
     }
 
 
@@ -618,12 +760,15 @@ def prepare_parse(settings, sessions, job, *, clock):
     prepared_files = []
     prepared_items = []
 
-    def candidate(file_id, index, content, sha, *, readable=True, issues=None):
+    def candidate(file_id, index, content, sha, *, readable=True, issues=None, parsed=None):
         prepared_items.append(
             {
                 "id": str(uuid5(NAMESPACE_URL, file_id + ":" + str(index))),
                 "source_file_id": file_id,
                 "source_index": index,
+                "content_type": (parsed or {}).get("content_type"),
+                "type_raw": (parsed or {}).get("type_raw", []),
+                "type_origin": "file" if (parsed or {}).get("content_type") else None,
                 "content": content,
                 "source_identity": fingerprint({"docx": sha, "section": index}),
                 "readable": readable,
@@ -647,6 +792,7 @@ def prepare_parse(settings, sessions, job, *, clock):
                 source["sha256"],
                 readable=item["readable"],
                 issues=item["issues"],
+                parsed=item,
             )
         parse_progress(sessions, job, clock(), "parsing", len(items), len(items))
     else:
@@ -787,6 +933,7 @@ def prepare_parse(settings, sessions, job, *, clock):
                         document["sha256"],
                         readable=parsed_items[0]["readable"],
                         issues=parsed_items[0]["issues"],
+                        parsed=parsed_items[0],
                     )
                     notes = [f for f in files if f["kind"] == "study_note"]
                     if notes:
@@ -874,11 +1021,12 @@ def prepare_parse(settings, sessions, job, *, clock):
         db.flush()
         for index, value in enumerate(new_items):
             if not db.get(ImportItem, value["id"]):
-                db.add(
-                    ImportItem(
-                        **value, batch_id=source["batch_id"], revision=1, position=existing + index
-                    )
+                item = ImportItem(
+                    **value, batch_id=source["batch_id"], revision=1, position=existing + index
                 )
+                db.add(item)
+                db.flush()
+                classify_scene(db, item)
         current.progress = {
             "phase": "parsed",
             "processed": len(prepared_items),
@@ -905,7 +1053,7 @@ def prepare_save(settings, sessions, job, now):
             raise DomainError(409, "import_changed", "核对资料已变化，请重新确认保存范围")
         batch = owned_batch(db, item.batch_id, job["owner_id"])
         content = SceneContent.model_validate(payload["content"])
-        hashed = content_hash(db, payload["content"], item.study_note)
+        hashed = semantic_hash(db, payload["content"], item.study_note)
         identity_key = object_key(db, item)
         identity = find_identity(db, item)
         target = payload.get("target_card_id") or (
@@ -935,6 +1083,11 @@ def prepare_save(settings, sessions, job, now):
             if item.study_note
             else None
         )
+        classify_scene(db, item)
+        if item.duplicate_detail and not target:
+            result.update({"skipped": True, "duplicate": item.duplicate_detail})
+            touch_batch(batch, now)
+            return
         if identity and identity.content_hash == hashed and not target:
             card = require_card(db, identity.card_id)
             result["skipped"] = True
@@ -952,9 +1105,18 @@ def prepare_save(settings, sessions, job, now):
                 now,
                 study_note=note_change,
                 preserve_equivalent_body=True,
+                content_type=item.content_type,
+                update_type=bool(item.type_origin),
             )
         else:
-            card = create_candidate(db, content, job["owner_id"], now, study_note=note_change)
+            card = create_candidate(
+                db,
+                content,
+                job["owner_id"],
+                now,
+                study_note=note_change,
+                content_type=item.content_type,
+            )
         draft = db.get(CardDraft, card.id)
         if item.study_note and not result.get("skipped"):
             draft.study_note = import_note_selection(draft.study_note, item.study_note)

@@ -22,6 +22,8 @@ class Source(BaseModel):
 
 
 class Vocabulary(BaseModel):
+    source_hint: str = Field(default="", max_length=20000)
+    source_reason: str | None = None
     id: str = Field(default_factory=identifier, max_length=64)
     english: str = Field(default="", max_length=300)
     meaning: str = Field(default="", max_length=2000)
@@ -80,7 +82,11 @@ class StudyNoteChange(BaseModel):
         return self
 
 
+ContentType = Literal["illustrated", "intensive"]
+
+
 class CreateCard(BaseModel):
+    content_type: ContentType | None = None
     content: SceneContent
     study_note: StudyNoteChange | None = None
 
@@ -90,6 +96,7 @@ class Revision(BaseModel):
 
 
 class SaveCard(Revision):
+    content_type: ContentType | None = None
     content: SceneContent
     study_note: StudyNoteChange | None = None
 

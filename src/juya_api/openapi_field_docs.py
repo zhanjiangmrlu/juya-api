@@ -1,6 +1,8 @@
 """Chinese documentation metadata; wire names and validation rules stay unchanged."""
 
 FIELD_DOCS: dict[str, tuple[str, str]] = {
+    "failed_files": ("处理失败文件数", "源文件或媒体处理失败的文件数。"),
+    "package_count": ("来源ZIP数量", "批次内现有ZIP文件数。"),
     "require_study_note": (
         "要求有效发布笔记",
         "默认false保持原详情语义；true按当前权限及有效发布PDF原子校验后，沿用mark_started记录正文开始。笔记失效409且不新增开始记录；mark_started=false只读。",
@@ -1059,4 +1061,63 @@ FIELD_DOCS.update(
     {
         "content_id": ("稳定内容标识", "所选场景或听读文章的稳定ID，不使用页码或标题代替。"),
     }
+)
+
+SCHEMA_TITLES.update(
+    {
+        "CatalogPage_Article_": "听读分类统计分页",
+        "CatalogStatistics": "分类统计",
+        "Confirm": "历史分类确认请求",
+        "Confirmed": "历史分类确认回执",
+        "DuplicateDetail": "重复项明细",
+        "DuplicatePage": "重复明细分页",
+        "HistoryItem": "历史发布核对项",
+        "HistoryPage": "历史发布核对分页",
+        "ListeningMatchRequest": "听读来源预览请求",
+        "ListeningMatchResult": "听读来源预览结果",
+        "Ready": "分类启用结果",
+        "Receipt": "分类逐项确认结果",
+        "SceneMatchRequest": "场景来源预览请求",
+        "SceneMatchResult": "场景来源预览结果",
+        "TypeApply": "批量应用分类请求",
+        "TypeChange": "候选分类变更",
+        "TypePreview": "分类覆盖预览",
+        "TypeSelection": "批量分类选择",
+        "HistorySelection": "历史卡片选择",
+    }
+)
+FIELD_DOCS.update(
+    {
+        "all_statistics": ("全模块统计", "全模块统计。"),
+        "content_types_ready": ("分类是否就绪", "分类是否就绪。"),
+        "draft_content_type": ("草稿拟发布类型", "草稿拟发布类型。"),
+        "free": ("已发布且免费数", "已发布且免费数。"),
+        "module": ("来源模块", "来源模块。"),
+        "new_type": ("拟选内容类型", "拟选内容类型。"),
+        "old_type": ("现有内容类型", "现有内容类型。"),
+        "overwrite": ("是否覆盖已有值", "是否覆盖已有值。"),
+        "pdf_conflict": ("类型与附件冲突", "类型与附件冲突。"),
+        "published": ("当前有效发布数", "当前有效发布数。"),
+        "published_content_type": ("当前绑定发布分类", "当前绑定发布分类。"),
+        "remaining": ("剩余可开启免费数", "剩余可开启免费数。"),
+        "snapshot": ("核对快照摘要", "核对快照摘要。"),
+        "snapshot_at": ("统计快照时间", "统计快照时间。"),
+        "source_name": ("来源文件名", "来源文件名。"),
+        "source_path": ("来源内部路径", "来源内部路径。"),
+        "source_reason": ("来源待核对原因", "来源待核对原因。"),
+        "suggestion": ("建议内容类型", "建议内容类型。"),
+        "target_available": ("命中目标当前可查看", "命中目标当前可查看。"),
+        "target_id": ("命中目标稳定标识", "命中目标稳定标识。"),
+        "target_kind": ("命中目标对象种类", "命中目标对象种类。"),
+        "type_origin": ("候选分类来源", "候选分类来源。"),
+        "type_raw": ("文档原始分类文字", "文档原始分类文字。"),
+        "warnings": ("核对异常原因", "核对异常原因。"),
+        "type_published_total": ("当前分类有效发布数", "当前分类有效发布数。"),
+        "unclassified_only": ("只查询未归类发布项", "只查询未归类发布项。"),
+    }
+)
+
+FIELD_OVERRIDES[("ImportBatchView", "removed_count")] = (
+    "人工移除数",
+    "此批次明确移除的候选卡片数量。",
 )

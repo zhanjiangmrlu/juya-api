@@ -309,8 +309,12 @@ def article_view(db, row):
     return {
         "id": row.id,
         "topic_id": row.draft_topic_id or row.topic_id,
-        "category_id": row.draft_category_id or row.category_id,
-        "category_name": category_name(db, row.draft_category_id or row.category_id),
+        "category_id": row.category_id
+        if row.version_id
+        else (row.draft_category_id or row.category_id),
+        "category_name": category_name(
+            db, row.category_id if row.version_id else (row.draft_category_id or row.category_id)
+        ),
         "category_order": row.draft_category_order
         if row.draft_category_order is not None
         else row.category_order,

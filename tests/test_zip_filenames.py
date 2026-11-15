@@ -53,7 +53,11 @@ def test_zip_names_are_readable_in_review_results_and_saved_media(admin, system,
                     list(
                         zip(
                             names,
-                            [document("为戏剧社挑一个剧本"), picture(), recording()],
+                            [
+                                document("为戏剧社挑一个剧本", content_type="图解词汇"),
+                                picture(),
+                                recording(),
+                            ],
                             strict=True,
                         )
                     )

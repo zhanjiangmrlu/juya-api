@@ -1505,6 +1505,28 @@
               "description": "列表仅依据当前已发布有效PDF筛选，省略不限制；摘要只返回是否含笔记。"
             },
             "description": "列表仅依据当前已发布有效PDF筛选，省略不限制；摘要只返回是否含笔记。"
+          },
+          {
+            "name": "content_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "illustrated",
+                    "intensive"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "内容类型",
+              "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+            },
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
           }
         ],
         "responses": {
@@ -12633,6 +12655,22 @@
       },
       "CardBrief": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "has_study_note": {
             "type": "boolean",
             "title": "含有效学习笔记",
@@ -13033,6 +13071,22 @@
       },
       "CreateLearningQueue": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "source": {
             "type": "string",
             "enum": [
@@ -14057,6 +14111,23 @@
             "title": "每页数量",
             "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
           },
+          "content_types_ready": {
+            "type": "boolean",
+            "title": "分类是否就绪",
+            "description": "分类是否就绪。"
+          },
+          "type_published_total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "当前分类有效发布数",
+            "description": "当前分类有效发布数。"
+          },
           "learning_access": {
             "anyOf": [
               {
@@ -14094,6 +14165,8 @@
           "total",
           "page",
           "limit",
+          "content_types_ready",
+          "type_published_total",
           "published_total"
         ],
         "title": "学习端场景列表分页"
@@ -15599,6 +15672,22 @@
       },
       "PublishedDetail": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "study_note": {
             "anyOf": [
               {
@@ -15716,6 +15805,22 @@
             "title": "资源标识",
             "description": "当前对象的唯一标识；具体对象类型由所在模型确定。"
           },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "source": {
             "type": "string",
             "enum": [
@@ -15770,6 +15875,22 @@
       },
       "QueuePage": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "end_reason": {
             "type": "string",
             "enum": [
@@ -16778,6 +16899,25 @@
       },
       "Vocabulary": {
         "properties": {
+          "source_hint": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "原句定位提示",
+            "default": "",
+            "description": "导入词汇附带的原句文字，用于匹配英文正文中的真实出处。"
+          },
+          "source_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "来源待核对原因",
+            "description": "来源待核对原因。"
+          },
           "id": {
             "type": "string",
             "maxLength": 64,
@@ -16895,6 +17035,18 @@
       },
       "VocabularyWord": {
         "properties": {
+          "source_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "来源待核对原因",
+            "description": "来源待核对原因。"
+          },
           "source_hint": {
             "type": "string",
             "maxLength": 10000,

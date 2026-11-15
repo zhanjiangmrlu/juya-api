@@ -19,6 +19,7 @@ from .content_models import Media
 from .database import timestamp
 from .dependencies import administrator, database, operation_key, write_transaction
 from .errors import DomainError
+from .import_duplicates import DuplicatePage, paged, receipt
 from .import_parser import W, checked_archive, member_bytes, paragraph_text, xml_document
 from .listening_api import mutate_timeline, page_view
 from .listening_media import save_media
@@ -177,6 +178,36 @@ def owned(db, batch_id, admin_id, revision=None, *, lock=True):
     return row
 
 
+def legacy_receipt(db, batch, row):
+    target = db.get(ListeningArticle, row.duplicate_of) if row.duplicate_of else None
+    other = (
+        db.get(ListeningCandidate, row.duplicate_of) if row.duplicate_of and not target else None
+    )
+    same_batch = other and other.batch_id == batch.id
+    kind = "listening_article" if target else "listening_candidate" if same_batch else "unknown"
+    reason = (
+        ("same_package" if other.package_id == row.package_id else "cross_package")
+        if same_batch and other is not None
+        else "existing_content"
+    )
+    name = next((p["name"] for p in batch.packages if p["id"] == row.package_id), "")
+    return receipt(
+        row.id,
+        name,
+        row.path,
+        row.payload.get("title_zh", ""),
+        row.payload.get("title_en", ""),
+        reason,
+        kind,
+        row.duplicate_of if kind != "unknown" else None,
+    )
+
+
+def duplicate_article_id(db, batch, row):
+    detail = row.duplicate_detail or legacy_receipt(db, batch, row)
+    return detail["target_id"] if detail["target_kind"] == "listening_article" else None
+
+
 def candidates(db, batch):
     return list(
         db.scalars(
@@ -284,13 +315,15 @@ def view(db, batch):
             counts[row.state] = counts.get(row.state, 0) + 1
             if row.state in {"complete", "incomplete"}:
                 counts["savable"] += 1
+        payload = deepcopy(row.payload)
+        resolve_vocabulary_sources(payload)
         items.append(
             {
                 "id": row.id,
                 "package_id": row.package_id,
                 "path": row.path,
                 "state": row.state,
-                "payload": row.payload,
+                "payload": payload,
                 "category_id": row.category_id,
                 "category_name": service.category_name(db, row.category_id),
                 "category_order": 0,
@@ -477,9 +510,14 @@ def source_hash(db, payload):
     return fingerprint(canonical_payload(normalized))
 
 
-def classify(db, candidate):
+def classify(db, candidate, package_name=None):
     """校验候选完整度及重复身份；db 为事务会话，candidate 为待分类候选，检查不改资料正文"""
-    if candidate.state == "unreadable" or candidate.removed or candidate.article_id:
+    if (
+        candidate.duplicate_detail
+        or candidate.state == "unreadable"
+        or candidate.removed
+        or candidate.article_id
+    ):
         return
     checked_payload = deepcopy(candidate.payload)
     resolve_vocabulary_sources(checked_payload)
@@ -502,6 +540,41 @@ def classify(db, candidate):
             .limit(1)
         )
     )
+    if not existing and not explicit_update:
+        # Old v1/v2 hashes stay immutable. Compare original semantic inputs for titled candidates.
+        old = db.scalars(
+            select(ListeningArticle).where(
+                ListeningArticle.deleted_at.is_(None),
+                ListeningArticle.payload["title_zh"].as_string()
+                == candidate.payload.get("title_zh", ""),
+            )
+        )
+        existing = next(
+            (
+                article
+                for article in old
+                if source_hash(db, article.payload) == candidate.canonical_hash
+            ),
+            None,
+        )
+        if not existing:
+            saved = db.execute(
+                select(ListeningCandidate, ListeningArticle)
+                .join(ListeningArticle, ListeningArticle.id == ListeningCandidate.article_id)
+                .where(
+                    ListeningArticle.deleted_at.is_(None),
+                    ListeningCandidate.payload["title_zh"].as_string()
+                    == candidate.payload.get("title_zh", ""),
+                )
+            )
+            existing = next(
+                (
+                    article
+                    for original, article in saved
+                    if source_hash(db, original.payload) == candidate.canonical_hash
+                ),
+                None,
+            )
     other = (
         None
         if explicit_update
@@ -510,6 +583,7 @@ def classify(db, candidate):
             .where(
                 ListeningCandidate.canonical_hash == candidate.canonical_hash,
                 ListeningCandidate.id != candidate.id,
+                ListeningCandidate.batch_id == candidate.batch_id,
                 ListeningCandidate.removed.is_(False),
                 ListeningCandidate.article_id.is_(None),
                 ListeningCandidate.state.in_(["complete", "incomplete"]),
@@ -524,6 +598,29 @@ def classify(db, candidate):
         else:
             assert other is not None
             candidate.duplicate_of = other.article_id or other.id
+        batch = db.get(ListeningImport, candidate.batch_id)
+        name = package_name or next(
+            (p["name"] for p in batch.packages if p["id"] == candidate.package_id), ""
+        )
+        why = (
+            "existing_content"
+            if existing
+            else (
+                "same_package"
+                if other and other.package_id == candidate.package_id
+                else "cross_package"
+            )
+        )
+        candidate.duplicate_detail = receipt(
+            candidate.id,
+            name,
+            candidate.path,
+            candidate.payload.get("title_zh", ""),
+            candidate.payload.get("title_en", ""),
+            why,
+            "listening_article" if existing else "listening_candidate",
+            candidate.duplicate_of,
+        )
         candidate.errors = []
         return
     candidate.duplicate_of = None
@@ -669,7 +766,7 @@ def parse_package(db, settings, batch, name, data, now):
                 if len(choices) == 1 and choices[0]["state"] == "ready":
                     payload[kind + "_id"] = choices[0]["id"]
             row.payload, row.resources = payload, resources
-            classify(db, row)
+            classify(db, row, name)
             if row.state != "duplicate":
                 ensure_timeline(db, payload, now)
         except DomainError as error:
@@ -701,7 +798,11 @@ def selected(db, batch, ids, *, saving=False):
         row = by_id.get(candidate_id)
         if not row or row.removed or (not saving and row.article_id):
             raise DomainError(409, "listening_candidate_changed", "候选已保存或移除，请刷新")
-        if saving and (row.state == "unreadable" or not row.category_id):
+        if (
+            saving
+            and row.state != "duplicate"
+            and (row.state == "unreadable" or not row.category_id)
+        ):
             raise DomainError(
                 422, "listening_candidate_not_savable", "无法读取或未确认主题的候选不能保存"
             )
@@ -851,6 +952,25 @@ def routes():
             execute,
         )
 
+    @router.get("/imports/{batch_id}/duplicates", response_model=DuplicatePage)
+    def duplicates(
+        batch_id: str,
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=100),
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        batch = owned(db, batch_id, admin.id, lock=False)
+        details = []
+        for row in candidates(db, batch):
+            if row.removed or row.state != "duplicate":
+                continue
+            if row.duplicate_detail:
+                details.append(row.duplicate_detail)
+            else:
+                details.append(legacy_receipt(db, batch, row))
+        return paged(db, batch, details, page, limit)
+
     @router.post("/imports", response_model=Batch)
     def create(
         body: ImportInput,
@@ -943,10 +1063,12 @@ def routes():
                 or (row.state != "duplicate" and not legacy_source_issue)
             ):
                 continue
+            if row.state == "duplicate":
+                if not row.duplicate_detail:
+                    row.duplicate_detail = legacy_receipt(db, batch, row)
+                continue
             before = (row.state, row.duplicate_of, list(row.errors))
             classify(db, row)
-            if before[0] == "duplicate" and row.state in {"complete", "incomplete"}:
-                ensure_timeline(db, row.payload, request.app.state.clock())
             changed = changed or before != (row.state, row.duplicate_of, row.errors)
         if changed:
             batch.revision += 1
@@ -1275,7 +1397,7 @@ def routes():
                                 {
                                     "candidate_id": row.id,
                                     "status": "skipped",
-                                    "article_id": row.duplicate_of,
+                                    "article_id": duplicate_article_id(db, batch, row),
                                 }
                             )
                             continue
@@ -1301,7 +1423,7 @@ def routes():
                                 {
                                     "candidate_id": row.id,
                                     "status": "skipped",
-                                    "article_id": row.duplicate_of,
+                                    "article_id": duplicate_article_id(db, batch, row),
                                 }
                             )
                             continue

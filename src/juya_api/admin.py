@@ -6,6 +6,8 @@ from .application import application
 from .auth import admin_routes
 from .config import Settings
 from .content_api import admin_routes as content_routes
+from .content_type_api import routes as content_type_routes
+from .content_type_api import vocabulary_routes
 from .feedback_api import routes as feedback_routes
 from .feedback_safety import FeedbackSafetyGateway
 from .free_access import routes as free_access_routes
@@ -50,4 +52,6 @@ def create_app(
     app.include_router(listening_routes())
     app.include_router(listening_pronunciation_routes("admin"))
     app.include_router(listening_import_routes())
+    app.include_router(content_type_routes())
+    app.include_router(vocabulary_routes())
     return app

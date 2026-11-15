@@ -2663,6 +2663,28 @@
             "description": "当前对象或操作的业务状态，取值以所在模型约束为准。"
           },
           {
+            "name": "content_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "illustrated",
+                    "intensive"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "内容类型",
+              "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+            },
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          {
             "name": "search",
             "in": "query",
             "required": false,
@@ -8497,6 +8519,460 @@
         "description": "校验候选版本后保存本人导入批次中指定候选项的暂存修改。"
       }
     },
+    "/api/admin/v1/imports/{batch_id}/duplicates": {
+      "get": {
+        "tags": [
+          "词汇内容导入"
+        ],
+        "summary": "分页查看场景重复项",
+        "operationId": "duplicates_api_admin_v1_imports__batch_id__duplicates_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "批次标识",
+              "description": "本次导入、发布或管理操作批次的 ID。"
+            },
+            "description": "本次导入、发布或管理操作批次的 ID。"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "页码",
+              "description": "从 1 开始的分页页码。"
+            },
+            "description": "从 1 开始的分页页码。"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "每页数量",
+              "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+            },
+            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicatePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        },
+        "description": "读取所属批次完整重复明细和命中目标当前状态。"
+      }
+    },
+    "/api/admin/v1/imports/{batch_id}/content-types/preview": {
+      "post": {
+        "tags": [
+          "词汇内容导入"
+        ],
+        "summary": "预览批量候选分类",
+        "operationId": "preview_types_api_admin_v1_imports__batch_id__content_types_preview_post",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "批次标识",
+              "description": "本次导入、发布或管理操作批次的 ID。"
+            },
+            "description": "本次导入、发布或管理操作批次的 ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TypeSelection"
+              }
+            }
+          },
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypePreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        },
+        "description": "展示本次实际变更候选、原值与附件冲突。"
+      }
+    },
+    "/api/admin/v1/imports/{batch_id}/content-types/apply": {
+      "post": {
+        "tags": [
+          "词汇内容导入"
+        ],
+        "summary": "确认批量候选分类",
+        "operationId": "apply_types_api_admin_v1_imports__batch_id__content_types_apply_post",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "批次标识",
+              "description": "本次导入、发布或管理操作批次的 ID。"
+            },
+            "description": "本次导入、发布或管理操作批次的 ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TypeApply"
+              }
+            }
+          },
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchView"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        },
+        "description": "按预览摘要和逐项版本应用分类。"
+      }
+    },
     "/api/admin/v1/imports/{batch_id}/confirmation": {
       "get": {
         "tags": [
@@ -12118,7 +12594,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_Article_"
+                  "$ref": "#/components/schemas/CatalogPage_Article_"
                 }
               }
             }
@@ -17328,6 +17804,168 @@
         "description": "校验本人批次版本后，按 action 执行时间轴重试或核对确认。"
       }
     },
+    "/api/admin/v1/listening/imports/{batch_id}/duplicates": {
+      "get": {
+        "tags": [
+          "听读内容导入"
+        ],
+        "summary": "分页查看听读重复项",
+        "operationId": "duplicates_api_admin_v1_listening_imports__batch_id__duplicates_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "批次标识",
+              "description": "本次导入、发布或管理操作批次的 ID。"
+            },
+            "description": "本次导入、发布或管理操作批次的 ID。"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "页码",
+              "description": "从 1 开始的分页页码。"
+            },
+            "description": "从 1 开始的分页页码。"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "每页数量",
+              "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+            },
+            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicatePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        },
+        "description": "读取所属批次完整重复明细和命中目标当前状态。"
+      }
+    },
     "/api/admin/v1/listening/imports": {
       "post": {
         "tags": [
@@ -18508,6 +19146,580 @@
         },
         "description": "使用预览凭证核对批次、候选指纹及提交方式，逐项保存草稿或发布并返回结果。"
       }
+    },
+    "/api/admin/v1/content-types/history": {
+      "get": {
+        "tags": [
+          "雅思词汇管理"
+        ],
+        "summary": "查询历史分类核对清单",
+        "operationId": "history_api_admin_v1_content_types_history_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "页码",
+              "description": "从 1 开始的分页页码。"
+            },
+            "description": "从 1 开始的分页页码。"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "每页数量",
+              "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+            },
+            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          },
+          {
+            "name": "unclassified_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "只查询未归类发布项",
+              "description": "只查询未归类发布项。"
+            },
+            "description": "只查询未归类发布项。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        },
+        "description": "列出当前有效发布内容、分类建议、异常及版本快照。"
+      }
+    },
+    "/api/admin/v1/content-types/confirm": {
+      "post": {
+        "tags": [
+          "雅思词汇管理"
+        ],
+        "summary": "逐项确认历史发布分类",
+        "operationId": "confirm_api_admin_v1_content_types_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Confirm"
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Confirmed"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "检查快照和附件后写入独立的分类绑定。"
+      }
+    },
+    "/api/admin/v1/content-types/enable": {
+      "post": {
+        "tags": [
+          "雅思词汇管理"
+        ],
+        "summary": "启用雅思词汇双分类",
+        "operationId": "enable_api_admin_v1_content_types_enable_post",
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ready"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "在目录锁内复核全部发布卡片的分类与附件。"
+      }
+    },
+    "/api/admin/v1/vocabulary/sources/preview": {
+      "post": {
+        "tags": [
+          "雅思词汇管理"
+        ],
+        "summary": "预览词汇正文来源",
+        "operationId": "preview_sources_api_admin_v1_vocabulary_sources_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SceneMatchRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ListeningMatchRequest"
+                  }
+                ],
+                "title": "请求数据",
+                "discriminator": {
+                  "propertyName": "module",
+                  "mapping": {
+                    "scene": "#/components/schemas/SceneMatchRequest",
+                    "listening": "#/components/schemas/ListeningMatchRequest"
+                  }
+                }
+              }
+            }
+          },
+          "required": true,
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SceneMatchResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ListeningMatchResult"
+                    }
+                  ],
+                  "title": "预览词汇正文来源响应数据"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求不符合业务规则",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "尚未登录，或登录凭证已失效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "当前身份无权执行该操作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "资源不存在，或当前身份不可访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "资源或功能已不可用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数校验失败，或业务内容不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求过于频繁，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器暂未完成请求，请按错误信息处理",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "服务暂不可用，请稍后重试",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "按模块使用保存和发布共用的词形与原句匹配规则。"
+      }
     }
   },
   "components": {
@@ -18818,6 +20030,26 @@
             "title": "每页数量",
             "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
           },
+          "statistics": {
+            "$ref": "#/components/schemas/CatalogStatistics",
+            "title": "本人学习统计",
+            "description": "场景、听读完成数量、收藏数量及打卡情况等统计。"
+          },
+          "all_statistics": {
+            "$ref": "#/components/schemas/CatalogStatistics",
+            "title": "全模块统计",
+            "description": "全模块统计。"
+          },
+          "snapshot_at": {
+            "type": "string",
+            "title": "统计快照时间",
+            "description": "统计快照时间。"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "总页数",
+            "description": "按当前筛选总数量及每页数量计算的分页总页数。"
+          },
           "learning_policy": {
             "anyOf": [
               {
@@ -18829,11 +20061,6 @@
             ],
             "title": "学习权限策略",
             "description": "后台列表关联的免费内容策略和版本信息。"
-          },
-          "total_pages": {
-            "type": "integer",
-            "title": "总页数",
-            "description": "按当前筛选总数量及每页数量计算的分页总页数。"
           }
         },
         "type": "object",
@@ -18842,6 +20069,9 @@
           "total",
           "page",
           "limit",
+          "statistics",
+          "all_statistics",
+          "snapshot_at",
           "total_pages"
         ],
         "title": "后台场景列表分页"
@@ -20067,6 +21297,22 @@
       },
       "CardPreview": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "study_note": {
             "$ref": "#/components/schemas/StudyNoteDraft",
             "title": "学习笔记",
@@ -20112,6 +21358,54 @@
       },
       "CardView": {
         "properties": {
+          "draft_content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "草稿拟发布类型",
+            "description": "草稿拟发布类型。"
+          },
+          "published_content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "当前绑定发布分类",
+            "description": "当前绑定发布分类。"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "study_note": {
             "$ref": "#/components/schemas/StudyNoteDraft",
             "title": "学习笔记",
@@ -20365,6 +21659,97 @@
         ],
         "title": "听读目录排序请求"
       },
+      "CatalogPage_Article_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Article"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "total": {
+            "type": "integer",
+            "title": "总条目数",
+            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
+          },
+          "page": {
+            "type": "integer",
+            "title": "页码",
+            "description": "从 1 开始的分页页码。"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "每页数量",
+            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/CatalogStatistics",
+            "title": "本人学习统计",
+            "description": "场景、听读完成数量、收藏数量及打卡情况等统计。"
+          },
+          "all_statistics": {
+            "$ref": "#/components/schemas/CatalogStatistics",
+            "title": "全模块统计",
+            "description": "全模块统计。"
+          },
+          "snapshot_at": {
+            "type": "string",
+            "title": "统计快照时间",
+            "description": "统计快照时间。"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "总页数",
+            "description": "按当前筛选总数量及每页数量计算的分页总页数。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit",
+          "statistics",
+          "all_statistics",
+          "snapshot_at",
+          "total_pages"
+        ],
+        "title": "听读分类统计分页"
+      },
+      "CatalogStatistics": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "总条目数",
+            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
+          },
+          "published": {
+            "type": "integer",
+            "title": "当前有效发布数",
+            "description": "当前有效发布数。"
+          },
+          "free": {
+            "type": "integer",
+            "title": "已发布且免费数",
+            "description": "已发布且免费数。"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "剩余可开启免费数",
+            "description": "剩余可开启免费数。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "published",
+          "free",
+          "remaining"
+        ],
+        "title": "分类统计"
+      },
       "Category": {
         "properties": {
           "name": {
@@ -20538,6 +21923,42 @@
         "type": "object",
         "title": "场景语块"
       },
+      "Confirm": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HistorySelection"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "历史分类确认请求"
+      },
+      "Confirmed": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "历史分类确认回执"
+      },
       "ContentSnapshot": {
         "properties": {
           "category_id": {
@@ -20641,6 +22062,22 @@
       },
       "CreateCard": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "content": {
             "$ref": "#/components/schemas/SceneContent",
             "title": "场景内容",
@@ -20992,6 +22429,128 @@
           "hints"
         ],
         "title": "听读 DOCX 解析预览"
+      },
+      "DuplicateDetail": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "导入候选标识",
+            "description": "听读导入中单篇待核对文章的候选 ID。"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "来源文件名",
+            "description": "来源文件名。"
+          },
+          "source_path": {
+            "type": "string",
+            "title": "来源内部路径",
+            "description": "来源内部路径。"
+          },
+          "title_zh": {
+            "type": "string",
+            "title": "中文标题",
+            "description": "听读文章向用户展示的中文标题。"
+          },
+          "title_en": {
+            "type": "string",
+            "title": "英文标题",
+            "description": "场景或听读文章向用户展示的英文标题。"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "existing_content",
+              "same_package",
+              "cross_package"
+            ],
+            "title": "处理原因码",
+            "description": "跳过或失败的稳定原因代码，完整解释见message。"
+          },
+          "target_kind": {
+            "type": "string",
+            "enum": [
+              "scene_card",
+              "scene_candidate",
+              "listening_article",
+              "listening_candidate",
+              "unknown"
+            ],
+            "title": "命中目标对象种类",
+            "description": "命中目标对象种类。"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "命中目标稳定标识",
+            "description": "命中目标稳定标识。"
+          },
+          "target_available": {
+            "type": "boolean",
+            "title": "命中目标当前可查看",
+            "description": "命中目标当前可查看。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "source_name",
+          "source_path",
+          "title_zh",
+          "title_en",
+          "reason",
+          "target_kind",
+          "target_id",
+          "target_available"
+        ],
+        "title": "重复项明细"
+      },
+      "DuplicatePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateDetail"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "total": {
+            "type": "integer",
+            "title": "总条目数",
+            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
+          },
+          "page": {
+            "type": "integer",
+            "title": "页码",
+            "description": "从 1 开始的分页页码。"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "每页数量",
+            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "总页数",
+            "description": "按当前筛选总数量及每页数量计算的分页总页数。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit",
+          "total_pages"
+        ],
+        "title": "重复明细分页"
       },
       "ErrorBody": {
         "properties": {
@@ -22162,8 +23721,206 @@
         ],
         "title": "用户学习授权变更预览"
       },
+      "HistoryItem": {
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "title": "场景卡片标识",
+            "description": "业务场景卡片的 ID，区别于卡片的发布版本 ID。"
+          },
+          "name": {
+            "type": "string",
+            "title": "名称",
+            "description": "当前场景、分类、主题或文件的显示名称。"
+          },
+          "current_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "当前发布版本标识",
+            "description": "场景当前对学习端生效的不可变发布版本 ID。"
+          },
+          "study_note_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "学习笔记独立版本",
+            "description": "资源票据绑定的当前PDF发布版本，每次GET、HEAD及Range均重新校验。"
+          },
+          "draft_revision": {
+            "type": "integer",
+            "title": "草稿修订号",
+            "description": "当前场景草稿的修订号，编辑和发布时用于并发校验。"
+          },
+          "draft_content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "草稿拟发布类型",
+            "description": "草稿拟发布类型。"
+          },
+          "published_content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "当前绑定发布分类",
+            "description": "当前绑定发布分类。"
+          },
+          "suggestion": {
+            "type": "string",
+            "enum": [
+              "illustrated",
+              "intensive"
+            ],
+            "title": "建议内容类型",
+            "description": "建议内容类型。"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "核对异常原因",
+            "description": "核对异常原因。"
+          },
+          "snapshot": {
+            "type": "string",
+            "title": "核对快照摘要",
+            "description": "核对快照摘要。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_id",
+          "name",
+          "current_version_id",
+          "study_note_version_id",
+          "draft_revision",
+          "draft_content_type",
+          "published_content_type",
+          "suggestion",
+          "warnings",
+          "snapshot"
+        ],
+        "title": "历史发布核对项"
+      },
+      "HistoryPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryItem"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "total": {
+            "type": "integer",
+            "title": "总条目数",
+            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
+          },
+          "page": {
+            "type": "integer",
+            "title": "页码",
+            "description": "从 1 开始的分页页码。"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "每页数量",
+            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "总页数",
+            "description": "按当前筛选总数量及每页数量计算的分页总页数。"
+          },
+          "content_types_ready": {
+            "type": "boolean",
+            "title": "分类是否就绪",
+            "description": "分类是否就绪。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit",
+          "total_pages",
+          "content_types_ready"
+        ],
+        "title": "历史发布核对分页"
+      },
+      "HistorySelection": {
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "场景卡片标识",
+            "description": "业务场景卡片的 ID，区别于卡片的发布版本 ID。"
+          },
+          "snapshot": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 64,
+            "title": "核对快照摘要",
+            "description": "核对快照摘要。"
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "illustrated",
+              "intensive"
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_id",
+          "snapshot",
+          "content_type"
+        ],
+        "title": "历史卡片选择"
+      },
       "ImportBatchView": {
         "properties": {
+          "removed_count": {
+            "type": "integer",
+            "title": "人工移除数",
+            "default": 0,
+            "description": "此批次明确移除的候选卡片数量。"
+          },
           "id": {
             "type": "string",
             "title": "资源标识",
@@ -22320,6 +24077,30 @@
       },
       "ImportConfirmation": {
         "properties": {
+          "removed": {
+            "type": "integer",
+            "title": "移除信息",
+            "default": 0,
+            "description": "当前对象从本次导入选择或免费范围移除的信息。"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "失败数量",
+            "default": 0,
+            "description": "明确失败并可重新核对重试的数量。"
+          },
+          "failed_files": {
+            "type": "integer",
+            "title": "处理失败文件数",
+            "default": 0,
+            "description": "源文件或媒体处理失败的文件数。"
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "来源ZIP数量",
+            "default": 0,
+            "description": "批次内现有ZIP文件数。"
+          },
           "version": {
             "type": "string",
             "title": "导入确认快照版本",
@@ -22508,6 +24289,42 @@
       },
       "ImportItemView": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          "type_origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "候选分类来源",
+            "description": "候选分类来源。"
+          },
+          "type_raw": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "文档原始分类文字",
+            "description": "文档原始分类文字。"
+          },
           "study_note": {
             "$ref": "#/components/schemas/StudyNoteDraft",
             "title": "学习笔记",
@@ -23238,6 +25055,51 @@
         ],
         "title": "选择听读导入保存范围请求"
       },
+      "ListeningMatchRequest": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "const": "listening",
+            "title": "来源模块",
+            "description": "来源模块。"
+          },
+          "content": {
+            "$ref": "#/components/schemas/ListeningPayload",
+            "title": "场景内容",
+            "description": "场景的名称、配图、音频、对话、词汇和语块资料。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module",
+          "content"
+        ],
+        "title": "听读来源预览请求"
+      },
+      "ListeningMatchResult": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "const": "listening",
+            "title": "来源模块",
+            "description": "来源模块。"
+          },
+          "vocabulary": {
+            "items": {
+              "$ref": "#/components/schemas/VocabularyWord"
+            },
+            "type": "array",
+            "title": "词汇列表",
+            "description": "正文关联的重点词汇、音标、中文释义和原文出处。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module",
+          "vocabulary"
+        ],
+        "title": "听读来源预览结果"
+      },
       "ListeningPayload": {
         "properties": {
           "title_zh": {
@@ -23813,41 +25675,6 @@
         ],
         "title": "听读导入文件包"
       },
-      "Page_Article_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/Article"
-            },
-            "type": "array",
-            "title": "条目列表",
-            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
-          },
-          "total": {
-            "type": "integer",
-            "title": "总条目数",
-            "description": "当前筛选范围内的总数量，分页时不只是当前页条目数。"
-          },
-          "page": {
-            "type": "integer",
-            "title": "页码",
-            "description": "从 1 开始的分页页码。"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "每页数量",
-            "description": "单页最多返回的条目数，实际限制以接口校验规则为准。"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "limit"
-        ],
-        "title": "听读文章列表分页"
-      },
       "Page_Batch_": {
         "properties": {
           "items": {
@@ -24270,6 +26097,22 @@
       },
       "PublishedPreview": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "study_note": {
             "anyOf": [
               {
@@ -24328,6 +26171,53 @@
           "event_id"
         ],
         "title": "标记反馈已读请求"
+      },
+      "Ready": {
+        "properties": {
+          "content_types_ready": {
+            "type": "boolean",
+            "title": "分类是否就绪",
+            "description": "分类是否就绪。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content_types_ready"
+        ],
+        "title": "分类启用结果"
+      },
+      "Receipt": {
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "title": "场景卡片标识",
+            "description": "业务场景卡片的 ID，区别于卡片的发布版本 ID。"
+          },
+          "status": {
+            "type": "string",
+            "title": "业务状态",
+            "description": "当前对象或操作的业务状态，取值以所在模型约束为准。"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "处理原因码",
+            "description": "跳过或失败的稳定原因代码，完整解释见message。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_id",
+          "status",
+          "reason"
+        ],
+        "title": "分类逐项确认结果"
       },
       "RemoveImportFiles": {
         "properties": {
@@ -24446,6 +26336,22 @@
             "minimum": 1.0,
             "title": "修订号",
             "description": "当前对象的乐观锁版本；修改时提交最近读取的值，防止覆盖并发更新。"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
           },
           "content": {
             "$ref": "#/components/schemas/SceneContent",
@@ -24668,6 +26574,51 @@
         "type": "object",
         "title": "场景正文资料"
       },
+      "SceneMatchRequest": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "const": "scene",
+            "title": "来源模块",
+            "description": "来源模块。"
+          },
+          "content": {
+            "$ref": "#/components/schemas/SceneContent",
+            "title": "场景内容",
+            "description": "场景的名称、配图、音频、对话、词汇和语块资料。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module",
+          "content"
+        ],
+        "title": "场景来源预览请求"
+      },
+      "SceneMatchResult": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "const": "scene",
+            "title": "来源模块",
+            "description": "来源模块。"
+          },
+          "vocabulary": {
+            "items": {
+              "$ref": "#/components/schemas/Vocabulary"
+            },
+            "type": "array",
+            "title": "词汇列表",
+            "description": "正文关联的重点词汇、音标、中文释义和原文出处。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module",
+          "vocabulary"
+        ],
+        "title": "场景来源预览结果"
+      },
       "SelectedPublication": {
         "properties": {
           "card_id": {
@@ -24862,6 +26813,22 @@
       },
       "StageItem": {
         "properties": {
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
           "study_note": {
             "anyOf": [
               {
@@ -25768,6 +27735,166 @@
         ],
         "title": "更新听读主题请求"
       },
+      "TypeApply": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RemoveImportItem"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "illustrated",
+              "intensive"
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "title": "是否覆盖已有值",
+            "default": false,
+            "description": "是否覆盖已有值。"
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 64,
+            "title": "数据版本",
+            "description": "当前数据快照或对象版本，写入时按原值提交用于一致性校验。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "content_type",
+          "version"
+        ],
+        "title": "批量应用分类请求"
+      },
+      "TypeChange": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "资源标识",
+            "description": "当前对象的唯一标识；具体对象类型由所在模型确定。"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "修订号",
+            "description": "当前对象的乐观锁版本；修改时提交最近读取的值，防止覆盖并发更新。"
+          },
+          "old_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "illustrated",
+                  "intensive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "现有内容类型",
+            "description": "现有内容类型。"
+          },
+          "new_type": {
+            "type": "string",
+            "enum": [
+              "illustrated",
+              "intensive"
+            ],
+            "title": "拟选内容类型",
+            "description": "拟选内容类型。"
+          },
+          "pdf_conflict": {
+            "type": "boolean",
+            "title": "类型与附件冲突",
+            "description": "类型与附件冲突。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "revision",
+          "old_type",
+          "new_type",
+          "pdf_conflict"
+        ],
+        "title": "候选分类变更"
+      },
+      "TypePreview": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TypeChange"
+            },
+            "type": "array",
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "count": {
+            "type": "integer",
+            "title": "数量",
+            "description": "当前接口统计的条目数量，统计范围由所在响应对象确定。"
+          },
+          "version": {
+            "type": "string",
+            "title": "数据版本",
+            "description": "当前数据快照或对象版本，写入时按原值提交用于一致性校验。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "count",
+          "version"
+        ],
+        "title": "分类覆盖预览"
+      },
+      "TypeSelection": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RemoveImportItem"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "条目列表",
+            "description": "当前页、批次或操作范围内的业务条目，顺序以返回列表为准。"
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "illustrated",
+              "intensive"
+            ],
+            "title": "内容类型",
+            "description": "媒体的 MIME 类型，或当前业务内容的类型标记。"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "title": "是否覆盖已有值",
+            "default": false,
+            "description": "是否覆盖已有值。"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "content_type"
+        ],
+        "title": "批量分类选择"
+      },
       "UploadConfiguration": {
         "properties": {
           "study_note_limit_bytes": {
@@ -25808,6 +27935,25 @@
       },
       "Vocabulary": {
         "properties": {
+          "source_hint": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "原句定位提示",
+            "default": "",
+            "description": "导入词汇附带的原句文字，用于匹配英文正文中的真实出处。"
+          },
+          "source_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "来源待核对原因",
+            "description": "来源待核对原因。"
+          },
           "id": {
             "type": "string",
             "maxLength": 64,
@@ -25925,6 +28071,18 @@
       },
       "VocabularyWord": {
         "properties": {
+          "source_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "来源待核对原因",
+            "description": "来源待核对原因。"
+          },
           "source_hint": {
             "type": "string",
             "maxLength": 10000,

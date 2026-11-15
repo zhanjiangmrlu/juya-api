@@ -37,6 +37,7 @@ class VocabularySource(Input):
 
 
 class VocabularyWord(Input):
+    source_reason: str | None = None
     source_hint: str = Field(default="", max_length=10000)
     id: str = Field(min_length=1, max_length=64)
     english: str = Field(min_length=1, max_length=300)

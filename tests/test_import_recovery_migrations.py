@@ -128,7 +128,7 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
     tmp_path, monkeypatch
 ):
     from juya_api.content_models import CardVersion, Media
-    from juya_api.import_models import ImportFile, ImportItem
+    from juya_api.import_models import ImportFile
     from juya_api.job_models import Job
     from juya_api.learning_models import Completion
     from juya_api.models import Administrator
@@ -273,8 +273,14 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
                 )
             )
         db.flush()
-        db.add(
-            ImportItem(
+        db.execute(
+            metadata.tables["import_items"]
+            .insert()
+            .values(
+                readable=True,
+                selected=True,
+                parser_issues=[],
+                revision=1,
                 id="item-saved",
                 batch_id="saved",
                 source_file_id="file-saved",
@@ -288,8 +294,14 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
                 job_id="save",
             )
         )
-        db.add(
-            ImportItem(
+        db.execute(
+            metadata.tables["import_items"]
+            .insert()
+            .values(
+                readable=True,
+                selected=True,
+                parser_issues=[],
+                revision=1,
                 id="item-mixed",
                 batch_id="mixed",
                 source_file_id="file-mixed",

@@ -5,6 +5,7 @@ import os
 import pytest
 from alembic import command
 from sqlalchemy import MetaData, create_engine, inspect, text
+from sqlalchemy.exc import DBAPIError
 
 from .test_import_recovery_migrations import migration_config
 
@@ -60,7 +61,23 @@ def test_additive_study_note_migration_preserves_legacy_body_and_contract(
         assert (
             db.scalar(text("SELECT value FROM setting_counters WHERE name='schema_contract'")) == 3
         )
-        assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0028"
+        assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0029"
+    with engine.connect() as db:
+        assert db.execute(
+            text(
+                "SELECT published_content_type,current_content_type_version_id "
+                "FROM cards WHERE id='keep'"
+            )
+        ).one() == (None, None)
+        assert db.scalar(text("SELECT count(*) FROM card_content_type_versions")) == 0
+        assert (
+            db.scalar(
+                text("SELECT count(*) FROM setting_counters WHERE name='content_types_ready'")
+            )
+            == 0
+        )
+    with pytest.raises(DBAPIError), engine.begin() as db:
+        db.execute(text("UPDATE cards SET published_content_type='unknown' WHERE id='keep'"))
     # A stamp retry cannot duplicate version storage or rewrite legacy draft/body identity.
     command.stamp(config, "0025")
     command.upgrade(config, "head")

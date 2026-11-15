@@ -11,9 +11,18 @@ from . import listening_contracts as C
 from . import listening_media as media
 from . import listening_service as service
 from .access_service import read_preview
+from .catalog_statistics import article_category
+from .catalog_statistics import statistics as catalog_statistics
 from .content_models import Media
 from .database import timestamp
-from .dependencies import administrator, database, learner, operation_key, optional_learner
+from .dependencies import (
+    administrator,
+    database,
+    learner,
+    operation_key,
+    optional_learner,
+    read_snapshot,
+)
 from .dictionary import DictionaryResult, TokenTarget, lookup
 from .errors import DomainError
 from .learning_models import Checkin
@@ -49,7 +58,7 @@ from .pronunciation import configuration, status
 from .pronunciation import request as request_speech
 from .pronunciation_api import SpeechState
 from .pronunciation_models import Pronunciation
-from .response_contracts import MediaMetadata, Page, Statistics
+from .response_contracts import CatalogPage, MediaMetadata, Page, Statistics
 from .security import fingerprint
 from .transactions import operate
 
@@ -194,7 +203,9 @@ def admin_routes():
         """Reject obsolete configuration writes while retaining role authentication."""
         raise DomainError(410, "configuration_retired", "请使用分类管理和逐项免费设置")
 
-    @router.get("/articles", response_model=Page[C.Article])
+    @router.get(
+        "/articles", response_model=CatalogPage[C.Article], dependencies=[Depends(read_snapshot)]
+    )
     def articles(
         page: int = Query(1, ge=1),
         limit: int = Query(20, ge=1, le=50),
@@ -209,9 +220,7 @@ def admin_routes():
         """Page articles using direct category ownership."""
         query = select(Article).where(Article.deleted_at.is_(None))
         if category_id:
-            query = query.where(
-                func.coalesce(Article.draft_category_id, Article.category_id) == category_id
-            )
+            query = query.where(article_category() == category_id)
         for field, value in [
             (func.coalesce(Article.draft_topic_id, Article.topic_id), topic_id),
             (Article.status, status),
@@ -231,13 +240,19 @@ def admin_routes():
                 Article.payload["title_zh"].as_string().contains(q.strip(), autoescape=True)
                 | Article.payload["title_en"].as_string().contains(q.strip(), autoescape=True)
             )
-        return page_view(
+        result = page_view(
             db,
             query.order_by(Article.created_at.desc(), Article.id),
             page,
             limit,
             lambda r: service.article_view(db, r),
         )
+
+        return {
+            **result,
+            "total_pages": (result["total"] + limit - 1) // limit,
+            **catalog_statistics(db, Article, category_id, db.info["now"]),
+        }
 
     @router.post("/articles", response_model=C.Article)
     def add_article(

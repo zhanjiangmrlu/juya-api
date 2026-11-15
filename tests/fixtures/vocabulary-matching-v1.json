@@ -1,0 +1,13 @@
+[
+  {"body":"😀 They ran and ran.","term":"run","quote":"ran","codepoint":7,"utf16":8},
+  {"body":"Children read.","term":"child","quote":"Children","codepoint":0,"utf16":0},
+  {"body":"We walk home.","term":"walked","quote":"walk","codepoint":3,"utf16":3},
+  {"body":"The fastest wins.","term":"fast","quote":"fastest","codepoint":4,"utf16":4},
+  {"body":"She studies daily.","term":"study","quote":"studies","codepoint":4,"utf16":4},
+  {"body":"They’re singing.","term":"they're","quote":"They’re","codepoint":0,"utf16":0},
+  {"body":"The party was successful.","term":"art","reason":"source_unmatched"},
+  {"body":"The party was successful.","term":"success","reason":"source_unmatched"},
+  {"body":"We saw birds.","term":"see","reason":"source_ambiguous"},
+  {"body":"We saw birds.","term":"see","hint":"We saw birds.","quote":"saw","codepoint":3,"utf16":3},
+  {"body":"We saw birds.","term":"see","hint":"Other birds flew.","reason":"source_hint_conflict"}
+]

@@ -8,10 +8,12 @@ import pytest
 from docx import Document
 
 
-def document(*names, titles=True):
+def document(*names, titles=True, content_type=None):
     doc = Document()
     for name in names:
         doc.add_heading(name, level=1)
+        if content_type:
+            doc.add_paragraph("内容类型：" + content_type)
         if titles:
             doc.add_paragraph("英文标题：Ordering Coffee")
         doc.add_heading("场景对话", level=2)
@@ -481,7 +483,7 @@ def test_oversized_child_asset_does_not_discard_recoverable_text_or_other_zip_fo
         [
             ("bad-image/内容.docx", document("缺图可恢复")),
             ("bad-image/场景图.png", os.urandom(1_100_000)),
-            ("good/内容.docx", document("独立完整")),
+            ("good/内容.docx", document("独立完整", content_type="图解词汇")),
             ("good/场景图.png", picture()),
             ("good/完整音频.wav", recording()),
         ]

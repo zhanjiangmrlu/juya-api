@@ -468,7 +468,20 @@ def test_editing_published_topic_is_draft_only_until_explicit_publication(admin,
     )
     assert changed.status_code == 200
     changed = changed.json()
-    assert changed["category_id"] == new_topic["id"]
+    assert (
+        changed["category_id"] == old_topic["id"]
+        and changed["draft_category_id"] == new_topic["id"]
+    )
+    original = admin.get(
+        A + "/articles", params={"category_id": old_topic["id"], "q": "no matching title"}
+    ).json()
+    assert original["total"] == 0 and original["statistics"]["published"] == 2
+    assert (
+        admin.get(A + "/articles", params={"category_id": new_topic["id"]}).json()["statistics"][
+            "total"
+        ]
+        == 0
+    )
     assert mini.get(M + f"/articles/{first['id']}").json()["category_id"] == old_topic["id"]
     assert mini.get(M + f"/articles?category_id={old_topic['id']}").json()["total"] == 2
     assert mini.get(M + f"/articles?category_id={new_topic['id']}").json()["total"] == 0

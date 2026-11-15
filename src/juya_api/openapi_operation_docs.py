@@ -1253,3 +1253,43 @@ for _prefix, _object in (("", "cards/{card_id}"), ("/listening", "articles/{arti
                 "不创建用户或个人幂等记录；不允许任意文本及正文点词。"
             ),
         )
+
+OPERATION_DOCS[("get", "/api/admin/v1/content-types/history")] = (
+    "查询历史分类核对清单",
+    "列出当前有效发布内容、分类建议、异常及版本快照。",
+)
+
+OPERATION_DOCS[("post", "/api/admin/v1/content-types/confirm")] = (
+    "逐项确认历史发布分类",
+    "检查快照和附件后写入独立的分类绑定。",
+)
+
+OPERATION_DOCS[("post", "/api/admin/v1/content-types/enable")] = (
+    "启用雅思词汇双分类",
+    "在目录锁内复核全部发布卡片的分类与附件。",
+)
+
+OPERATION_DOCS[("post", "/api/admin/v1/vocabulary/sources/preview")] = (
+    "预览词汇正文来源",
+    "按模块使用保存和发布共用的词形与原句匹配规则。",
+)
+
+OPERATION_DOCS[("get", "/api/admin/v1/imports/{batch_id}/duplicates")] = (
+    "分页查看场景重复项",
+    "读取所属批次完整重复明细和命中目标当前状态。",
+)
+
+OPERATION_DOCS[("get", "/api/admin/v1/listening/imports/{batch_id}/duplicates")] = (
+    "分页查看听读重复项",
+    "读取所属批次完整重复明细和命中目标当前状态。",
+)
+
+OPERATION_DOCS[("post", "/api/admin/v1/imports/{batch_id}/content-types/preview")] = (
+    "预览批量候选分类",
+    "展示本次实际变更候选、原值与附件冲突。",
+)
+
+OPERATION_DOCS[("post", "/api/admin/v1/imports/{batch_id}/content-types/apply")] = (
+    "确认批量候选分类",
+    "按预览摘要和逐项版本应用分类。",
+)

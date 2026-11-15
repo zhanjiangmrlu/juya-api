@@ -45,7 +45,7 @@ def test_0028_preserves_old_table_snapshots_and_matches_metadata(tmp_path, monke
             for t in old.sorted_tables
             if t.name != "alembic_version"
         }
-    command.upgrade(config, "head")
+    command.upgrade(config, "0028")
     assert set(inspect(engine).get_table_names()) - set(old.tables) == {
         "free_access_batches",
         "free_access_batch_items",
@@ -56,5 +56,6 @@ def test_0028_preserves_old_table_snapshots_and_matches_metadata(tmp_path, monke
             for t in old.sorted_tables
             if t.name != "alembic_version"
         } == before
+    command.upgrade(config, "head")
     command.check(config)
     engine.dispose()
