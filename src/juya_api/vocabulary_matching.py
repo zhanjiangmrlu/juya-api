@@ -132,19 +132,46 @@ def word_forms(english):
             if not any(word.endswith("ing") for word in forms):
                 forms.add(base + "ing")
         return forms
-    forms = {base, base + "s"}
-    if re.search(r"(?:s|x|z|ch|sh|o)$", base):
-        forms.add(base + "es")
-    if re.search(r"[^aeiou]y$", base):
-        forms.update({base[:-1] + "ies", base[:-1] + "ied"})
-    if base.endswith("e"):
+    consonant_y = bool(re.search(r"[^aeiou]y$", base))
+    plural = (
+        base[:-1] + "ies"
+        if consonant_y
+        else base + ("es" if re.search(r"(?:s|x|z|ch|sh|o)$", base) else "s")
+    )
+    forms = {base, plural}
+    if base.endswith("ie"):
+        forms.update({base + "d", base[:-2] + "ying"})
+    elif base.endswith("e"):
         forms.update({base + "d", base[:-1] + "ing"})
+    elif consonant_y:
+        forms.update({base[:-1] + "ied", base + "ing"})
+    elif re.search(r"[aeiou][bcdfgklmnprstvz]$", base) and not re.search(r"[aeiou]{2}.$", base):
+        # Stress in multisyllable verbs is lexical. Only bind attested endings here.
+        if re.fullmatch(r"[^aeiou]*[aeiou][bcdfgklmnprstvz]", base) or base in {
+            "admit",
+            "commit",
+            "control",
+            "occur",
+            "prefer",
+            "regret",
+            "submit",
+        }:
+            stem = base + base[-1]
+            forms.update({stem + "ed", stem + "ing"})
+        elif base in {
+            "benefit",
+            "deliver",
+            "enter",
+            "happen",
+            "limit",
+            "listen",
+            "offer",
+            "open",
+            "visit",
+        }:
+            forms.update({base + "ed", base + "ing"})
     else:
         forms.update({base + "ed", base + "ing"})
-    if re.search(r"[^aeiou][aeiou][^aeiouwxy]$", base):
-        forms.update({base + base[-1] + "ed", base + base[-1] + "ing"})
-    if base.endswith("ie"):
-        forms.add(base[:-2] + "ying")
     if base in COMPARABLE:
         if re.search(r"[^aeiou]y$", base):
             forms.update({base[:-1] + "ier", base[:-1] + "iest"})
@@ -197,7 +224,7 @@ def resolve_words(words, candidates):
             ),
             None,
         )
-        explicit_position = chosen is not None
+        has_position = chosen is not None
         reliable = [
             c
             for c in choices
@@ -217,7 +244,7 @@ def resolve_words(words, candidates):
                 chosen.get("word_start", chosen["start"]),
                 chosen.get("word_end", chosen["end"]),
             )
-            positions.setdefault(position, []).append((word, bool(hint) or explicit_position))
+            positions.setdefault(position, []).append((word, bool(hint) or has_position))
         else:
             word["source_reason"] = (
                 "source_hint_conflict"
@@ -227,8 +254,13 @@ def resolve_words(words, candidates):
                 else "source_unmatched"
             )
     for group in positions.values():
-        if len({w.get("meaning", "") for w, _ in group}) > 1:
-            for word, evidence in group:
-                if not evidence:
-                    word["source"] = None
-                    word["source_reason"] = "source_sense_conflict"
+        senses = {word.get("meaning", "").strip() for word, _ in group}
+        if len(senses) < 2:
+            continue
+        supported = {
+            word.get("meaning", "").strip() for word, has_evidence in group if has_evidence
+        }
+        for word, _ in group:
+            if supported != {word.get("meaning", "").strip()}:
+                word["source"] = None
+                word["source_reason"] = "source_sense_conflict"

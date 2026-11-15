@@ -200,3 +200,122 @@ def test_preview_and_publication_recompute_reliable_legacy_scene_source(admin, s
     assert preview.json()["content"]["vocabulary"][0]["source"]["quote"] == "coffee"
     published = publish(admin, card)
     assert published["content"]["vocabulary"][0]["source"]["quote"] == "coffee"
+
+
+def test_hop_and_hope_participles_are_distinct_in_both_modules_and_scene_publication(admin):
+    from .content_helpers import content, draft, key, publish
+
+    payload = content(admin)
+    for term, actual, valid in [
+        ("hop", "hoping", False),
+        ("hop", "hopping", True),
+        ("hope", "hoping", True),
+        ("hoping", "hop", False),
+        ("hop", "hoped", False),
+    ]:
+        line = f"I am {actual}."
+        payload["dialogue"][0]["english"] = line
+        word = {"id": "w", "english": term, "meaning": "测试"}
+        payload["vocabulary"] = [word]
+        card = draft(admin, payload)
+        scene = card["content"]["vocabulary"][0]
+        article = {"body_en": line, "vocabulary": [dict(word)]}
+        resolve_vocabulary_sources(article)
+        listening = article["vocabulary"][0]
+        if valid:
+            assert listening["source"]["word"] == scene["source"]["quote"] == actual
+            assert publish(admin, card)["status"] == "published"
+        else:
+            preview = admin.post(
+                f"/api/admin/v1/cards/{card['id']}/preview", headers=key(), json={"revision": 1}
+            )
+            assert preview.status_code == 422
+            assert scene["source_reason"] == listening["source_reason"] == "source_unmatched"
+            assert scene["source"] is None and listening["source"] is None
+
+
+def test_shared_hint_or_identical_old_position_cannot_disambiguate_bank_senses():
+    line = "I went to the bank."
+    for module in ("scene", "listening"):
+        for with_hint in (True, False):
+            words = []
+            for term, meaning in [("bank", "银行"), ("bank", "河岸"), ("went", "去")]:
+                word = {"english": term, "meaning": meaning}
+                if with_hint:
+                    word["source_hint"] = line
+                elif term == "bank":
+                    word["source"] = (
+                        {"line_id": "a", "start": 14, "end": 18, "quote": "bank"}
+                        if module == "scene"
+                        else {
+                            "start": 0,
+                            "end": 19,
+                            "quote": line,
+                            "word_start": 14,
+                            "word_end": 18,
+                            "word": "bank",
+                            "confirmed": True,
+                        }
+                    )
+                words.append(word)
+            if module == "scene":
+                words = normalize(
+                    SceneContent.model_validate(
+                        {"dialogue": [{"id": "a", "english": line}], "vocabulary": words}
+                    )
+                )["vocabulary"]
+            else:
+                resolve_vocabulary_sources({"body_en": line, "vocabulary": words})
+            assert all(
+                w.get("source_reason") == "source_sense_conflict" and not w["source"]
+                for w in words[:2]
+            )
+            assert words[2]["source"]
+
+
+def test_explicit_bank_sense_is_kept_when_only_an_unhinted_other_sense_contends():
+    line = "The bank is open."
+    words = [
+        {"english": "bank", "meaning": "银行", "source_hint": line},
+        {"english": "bank", "meaning": "河岸"},
+    ]
+    resolve_vocabulary_sources({"body_en": line, "vocabulary": words})
+    assert words[0]["source"]["word"] == "bank"
+    assert words[1]["source"] is None and words[1]["source_reason"] == "source_sense_conflict"
+
+
+def test_listening_final_publication_blocks_other_lemmas_participles(admin):
+    from .content_helpers import key
+    from .test_integration06 import A, article, category
+
+    owner = category(admin)
+    row = article(admin, owner["id"])
+    for term, allowed in [("hop", False), ("hope", True)]:
+        payload = {
+            **row["payload"],
+            "body_en": "I am hoping.",
+            "vocabulary": [{"id": "word", "english": term, "meaning": "释义"}],
+        }
+        response = admin.put(
+            f"{A}/articles/{row['id']}",
+            headers=key(),
+            json={"revision": row["revision"], "category_id": owner["id"], "payload": payload},
+        )
+        assert response.status_code == 200, response.text
+        row = response.json()
+        published = admin.post(
+            f"{A}/articles/{row['id']}/publish", headers=key(), json={"revision": row["revision"]}
+        )
+        assert published.status_code == (200 if allowed else 422), published.text
+
+
+def test_optional_listening_vocabulary_checks_meaning_even_after_auto_matching(admin):
+    from .content_helpers import key
+    from .test_integration06 import A, article, category
+
+    row = article(admin, category(admin)["id"], [{"id": "r", "english": "rest", "meaning": "  "}])
+    assert row["payload"]["vocabulary"][0]["source"]["word"] == "rest"
+    result = admin.post(
+        f"{A}/articles/{row['id']}/publish", headers=key(), json={"revision": row["revision"]}
+    )
+    assert result.status_code == 422 and "vocabulary:" in result.text

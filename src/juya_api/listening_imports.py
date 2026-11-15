@@ -575,22 +575,30 @@ def classify(db, candidate, package_name=None):
                 ),
                 None,
             )
-    other = (
-        None
-        if explicit_update
-        else db.scalar(
+    other = None
+    if not existing and not explicit_update:
+        retained = db.scalars(
             select(ListeningCandidate)
             .where(
-                ListeningCandidate.canonical_hash == candidate.canonical_hash,
                 ListeningCandidate.id != candidate.id,
                 ListeningCandidate.batch_id == candidate.batch_id,
                 ListeningCandidate.removed.is_(False),
                 ListeningCandidate.article_id.is_(None),
                 ListeningCandidate.state.in_(["complete", "incomplete"]),
+                ListeningCandidate.payload["title_zh"].as_string()
+                == candidate.payload.get("title_zh", ""),
             )
-            .limit(1)
+            .order_by(ListeningCandidate.package_id, ListeningCandidate.path, ListeningCandidate.id)
         )
-    )
+        other = next(
+            (
+                row
+                for row in retained
+                if row.canonical_hash == candidate.canonical_hash
+                or source_hash(db, row.payload) == candidate.canonical_hash
+            ),
+            None,
+        )
     if existing or other:
         candidate.state = "duplicate"
         if existing:

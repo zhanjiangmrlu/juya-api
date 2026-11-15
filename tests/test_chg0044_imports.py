@@ -149,3 +149,226 @@ def test_listening_mixed_save_skips_duplicate_without_an_article_reference(admin
     ]
     assert results[0]["status"] == "skipped" and results[0]["article_id"] is None
     assert results[1]["status"] == "success"
+
+
+def test_removal_gap_keeps_first_remaining_candidate_when_identical_material_is_appended(admin):
+    admin.app.state.settings.import_card_limit = 2
+    batch_id = admin.post("/api/admin/v1/imports", json={"mode": "zip"}, headers=key()).json()["id"]
+    route = "/api/admin/v1/imports/" + batch_id
+    material = document("乙")
+    upload_zip(
+        admin, batch_id, "原包.zip", [("a/资料.docx", document("甲")), ("b/资料.docx", material)]
+    )
+    process_jobs(admin)
+    first, kept = admin.get(route).json()["items"]
+    assert kept["content"]["name"] == "乙"
+    removed = admin.post(
+        route + "/items/remove",
+        headers=key(),
+        json={"items": [{"id": first["id"], "revision": first["revision"]}]},
+    )
+    assert removed.status_code == 200
+    upload_zip(admin, batch_id, "后包.zip", [("另一个目录/资料.docx", material)])
+    process_jobs(admin)
+    rows = admin.get(route).json()["items"]
+    detail = admin.get(route + "/duplicates").json()
+    assert detail["total"] == 1
+    assert detail["items"][0]["target_id"] == kept["id"]
+    assert detail["items"][0]["reason"] == "cross_package"
+    body = {
+        "items": [{"id": r["id"], "revision": r["revision"]} for r in rows],
+        "content_type": "illustrated",
+    }
+    assert [
+        r["id"] for r in admin.post(route + "/content-types/preview", json=body).json()["items"]
+    ] == [kept["id"]]
+    review = admin.get(route + "/confirmation").json()
+    assert review["count"] == review["duplicates"] == 1
+    admin.post(
+        route + "/save", headers=key(), json={"confirmed": True, "version": review["version"]}
+    )
+    process_jobs(admin)
+    assert [r["state"] for r in admin.get(route).json()["items"]] == ["saved", "duplicate"]
+
+
+def test_bulk_fill_leaves_unknown_and_multi_type_entries_for_individual_review(admin):
+    from io import BytesIO
+
+    from docx import Document
+
+    batch_id = admin.post("/api/admin/v1/imports", json={"mode": "zip"}, headers=key()).json()["id"]
+    route = "/api/admin/v1/imports/" + batch_id
+    multi = Document(BytesIO(document("两个类型", content_type="图解词汇")))
+    multi.paragraphs[2].insert_paragraph_before("内容类型：精读词汇")
+    data = BytesIO()
+    multi.save(data)
+    upload_zip(
+        admin,
+        batch_id,
+        "分类.zip",
+        [
+            ("a/资料.docx", document("缺字段")),
+            ("b/资料.docx", document("陌生类型", content_type="自定义")),
+            ("c/资料.docx", data.getvalue()),
+        ],
+    )
+    process_jobs(admin)
+    rows = admin.get(route).json()["items"]
+    empty = next(row for row in rows if not row["type_raw"])
+    selected = {
+        "items": [{"id": r["id"], "revision": r["revision"]} for r in rows],
+        "content_type": "illustrated",
+        "overwrite": False,
+    }
+    preview = admin.post(route + "/content-types/preview", json=selected).json()
+    assert [r["id"] for r in preview["items"]] == [empty["id"]]
+    applied = admin.post(
+        route + "/content-types/apply",
+        json={**selected, "version": preview["version"]},
+        headers=key(),
+    ).json()["items"]
+    for row in applied:
+        if row["id"] != empty["id"]:
+            assert row["content_type"] is None and any(
+                i["code"] == "content_type_unknown" for i in row["issues"]
+            )
+            resolved = admin.patch(
+                route + "/items/" + row["id"],
+                json={
+                    "selected": True,
+                    "content": row["content"],
+                    "revision": row["revision"],
+                    "content_type": "illustrated",
+                },
+                headers=key(),
+            ).json()
+            assert resolved["type_origin"] == "manual" and resolved["type_raw"] == row["type_raw"]
+            assert not any(i["code"] == "content_type_unknown" for i in resolved["issues"])
+
+
+def test_explicit_patch_retains_file_origin_until_a_real_override(admin):
+    batch_id = admin.post("/api/admin/v1/imports", json={"mode": "zip"}, headers=key()).json()["id"]
+    route = "/api/admin/v1/imports/" + batch_id
+    upload_zip(
+        admin,
+        batch_id,
+        "原类型.zip",
+        [("资料/内容.docx", document("稳定资料", content_type="图解词汇"))],
+    )
+    process_jobs(admin)
+    row = admin.get(route).json()["items"][0]
+    for content_type, expected in [
+        ("illustrated", "file"),
+        ("intensive", "override"),
+        ("intensive", "override"),
+    ]:
+        row = admin.patch(
+            route + "/items/" + row["id"],
+            json={
+                "selected": True,
+                "content": row["content"],
+                "revision": row["revision"],
+                "content_type": content_type,
+            },
+            headers=key(),
+        ).json()
+        assert row["type_origin"] == expected and row["type_raw"] == ["图解词汇"]
+
+
+def test_resumed_v2_unsaved_listening_source_matches_new_v3_upload(admin, system):
+    from copy import deepcopy
+
+    from juya_api.content_models import Media
+    from juya_api.listening_models import ListeningCandidate
+    from juya_api.listening_template import template_document
+    from juya_api.security import fingerprint
+
+    from .content_helpers import recording
+    from .test_imports import archive
+
+    material = archive([("one/content.docx", template_document()), ("one/full.wav", recording())])
+    batch = upload(admin, post(admin, A + "/imports", {"mode": "zip"}), material)
+    original = batch["candidates"][0]
+    assert original["payload"]["vocabulary"][0]["source"]
+    with system["sessions"].begin() as db:
+        old = db.get(ListeningCandidate, original["id"])
+        payload = deepcopy(old.payload)
+        for word in payload["vocabulary"]:
+            word.pop("source_reason", None)
+        old.payload = payload
+        canonical = deepcopy(payload)
+        for field in ("image_id", "audio_id"):
+            media = db.get(Media, payload[field]) if payload.get(field) else None
+            canonical[field] = media.sha256 if media else None
+        for word in canonical["vocabulary"]:
+            word.pop("id")
+            word.pop("source_hint")
+            word["source"].pop("confirmed")
+        old_hash = fingerprint({"canonical_version": 2, "payload": canonical})
+        old.canonical_hash = old.source_hash = old_hash
+    route = A + "/imports/" + batch["id"]
+    recovered = admin.get(route).json()
+    batch = upload(admin, recovered, material)
+    assert batch["counts"]["duplicate"] == 1
+    detail = admin.get(route + "/duplicates").json()["items"][0]
+    assert detail["target_kind"] == "listening_candidate" and detail["target_id"] == original["id"]
+    assert detail["reason"] == "cross_package" and detail["target_available"]
+    with system["sessions"]() as db:
+        old = db.get(ListeningCandidate, original["id"])
+        assert old.canonical_hash == old.source_hash == old_hash and not old.article_id
+
+
+def test_legacy_skipped_scene_receipt_survives_target_deletion_and_is_restored(admin, system):
+    from juya_api.import_models import ImportItem
+    from juya_api.import_service import content_hash
+    from juya_api.job_models import Job
+
+    batch_id = admin.post("/api/admin/v1/imports", json={"mode": "zip"}, headers=key()).json()["id"]
+    route = "/api/admin/v1/imports/" + batch_id
+    upload_zip(admin, batch_id, "旧包.zip", [("原目录/内容.docx", document("旧候选"))])
+    process_jobs(admin)
+    review = admin.get(route + "/confirmation").json()
+    assert (
+        admin.post(
+            route + "/save", headers=key(), json={"confirmed": True, "version": review["version"]}
+        ).status_code
+        == 200
+    )
+    process_jobs(admin)
+    item = admin.get(route).json()["items"][0]
+    card_id = item["saved_card_id"]
+    with system["sessions"].begin() as db:
+        old = db.get(ImportItem, item["id"])
+        assert old.duplicate_detail is None
+        job = db.get(Job, old.job_id)
+        assert job.state == "succeeded" and job.result["card_id"] == card_id
+        job.result = {"card_id": card_id, "skipped": True}
+        old.content = {
+            **old.content,
+            "vocabulary": [
+                {k: v for k, v in word.items() if k not in {"source_hint", "source_reason"}}
+                for word in old.content["vocabulary"]
+            ],
+        }
+        old.last_saved_hash = content_hash(db, old.content, old.study_note)
+    assert (
+        admin.request(
+            "DELETE",
+            "/api/admin/v1/cards/" + card_id,
+            headers=key(),
+            json={"revision": item["saved_draft_revision"]},
+        ).status_code
+        == 200
+    )
+    assert admin.get(route + "/confirmation").json()["duplicates"] == 1
+    restored = admin.get(route).json()["items"][0]
+    assert restored["state"] == "duplicate"
+    detail = admin.get(route + "/duplicates").json()["items"][0]
+    assert (
+        detail["target_id"] == card_id
+        and detail["source_name"] == "旧包.zip"
+        and not detail["target_available"]
+    )
+    assert admin.get(route + "/confirmation").json()["count"] == 0
+    with system["sessions"]() as db:
+        assert db.get(ImportItem, item["id"]).duplicate_detail["target_id"] == card_id

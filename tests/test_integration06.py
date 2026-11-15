@@ -364,8 +364,10 @@ def test_template_word_table_resolves_unique_quote_and_keeps_ambiguous_senses_se
     ambiguous, _ = parse_docx(stream.getvalue())
     words = ambiguous["vocabulary"]
     assert len(words) == 2 and words[0]["id"] != words[1]["id"]
-    assert all(word["source"]["quote"] == "Take a break." for word in words)
-    assert all(word["source"]["word_start"] == 7 for word in words)
+    assert all(
+        word["source"] is None and word["source_reason"] == "source_sense_conflict"
+        for word in words
+    )
 
 
 def test_unconfirmed_docx_source_hint_is_retained_and_distinguishes_staging_identity():

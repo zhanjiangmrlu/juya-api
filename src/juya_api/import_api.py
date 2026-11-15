@@ -14,7 +14,7 @@ from .content_contracts import ContentType, SceneContent, StudyNoteChange
 from .content_models import CardDraft, Media
 from .content_service import normalize, require_card, revision_matches
 from .content_types import type_issues
-from .dependencies import administrator, database, operation_key
+from .dependencies import administrator, database, operation_key, write_transaction
 from .errors import DomainError
 from .import_duplicates import DuplicatePage, paged
 from .import_models import ImportBatch, ImportFile, ImportItem
@@ -212,6 +212,7 @@ def type_preview(db, batch, body):
         seen.add(row.id)
         if (
             item_view(db, row)["state"] in {"duplicate", "saved", "saving", "unreadable"}
+            or (not row.content_type and row.type_raw)
             or (row.content_type and not body.overwrite)
             or row.content_type == body.content_type
         ):
@@ -319,7 +320,11 @@ def routes():
             filename="句芽英语-资料填写示例.zip",
         )
 
-    @router.get("/imports/{batch_id}", response_model=ImportBatchView)
+    @router.get(
+        "/imports/{batch_id}",
+        response_model=ImportBatchView,
+        dependencies=[Depends(write_transaction)],
+    )
     def read(
         batch_id: str,
         request: Request,
@@ -335,7 +340,9 @@ def routes():
                 raise DomainError(
                     409, "import_not_resumable", "该批次已失效或无权访问，请刷新待处理批次"
                 )
-            value = batch_view(db, batch, request.app.state.settings)
+            value = batch_view(
+                db, batch, request.app.state.settings, restore_duplicate_receipts=True
+            )
             if not value["resumable"]:
                 raise DomainError(
                     409,
@@ -343,7 +350,12 @@ def routes():
                     "该批次已处理完成或暂存资料不可恢复，请刷新列表；缺失原文件请重新选择上传",
                 )
             return value
-        return batch_view(db, owned_batch(db, batch_id, admin.id), request.app.state.settings)
+        return batch_view(
+            db,
+            owned_batch(db, batch_id, admin.id),
+            request.app.state.settings,
+            restore_duplicate_receipts=True,
+        )
 
     @router.delete("/imports/{batch_id}", response_model=DeletedImport)
     def delete_batch(
@@ -748,9 +760,9 @@ def routes():
                 db, batch, item, selection, body.target_card_id or item.saved_card_id
             )
             item.study_note = selection
-            if "content_type" in body.model_fields_set:
+            if "content_type" in body.model_fields_set and body.content_type != item.content_type:
+                item.type_origin = "override" if item.content_type else "manual"
                 item.content_type = body.content_type
-                item.type_origin = "manual"
             item.content = content
             item.selected = body.selected
             item.target_card_id = body.target_card_id
@@ -778,7 +790,11 @@ def routes():
             execute,
         )
 
-    @router.get("/imports/{batch_id}/duplicates", response_model=DuplicatePage)
+    @router.get(
+        "/imports/{batch_id}/duplicates",
+        response_model=DuplicatePage,
+        dependencies=[Depends(write_transaction)],
+    )
     def duplicates(
         batch_id: str,
         page: int = Query(1, ge=1),
@@ -796,8 +812,10 @@ def routes():
             if row.duplicate_detail:
                 details.append(row.duplicate_detail)
             else:
-                value = item_view(db, row)
-                if value["state"] == "duplicate":
+                value = item_view(db, row, restore_duplicate_receipt=True)
+                if row.duplicate_detail:
+                    details.append(row.duplicate_detail)
+                elif value["state"] == "duplicate":
                     details.append(
                         scene_receipt(
                             db,

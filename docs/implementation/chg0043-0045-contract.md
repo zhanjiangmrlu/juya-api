@@ -37,3 +37,5 @@ tests/fixtures/vocabulary-matching-v1.json 提供场景与听读适配层共用�
 | GET /api/admin/v1/imports/{batch_id}/confirmation | 可选 item_ids | removed、failed、failed_files、package_count、version、count、incomplete、saved、duplicates、excluded、unreadable |
 
 四项统计仅随分类变化，搜索、其他筛选或页码只影响 total。两管理列表返回有效页码，total_pages=0 时 page=1。POST /api/admin/v1/content-types/enable 可省略请求体。历史确认单项 reason 为 null、snapshot_changed 或 type_pdf_conflict。生成的完整字段类型见 [管理 OpenAPI](../../openapi/admin.json) 和 [小程序 OpenAPI](../../openapi/mini.json)。
+
+场景词条的本句释义和音标分别选填。听读词表可空，若提供词条，发布前其释义须非空。候选文件有未知类型或多个类型时，批量预览和应用跳过该项，须单项核对。PATCH 提交相同类型保留 type_origin，从空值补选记 manual，改动已有类型记 override；原始 type_raw 保留。

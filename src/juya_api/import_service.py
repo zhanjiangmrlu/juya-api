@@ -422,7 +422,7 @@ def import_note_selection(selected, staged):
     return result
 
 
-def item_view(db, item):
+def item_view(db, item, *, restore_duplicate_receipt=False):
     """Derive current staging state without treating deleted cards as saved results."""
     job = item_job(db, item)
     saved_card = live_card(db, item.saved_card_id)
@@ -453,7 +453,23 @@ def item_view(db, item):
 
     issues += type_issues(db, item.content_type, selection, target)
     issues += note_issues(db, selection, target)
-    if item.duplicate_detail:
+    # Staging edits detach the job. A linked successful skip stays a historical fact
+    # even if its target or source media can no longer supply the original hash.
+    skipped = (
+        job
+        and job.kind == "import.save"
+        and job.state == "succeeded"
+        and job.result
+        and job.result.get("skipped")
+        and item.saved_card_id
+        and job.result.get("card_id") == item.saved_card_id
+        and not item.target_card_id
+    )
+    if skipped and restore_duplicate_receipt and not item.duplicate_detail:
+        item.duplicate_detail = scene_receipt(
+            db, item, "existing_content", "scene_card", item.saved_card_id
+        )
+    if item.duplicate_detail or skipped:
         state = "duplicate"
     elif not item.readable:
         state = "unreadable"
@@ -461,15 +477,6 @@ def item_view(db, item):
         state = "saving"
     elif job and job.state == "failed":
         state = "failed"
-    elif (
-        job
-        and job.result
-        and job.result.get("skipped")
-        and saved_card
-        and item.last_saved_hash in hashes
-        and not item.target_card_id
-    ):
-        state = "duplicate"
     elif (
         saved_card
         and item.last_saved_hash in hashes
@@ -501,11 +508,13 @@ def item_view(db, item):
         "target_revision": item.target_revision,
         "saved_card_id": item.saved_card_id,
         "saved_draft_revision": item.saved_draft_revision,
-        "suggested_target_id": identity.card_id
-        if identity
-        else (
+        "suggested_target_id": (
             item.duplicate_detail["target_id"]
             if item.duplicate_detail and item.duplicate_detail["target_kind"] == "scene_card"
+            else item.saved_card_id
+            if skipped
+            else identity.card_id
+            if identity
             else None
         ),
         "job_id": item.job_id,
@@ -513,7 +522,7 @@ def item_view(db, item):
     }
 
 
-def batch_view(db, batch, settings):
+def batch_view(db, batch, settings, *, restore_duplicate_receipts=False):
     """Describe durable recovery inputs separately from ordinary historical result access."""
     files = db.scalars(
         select(ImportFile)
@@ -533,7 +542,9 @@ def batch_view(db, batch, settings):
     }
     used.update((item.study_note or {}).get("media_id") for item in items)
     file_values = [file_view(db, row) for row in files]
-    item_values = [item_view(db, item) for item in items]
+    item_values = [
+        item_view(db, item, restore_duplicate_receipt=restore_duplicate_receipts) for item in items
+    ]
     pending_items = [
         value
         for value in item_values
@@ -966,14 +977,12 @@ def prepare_parse(settings, sessions, job, *, clock):
         if not current or current.job_id != row.id:
             raise DomainError(409, "import_changed", "导入文件状态已变化")
         batch = owned_batch(db, source["batch_id"], source["admin_id"])
-        existing = (
-            db.scalar(
-                select(func.count())
-                .select_from(ImportItem)
-                .where(ImportItem.batch_id == source["batch_id"])
+        existing, last_position = db.execute(
+            select(func.count(ImportItem.id), func.max(ImportItem.position)).where(
+                ImportItem.batch_id == batch.id
             )
-            or 0
-        )
+        ).one()
+        next_position = last_position + 1 if last_position is not None else 0
         new_items = [value for value in prepared_items if not db.get(ImportItem, value["id"])]
         if existing + len(new_items) > settings.import_card_limit:
             raise DomainError(422, "import_card_limit", "本批卡片总数超过当前限制，请开始新的导入")
@@ -1022,7 +1031,7 @@ def prepare_parse(settings, sessions, job, *, clock):
         for index, value in enumerate(new_items):
             if not db.get(ImportItem, value["id"]):
                 item = ImportItem(
-                    **value, batch_id=source["batch_id"], revision=1, position=existing + index
+                    **value, batch_id=source["batch_id"], revision=1, position=next_position + index
                 )
                 db.add(item)
                 db.flush()
