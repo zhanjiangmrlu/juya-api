@@ -376,3 +376,12 @@ API常规检查为`uv run ruff check .`、`uv run ruff format --check .`、`uv r
 契约仍由API `uv run python scripts/export-openapi.py`导出UTF-8/LF，复制admin/mini JSON到对应前端，再各`pnpm generate:api`；不要手改生成类型。推送test会触发API现有CI/打包，配置没有自动部署步骤；两个前端main-only质量工作流不会因push test运行。不要预先声称CI通过。
 
 Git本次不包含Windows数据库、媒体、账号、.env、.private、Token或依赖缓存；Mac继续使用自己已有的对应资料。不要复制Windows虚拟环境、缓存或旧密钥覆盖Mac。后续先读仓库AGENTS、本文件、用户同步的需求及最终复审，不重做已完成模块，也不把源码推送视为部署授权。
+
+
+## CHG0043—0045（2026-11-16）
+
+本轮以test为基线，API904afb4、后台cea5772、小程序6e618b1，逐任务实现与限定复审已通过。学习授权、内置查词和动态听读高亮继续暂停，场景释义及音标仍选填。完整范围/接口见docs/superpowers/specs/2026-11-15-chg0043-0045-design.md及docs/implementation/chg0043-0045-contract.md。
+
+最终本地验证及真实HTTP/Worker证据见[集成记录](docs/verification/chg0043-0045-local-http-20261116.md)与[52项台账](docs/verification/chg0043-0045-acceptance.md)。小程序真实微信/iOS/Android生命周期仍未验；不得将Mock或H5证据表述为真机通过。
+
+用户已明确授权开发验收通过后推送配套test并直接部署测试环境，覆盖旧计划中未部署状态；生产不操作。测试迁移0028→0029须先优雅停写/备份，校验原60表原字段指纹保留；双角色CI制品固定最终SHA，六常规服务与独立听读worker均要更新。真实历史分类须管理员依据具体清单明确确认后才启用，不能直接按PDF推断回填。远端正式结果另写发布报告，此处不声明部署完成。

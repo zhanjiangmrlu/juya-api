@@ -1,0 +1,11 @@
+{
+  "batch_id": "c756667c-1c6b-45f8-9c83-25717431faa6",
+  "saved_card_id": "14887684-8fa4-4922-abd6-04a61dde2089",
+  "duplicate_count": 1,
+  "checks": [
+    "real restored batch and complete duplicate detail",
+    "default type preview affects only genuinely missing type",
+    "unknown raw retained for explicit item review",
+    "worker import.save persists one draft with duplicate excluded"
+  ]
+}
