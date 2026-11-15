@@ -102,6 +102,20 @@ COMPARABLE = set(
 )
 
 
+# These verbs retain the inflection of their root, unlike nouns such as "logo".
+COMPOUND_VERB_ROOTS = {
+    "forego": "go",
+    "forgo": "go",
+    "outgo": "go",
+    "undergo": "go",
+    "misdo": "do",
+    "outdo": "do",
+    "overdo": "do",
+    "redo": "do",
+    "underdo": "do",
+    "undo": "do",
+}
+
 # Most nouns ending in -o take -s. These common exceptions take -es or allow both.
 O_ES = {"echo", "embargo", "hero", "potato", "tomato", "veto"}
 O_S_OR_ES = {
@@ -157,6 +171,10 @@ STRESSED_FINAL = {
 def word_forms(english):
     """生成可自动对应的常见词形；english 为文档中的英文词条"""
     base = english.strip().casefold().replace("’", "'")
+    root = COMPOUND_VERB_ROOTS.get(base)
+    if root:
+        prefix = base.removesuffix(root)
+        return {prefix + form for form in word_forms(root)}
     consonant_y = bool(re.search(r"[^aeiou]y$", base))
     if consonant_y:
         plural = base[:-1] + "ies"

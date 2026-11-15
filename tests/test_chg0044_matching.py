@@ -369,3 +369,61 @@ def test_regular_words_survive_scene_and_listening_edit_and_publish(admin):
     assert response.status_code == 200, response.text
     published = publish_listening(admin, response.json())
     assert [w["source"]["word"] for w in published["payload"]["vocabulary"]] == expected
+
+
+@pytest.mark.parametrize("module", ["scene", "listening"])
+@pytest.mark.parametrize("valid", [True, False], ids=["undergoes-redoes", "undergos-redos"])
+def test_prefixed_go_do_sources_in_edit_and_publication(admin, module, valid):
+    from .content_helpers import draft, key
+    from .test_integration06 import A, article, category
+
+    actual = ["undergoes", "redoes"] if valid else ["undergos", "redos"]
+    line = f"She {actual[0]} a test and {actual[1]} the exercise."
+    words = [
+        {"id": term, "english": term, "meaning": meaning, "source_hint": line}
+        for term, meaning in [("undergo", "经历"), ("redo", "重做")]
+    ]
+
+    if module == "scene":
+        row = draft(admin)
+        route = f"/api/admin/v1/cards/{row['id']}"
+        body = row["content"]
+        body["dialogue"][0]["english"] = line
+        body["vocabulary"] = words
+        update = {"revision": row["draft_revision"], "content": body}
+        field, revision_field, source_field = "content", "draft_revision", "quote"
+    else:
+        owner = category(admin)
+        row = article(admin, owner["id"])
+        route = f"{A}/articles/{row['id']}"
+        update = {
+            "revision": row["revision"],
+            "category_id": owner["id"],
+            "payload": {**row["payload"], "body_en": line, "vocabulary": words},
+        }
+        field, revision_field, source_field = "payload", "revision", "word"
+    edited = admin.put(route, headers=key(), json=update)
+    assert edited.status_code == 200, edited.text
+    saved = edited.json()
+    revision = {"revision": saved[revision_field]}
+    if module == "scene":
+        preview = admin.post(route + "/preview", headers=key(), json=revision)
+        result = (
+            admin.post(
+                route + "/publish",
+                headers=key(),
+                json={**revision, "preview_id": preview.json()["preview_id"]},
+            )
+            if preview.status_code == 200
+            else preview
+        )
+    else:
+        result = admin.post(route + "/publish", headers=key(), json=revision)
+    assert result.status_code == (200 if valid else 422), result.text
+    if valid:
+        assert [w["source"][source_field] for w in result.json()[field]["vocabulary"]] == actual
+    else:
+        assert all(
+            w["source"] is None and w["source_reason"] == "source_unmatched"
+            for w in saved[field]["vocabulary"]
+        )
