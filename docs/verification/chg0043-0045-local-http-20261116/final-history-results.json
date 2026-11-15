@@ -1,0 +1,14 @@
+{
+  "apiHead": "143fd38",
+  "adminHead": "7446218",
+  "checks": [
+    "real HTTP history represents both explicit PDF removal versions as no valid PDF",
+    "Escape before submission releases selection without sending confirmation"
+  ],
+  "removedRows": [
+    "自动化联调 intensive 02",
+    "自动化联调 intensive 02",
+    "自动化联调 intensive 01"
+  ],
+  "errors": []
+}

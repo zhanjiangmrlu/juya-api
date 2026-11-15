@@ -380,8 +380,10 @@ Git本次不包含Windows数据库、媒体、账号、.env、.private、Token�
 
 ## CHG0043—0045（2026-11-16）
 
-本轮以test为基线，API904afb4、后台cea5772、小程序6e618b1，逐任务实现与限定复审已通过。学习授权、内置查词和动态听读高亮继续暂停，场景释义及音标仍选填。完整范围/接口见docs/superpowers/specs/2026-11-15-chg0043-0045-design.md及docs/implementation/chg0043-0045-contract.md。
+已基于test完成实现、逐任务审查、最终修复复审，并按用户授权直接发布测试环境。线上应用源码：API143fd38、后台7446218、小程序46d9b7e。官方MySQL/Redis全量1000通过/3跳过，后台370、小程序905；精确范围和本地HTTP/Worker证据见[集成记录](docs/verification/chg0043-0045-local-http-20261116.md)及[52项台账](docs/verification/chg0043-0045-acceptance.md)。
 
-最终本地验证及真实HTTP/Worker证据见[集成记录](docs/verification/chg0043-0045-local-http-20261116.md)与[52项台账](docs/verification/chg0043-0045-acceptance.md)。小程序真实微信/iOS/Android生命周期仍未验；不得将Mock或H5证据表述为真机通过。
+[测试管理后台](https://test-admin.juyayingyu.com)与7个API配套服务已部署、健康；0029迁移前完整备份，原60表原字段/行数/值指纹保持。小程序测试开发版 `1.5.0-test.20261116.032311` 已上传，体验版尚未切换。完整版本、数据保护、CI和运行回执见[测试发布报告](docs/verification/chg0043-0045-test-release-20261116.md)。后续纯文档提交不改变这些线上应用源码。
 
-用户已明确授权开发验收通过后推送配套test并直接部署测试环境，覆盖旧计划中未部署状态；生产不操作。测试迁移0028→0029须先优雅停写/备份，校验原60表原字段指纹保留；双角色CI制品固定最终SHA，六常规服务与独立听读worker均要更新。真实历史分类须管理员依据具体清单明确确认后才启用，不能直接按PDF推断回填。远端正式结果另写发布报告，此处不声明部署完成。
+真实test的15张有效历史卡分类清单已提交用户确认，尚未归类或启用；content_types_ready=false。等待明确确认后再按真实快照提交，不按PDF静默回填。真实微信/iOS/Android仍未验；远端后台未做账号登录业务操作，不把本地隔离HTTP或Mock证据当成该验收。
+
+学习授权、内置查词及动态听读高亮继续暂停；场景释义与音标选填。完整契约见docs/implementation/chg0043-0045-contract.md，执行取舍见[决策记录](docs/verification/chg0043-0045-decisions.md)。生产未部署，本地原配置和账号资料不随Git提交。
