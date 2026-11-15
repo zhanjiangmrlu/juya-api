@@ -222,7 +222,7 @@ def routes():
         "/analytics/events",
         response_model=AnalyticsEventReceiptView,
         summary="接收已获许可的分析事件",
-        description="验证账号许可、五类事件及持久去重，不修改学习成绩。真实统计固定关闭，旧客户端开关不可绕过；仅隔离接收器测试五事件契约。",
+        description="验证账号许可、五类事件及持久去重，不修改学习成绩。仅新版披露和显式测试配置允许客户端SDK发送；accepted表示授权成功，不代表友盟已接收。",
     )
     def receive(
         body: AnalyticsEventInput,

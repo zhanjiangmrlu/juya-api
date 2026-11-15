@@ -352,24 +352,50 @@ def test_privacy_responses_are_described_for_generated_clients(system):
     assert "documents" in schema["components"]["schemas"][ref["$ref"].split("/")[-1]]["properties"]
 
 
-def test_legacy_client_transport_switch_cannot_bypass_closed_statistics(system, mini):
-    """Legacy switches never advertise collection, accept events or create receipts."""
+def test_test_client_transport_requires_new_disclosure_and_current_manual_permission(system, mini):
+    """Only explicit test config plus the new publication authorize future events."""
+    from pathlib import Path
+
     from juya_api.config import Settings
-    from juya_api.privacy_models import AnalyticsEventReceipt
+    from juya_api.privacy_service import load_documents
 
     published(system)
     system["mini"].app.state.settings = Settings.model_validate(
         {**system["settings"].model_dump(), "analytics_client_transport_enabled": True}
     )
-    assert system["mini"].get(P + "/privacy/policies").json()["analytics_available"] is False
-    mini.post(P + "/me/agreements", json=confirmation(), headers={"Idempotency-Key": str(uuid4())})
+    assert mini.get(P + "/privacy/policies").json()["analytics_available"] is False
+    configured = system["settings"].model_copy(
+        update={
+            "privacy_documents_path": Path(__file__).parents[1]
+            / "src/juya_api/policies/umeng-20261115-v3.json"
+        }
+    )
+    system["mini"].app.state.privacy_documents = load_documents(configured)
+    catalog = mini.get(P + "/privacy/policies").json()
+    assert catalog["analytics_available"] is True, (
+        system["mini"].app.state.settings.environment,
+        system["mini"].app.state.settings.analytics_client_transport_enabled,
+        [(d["kind"], d["version"]) for d in catalog["documents"]],
+    )
+    current = {d["kind"]: d["version"] for d in catalog["documents"]}
+    agreed = confirmation()
+    agreed.update(terms_version=current["terms"], privacy_version=current["privacy"])
+    assert (
+        mini.post(
+            P + "/me/agreements", json=agreed, headers={"Idempotency-Key": str(uuid4())}
+        ).status_code
+        == 200
+    )
+    before = mini.get(P + "/me/privacy").json()["analytics"]
+    assert before["enabled"] is False
     permitted = mini.put(
         P + "/me/analytics-preference",
-        json={"enabled": True, "scope_version": "v1", "expected_revision": 0},
+        json={"enabled": True, "scope_version": current["analytics"], "expected_revision": 0},
         headers={"Idempotency-Key": str(uuid4())},
     )
     assert permitted.status_code == 200
-    assert permitted.json()["enabled"] is True and permitted.json()["collecting"] is False
+    assert permitted.json()["enabled"] is True
+    assert permitted.json()["collecting"] is None
     event = {
         "event_id": str(uuid4()),
         "event": "page_enter",
@@ -377,9 +403,34 @@ def test_legacy_client_transport_switch_cannot_bypass_closed_statistics(system, 
         "consent_revision": 1,
         "properties": {"page_path": "pages/home/index"},
     }
-    assert mini.post(P + "/analytics/events", json=event).status_code == 503
-    with system["sessions"]() as db:
-        assert db.scalar(select(func.count()).select_from(AnalyticsEventReceipt)) == 0
+    assert mini.post(P + "/analytics/events", json=event).status_code == 200
+    off = mini.put(
+        P + "/me/analytics-preference",
+        json={"enabled": False, "scope_version": "", "expected_revision": 1},
+        headers={"Idempotency-Key": str(uuid4())},
+    )
+    assert off.json()["enabled"] is False and off.json()["collecting"] is False
+    event["event_id"] = str(uuid4())
+    assert mini.post(P + "/analytics/events", json=event).status_code == 403
+
+
+def test_new_disclosure_invalidates_an_existing_permission(system, mini):
+    """Expanded SDK scope requires a fresh manual choice instead of reusing v1."""
+    import json
+    from pathlib import Path
+
+    published(system)
+    mini.post(P + "/me/agreements", json=confirmation(), headers={"Idempotency-Key": str(uuid4())})
+    mini.put(
+        P + "/me/analytics-preference",
+        json={"enabled": True, "scope_version": "v1", "expected_revision": 0},
+        headers={"Idempotency-Key": str(uuid4())},
+    )
+    assert mini.get(P + "/me/privacy").json()["analytics"]["enabled"] is True
+    system["mini"].app.state.privacy_documents = json.loads(
+        (Path(__file__).parents[1] / "src/juya_api/policies/umeng-20261115-v3.json").read_text()
+    )
+    assert mini.get(P + "/me/privacy").json()["analytics"]["enabled"] is False
 
 
 def test_configured_release_documents_are_readable_anonymously_without_creating_users(system):
