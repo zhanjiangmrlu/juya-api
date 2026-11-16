@@ -553,3 +553,5 @@ API独立审阅第1轮已修复短元音双写拼写、同位置义项冲突、�
 ## 2026-11-16 所有格与人工来源验收修复
 
 已补名词所有格自动匹配、显式人工来源独立校验和后台红色待补提示；新增manual_english可选契约，无schema迁移。独立审阅1项Important已通过4项失败回归修复（saw所有格歧义），相关154通过；最终完整API968/61环境跳过，后台373/check/build、两项相关Chrome Mock和真实隔离HTTP双模块人工保存预览重开发布通过。小程序仅生成契约check通过、不重复上传。后续测试发布以[本轮修复记录](../verification/vocabulary-manual-source-20261116.md)为准。
+
+用户最新要求先不部署，已停止测试发布安排；本次只有源码同步test和本地验证，未执行远端gate/backup/migrate/load/publish或微信上传。私有clone原生API971/58、后台373/check/build通过；CI43864923777交付时仍在完整数据库检查，不称官方结果已通过。
