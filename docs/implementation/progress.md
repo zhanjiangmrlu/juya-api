@@ -581,3 +581,8 @@ API独立审阅第1轮已修复短元音双写拼写、同位置义项冲突、�
 已补名词所有格自动匹配、显式人工来源独立校验和后台红色待补提示；新增manual_english可选契约，无schema迁移。独立审阅1项Important已通过4项失败回归修复（saw所有格歧义），相关154通过；最终完整API968/61环境跳过，后台373/check/build、两项相关Chrome Mock和真实隔离HTTP双模块人工保存预览重开发布通过。小程序仅生成契约check通过、不重复上传。后续测试发布以[本轮修复记录](../verification/vocabulary-manual-source-20261116.md)为准。
 
 用户短暂要求先不部署后，已明确授权结合其他对话远程test修改一起发布。API fd25508、组合后台3e215b9测试发布成功；官方CI1026/3、组合后台378/check/build及14项Chrome通过。7服务健康且0重启、12非目标容器保持，61表维护窗口原列/行数/值指纹保持，无迁移；测试备份本地/远端SHA相同。78安装文件和51公网首页/JS哈希一致，gate关闭并finalize完成。分类ready1/版本16按发布前实际值保留。小程序运行代码未变不重传，生产未发布，真实账号/真机未验边界见修复记录。
+
+
+## 2026-11-16 release合并与小程序生产包上传
+
+三仓test均合入release并推送，API e1d8390/后台d5dd2d4/mini634841a；仅文档冲突，业务代码与test一致。API971/58环境跳过及静态/OpenAPI检查、后台378/check/build、小程序905/check通过。标准生产流程已上传1.0.2/106，记录52f0fb1同步release，生产OSS0新增/13复用。未部署生产API或站点、未迁移生产库；生产cards缺新版分类元数据，新分类需配套升级才能使用。体验版用户手动切换，真机未验，详见[上传记录](https://github.com/zhanjiangmrlu/juya-miniapp/blob/release/docs/verification/chg0043-0045-production-upload-20261116.md)。
