@@ -1,0 +1,160 @@
+{
+  "status": "success",
+  "verified_at_utc": "2026-11-16T13:41:11.296414+00:00",
+  "environment": "test",
+  "api_commit": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+  "admin_commit": "3e215b9677604bf3ef87731174eeedfb49df2a55",
+  "api_releases": {
+    "juya-admin-api": {
+      "current": "20261116T124959-fd2550862d2b-ad1ed0",
+      "previous": "20261115T180753-143fd385b382-79e696",
+      "bundle_sha256": "79ccb1475453ad099858ec8960264d0a8a20959f2158e054e8a090f4013057d1"
+    },
+    "juya-miniapp-api": {
+      "current": "20261116T125003-fd2550862d2b-6f456f",
+      "previous": "20261115T180757-143fd385b382-994447",
+      "bundle_sha256": "77f1f03095c13eb6adc588e297b7640785161993786a3f3f32b42740691c8933"
+    }
+  },
+  "web": {
+    "status": "success",
+    "commit": "3e215b9677604bf3ef87731174eeedfb49df2a55",
+    "release_id": "20261116T124344-3e215b967760-5d7a55",
+    "previous_release_id": "20261115T174223-7446218001c5-149624",
+    "installed_files_sha256_verified": 78,
+    "public_index_and_js_sha256_verified": 51,
+    "api": "https://test-admin-api.juyayingyu.com",
+    "protected_containers_unchanged": 12
+  },
+  "state": {
+    "preflight_complete": true,
+    "backup_complete": true,
+    "deploy_complete": true,
+    "verified": true,
+    "resumed": true,
+    "finalized": true,
+    "gate_active": false
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "revision": "fd2550862d2be9b46a3e3795cfca6daed4caaa20",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "protected_container_count": 12,
+  "protected_containers_exactly_unchanged": true,
+  "nginx_restored_exactly": true,
+  "listening_config_only_image_changed": true,
+  "database": {
+    "schema": [
+      "0029"
+    ],
+    "contract": 3,
+    "business_tables": 61,
+    "columns_counts_value_fingerprints_equal_during_maintenance": true,
+    "content_types_ready": 1,
+    "classification_versions": 16,
+    "migration_performed": false,
+    "backup_bytes": 13120767,
+    "backup_sha256": "a6fba65846efea0e555289543335d53d79df9b2442be6568cc3972958782d0fe",
+    "local_backup_identical": true
+  },
+  "feature_probes": {
+    "juya-admin-api": {
+      "synthetic_checks": [
+        "scene:possessive:vine's",
+        "scene:possessive:vine’s",
+        "scene:manual-cacti",
+        "scene:unresolved-cacti",
+        "scene:invalid-manual",
+        "scene:ambiguous-possessive",
+        "listening:possessive:vine's",
+        "listening:possessive:vine’s",
+        "listening:manual-cacti",
+        "listening:unresolved-cacti",
+        "listening:invalid-manual",
+        "listening:ambiguous-possessive"
+      ],
+      "passed": 12,
+      "database_engine_created": false,
+      "real_content_mutated": false
+    },
+    "juya-miniapp-api": {
+      "synthetic_checks": [
+        "scene:possessive:vine's",
+        "scene:possessive:vine’s",
+        "scene:manual-cacti",
+        "scene:unresolved-cacti",
+        "scene:invalid-manual",
+        "scene:ambiguous-possessive",
+        "listening:possessive:vine's",
+        "listening:possessive:vine’s",
+        "listening:manual-cacti",
+        "listening:unresolved-cacti",
+        "listening:invalid-manual",
+        "listening:ambiguous-possessive"
+      ],
+      "passed": 12,
+      "database_engine_created": false,
+      "real_content_mutated": false
+    }
+  },
+  "public_ready_probes": [
+    {
+      "host": "test-admin-api.juyayingyu.com",
+      "service": "admin",
+      "status": 200
+    },
+    {
+      "host": "test-api.juyayingyu.com",
+      "service": "mini",
+      "status": 200
+    }
+  ],
+  "maintenance_public_probes_count": 10
+}

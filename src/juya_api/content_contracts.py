@@ -15,6 +15,7 @@ class Dialogue(BaseModel):
 
 
 class Source(BaseModel):
+    manual_english: str | None = Field(default=None, max_length=300, exclude_if=lambda v: v is None)
     line_id: str = Field(max_length=64)
     start: int = Field(ge=0)
     end: int = Field(gt=0)
@@ -22,6 +23,8 @@ class Source(BaseModel):
 
 
 class Vocabulary(BaseModel):
+    source_hint: str = Field(default="", max_length=20000)
+    source_reason: str | None = None
     id: str = Field(default_factory=identifier, max_length=64)
     english: str = Field(default="", max_length=300)
     meaning: str = Field(default="", max_length=2000)
@@ -80,7 +83,11 @@ class StudyNoteChange(BaseModel):
         return self
 
 
+ContentType = Literal["illustrated", "intensive"]
+
+
 class CreateCard(BaseModel):
+    content_type: ContentType | None = None
     content: SceneContent
     study_note: StudyNoteChange | None = None
 
@@ -90,6 +97,7 @@ class Revision(BaseModel):
 
 
 class SaveCard(Revision):
+    content_type: ContentType | None = None
     content: SceneContent
     study_note: StudyNoteChange | None = None
 

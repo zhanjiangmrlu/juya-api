@@ -30,7 +30,7 @@ def test_delete_batch_preserves_saved_cards_media_and_original_receipts(admin, m
         batch["id"],
         "retained.zip",
         [
-            ("场景/内容.docx", document("保留已存卡片")),
+            ("场景/内容.docx", document("保留已存卡片", content_type="图解词汇")),
             ("场景/图片.png", picture()),
             ("场景/音频.wav", recording()),
         ],

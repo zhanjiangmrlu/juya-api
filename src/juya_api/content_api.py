@@ -3,7 +3,7 @@
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, false, func, or_, select
 from sqlalchemy.orm import Session
 
 from .access_service import (
@@ -14,7 +14,8 @@ from .access_service import (
     policy,
     require_access,
 )
-from .content_contracts import CreateCard, PublishCard, Revision, SaveCard
+from .catalog_statistics import scene_category, statistics
+from .content_contracts import ContentType, CreateCard, PublishCard, Revision, SaveCard
 from .content_models import Card, CardDraft, CardStudyNoteVersion, CardVersion, Media
 from .content_service import (
     card_view,
@@ -26,6 +27,7 @@ from .content_service import (
     require_card,
     save_candidate,
 )
+from .content_types import ready
 from .database import timestamp
 from .dependencies import (
     administrator,
@@ -58,10 +60,11 @@ from .transactions import actor_lock, operate
 def admin_routes():
     router = APIRouter(prefix="/api/admin/v1", tags=["scene management"])
 
-    @router.get("/cards", response_model=AdminCardPage)
+    @router.get("/cards", response_model=AdminCardPage, dependencies=[Depends(read_snapshot)])
     def listing(
         request: Request,
         status: str = "all",
+        content_type: ContentType | None = None,
         search: str = "",
         batch_id: str | None = Query(None, min_length=1, max_length=36),
         anchor_id: str | None = Query(None, min_length=1, max_length=36),
@@ -79,6 +82,8 @@ def admin_routes():
             .outerjoin(CardVersion, CardVersion.id == Card.current_version_id)
             .where(Card.deleted_at.is_(None))
         )
+        if content_type:
+            query = query.where(scene_category() == content_type)
         if batch_id:
             owned_batch(db, batch_id, admin.id)
             query = query.where(
@@ -124,6 +129,7 @@ def admin_routes():
             query.order_by(listed_at.desc(), Card.id.desc()).offset((page - 1) * limit).limit(limit)
         ).all()
         return {
+            **statistics(db, Card, content_type, request.app.state.clock()),
             "learning_policy": {
                 **policy(db),
                 "actual_free_count": len(free_ids(db, policy(db)["free_count"])),
@@ -152,7 +158,14 @@ def admin_routes():
         now = request.app.state.clock()
 
         def execute():
-            card = create_candidate(db, body.content, admin.id, now, study_note=body.study_note)
+            card = create_candidate(
+                db,
+                body.content,
+                admin.id,
+                now,
+                study_note=body.study_note,
+                content_type=body.content_type,
+            )
             return card_view(db, card)
 
         return operate(
@@ -183,6 +196,7 @@ def admin_routes():
         card, version = published_card(db, card_id)
         return {
             "card_id": card.id,
+            "content_type": card.published_content_type,
             "version_id": version.id,
             "content": version.payload,
             "study_note": note_metadata(db, card),
@@ -202,7 +216,15 @@ def admin_routes():
 
         def execute():
             card = save_candidate(
-                db, card_id, body.revision, body.content, admin.id, now, study_note=body.study_note
+                db,
+                card_id,
+                body.revision,
+                body.content,
+                admin.id,
+                now,
+                study_note=body.study_note,
+                content_type=body.content_type,
+                update_type="content_type" in body.model_fields_set,
             )
             return card_view(db, card)
 
@@ -324,6 +346,7 @@ def mini_routes():
         limit: int = Query(20, ge=1, le=50),
         scope: Literal["uncompleted", "published"] = "uncompleted",
         has_study_note: bool | None = None,
+        content_type: ContentType | None = None,
         user=Depends(optional_learner),
         db: Session = Depends(database, scope="function"),
     ):
@@ -332,6 +355,19 @@ def mini_routes():
         access_snapshot = learning_access_snapshot(db, user.id if user else None, now)
         query = select(Card).where(Card.status == "published", Card.deleted_at.is_(None))
         published_total = db.scalar(select(func.count()).select_from(query.subquery()))
+        types_ready = ready(db, strict=bool(content_type))
+        type_total = None
+        if content_type:
+            query = (
+                query.where(
+                    Card.published_content_type == content_type,
+                    Card.current_version_id.is_not(None),
+                )
+                if types_ready
+                else query.where(false())
+            )
+            if types_ready:
+                type_total = db.scalar(select(func.count()).select_from(query.subquery()))
         if scope == "uncompleted" and user:
             query = query.where(
                 Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id))
@@ -417,6 +453,7 @@ def mini_routes():
             items.append(
                 {
                     "id": card.id,
+                    "content_type": card.published_content_type,
                     "has_study_note": card.id in noted,
                     "access": learning_access(
                         db,
@@ -448,6 +485,8 @@ def mini_routes():
             "total": total,
             "page": page,
             "limit": limit,
+            "content_types_ready": types_ready,
+            "type_published_total": type_total,
             "published_total": published_total,
             "learning_access": {
                 **policy(db),
@@ -528,6 +567,7 @@ def mini_routes():
             "audio_duration": audio.duration if audio else None,
             "thumbnail_id": image.thumbnail_id if image else None,
             "card_id": card.id,
+            "content_type": card.published_content_type,
             "version_id": version.id,
             "content": version.payload,
             "published_at": timestamp(version.published_at),

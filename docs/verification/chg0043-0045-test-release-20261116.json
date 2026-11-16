@@ -1,0 +1,218 @@
+{
+  "status": "success",
+  "verified_at_utc": "2026-11-15T19:32:54.592933+00:00",
+  "api_source": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+  "state": {
+    "migration_complete": true,
+    "deploy_complete": true,
+    "verified": true,
+    "resumed": true,
+    "finalized": true,
+    "gate_active": false
+  },
+  "protected_container_count": 12,
+  "protected_containers_exactly_unchanged": true,
+  "nginx_configuration_restored_exactly": true,
+  "independent_listening_compose_only_image_changed": true,
+  "data_protection": {
+    "original_tables": 60,
+    "original_columns_rows_and_value_hashes_unchanged_during_rollout": true,
+    "schema": [
+      "0029"
+    ],
+    "contract": 3,
+    "new_type_versions_at_resume": 0,
+    "backup_bytes": 12815776,
+    "backup_sha256": "63292f67b49c3d5777b17569c785d2595580e2b6810d2d4c7418d02c084db57b"
+  },
+  "public_probes": [
+    {
+      "url": "https://test-api.juyayingyu.com/health/ready",
+      "status": 200
+    },
+    {
+      "url": "https://test-admin-api.juyayingyu.com/health/ready",
+      "status": 200
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/api/mini/v1/listening/home",
+      "status": 200
+    },
+    {
+      "url": "https://test-admin.juyayingyu.com/",
+      "status": 200
+    }
+  ],
+  "content_types_ready": false,
+  "historical_classification_written": false,
+  "web": {
+    "status": "success",
+    "commit": "7446218001c5da66e162497e21280dfbfeac7bf9",
+    "release_id": "20261115T174223-7446218001c5-149624",
+    "previous_release_id": "20261111T050119-bdefc6a745f3-84efae",
+    "installed_files_sha256_verified": 76,
+    "public_index_and_js_sha256_verified": 50,
+    "api": "https://test-admin-api.juyayingyu.com",
+    "protected_containers_unchanged": 12
+  },
+  "services": [
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "image": "sha256:774b754c4f41af6df35c67157dfe7dd2d3663e1936ae9634732a41d7e0f02b44",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "image": "sha256:774b754c4f41af6df35c67157dfe7dd2d3663e1936ae9634732a41d7e0f02b44",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "image": "sha256:774b754c4f41af6df35c67157dfe7dd2d3663e1936ae9634732a41d7e0f02b44",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "image": "sha256:774b754c4f41af6df35c67157dfe7dd2d3663e1936ae9634732a41d7e0f02b44",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "image": "sha256:5a237f1427848b6c57b24f1f935fee7dab4ec9cc70895e75580726535c90c60d",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "image": "sha256:5a237f1427848b6c57b24f1f935fee7dab4ec9cc70895e75580726535c90c60d",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "image": "sha256:5a237f1427848b6c57b24f1f935fee7dab4ec9cc70895e75580726535c90c60d",
+      "revision": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "retention": {
+    "juya-admin-api": {
+      "applied": true,
+      "deleted_release_ids": [
+        "20261112T065210-c3f70c322352-e27321"
+      ],
+      "deleted_image_refs": [
+        "juya-admin-api:c3f70c322352cce6abd5aaf3a8f8fc1fa2c11f4f"
+      ],
+      "warnings": [],
+      "reclaimed_file_bytes": 253120436
+    },
+    "juya-miniapp-api": {
+      "applied": true,
+      "deleted_release_ids": [
+        "20261112T065637-c3f70c322352-dbd83e"
+      ],
+      "deleted_image_refs": [
+        "juya-miniapp-api:c3f70c322352cce6abd5aaf3a8f8fc1fa2c11f4f"
+      ],
+      "warnings": [],
+      "reclaimed_file_bytes": 253111110
+    }
+  },
+  "official_ci": {
+    "run_id": 43742494469,
+    "job_id": 132898501943,
+    "commit": "143fd385b382a51504be90d9cd8e5cb2d6bf0cd4",
+    "status": "success",
+    "passed": 1000,
+    "skipped": 3,
+    "duration_seconds": 1039.88,
+    "environment": "official MySQL8.4 + Redis7.4 workflow",
+    "source": "official job log fetched using GitHub connector"
+  },
+  "mini": {
+    "status": "success",
+    "environment": "test",
+    "version": "1.5.0-test.20261116.032311",
+    "source_commit": "46d9b7e2d64e73aed0a38f3a53e06128fc135e97",
+    "input_files_verified": 277,
+    "input_difference": "manifest.versionName only",
+    "compiled_api": "https://test-api.juyayingyu.com",
+    "production_api_literal_absent": true,
+    "official_upload_info": {
+      "size": {
+        "total": 1538568,
+        "packages": [
+          {
+            "name": "TOTAL",
+            "size": 1538568
+          },
+          {
+            "name": "main",
+            "size": 948324
+          },
+          {
+            "name": "/sub-packages/account/",
+            "size": 44903
+          },
+          {
+            "name": "/sub-packages/feedback/",
+            "size": 93192
+          },
+          {
+            "name": "/sub-packages/listening/",
+            "size": 169930
+          },
+          {
+            "name": "/sub-packages/records/",
+            "size": 25287
+          },
+          {
+            "name": "/sub-packages/scenes/",
+            "size": 256932
+          }
+        ]
+      }
+    },
+    "result_sha256": "726111d6781b96c44c18d64cca35302b017d60aa86406fc7c71677206ab231e6",
+    "upload_log_sha256": "b4893aab5a0b2c612652fb4ed7d9bd5873df674ccf6beba218827a0dc704fcd0",
+    "experience_version_changed": false,
+    "real_device_verified": false,
+    "test_oss": {
+      "uploaded": 0,
+      "reused": 13
+    }
+  }
+}

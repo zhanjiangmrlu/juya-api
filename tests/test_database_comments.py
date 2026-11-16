@@ -42,6 +42,7 @@ def test_comment_migration_is_complete_and_frozen():
         set(Base.metadata.tables)
         - {
             "card_study_note_versions",
+            "card_content_type_versions",
             "analytics_preferences",
             "analytics_event_receipts",
             "free_access_batches",
@@ -51,6 +52,7 @@ def test_comment_migration_is_complete_and_frozen():
     for name, table in Base.metadata.tables.items():
         if name in {
             "card_study_note_versions",
+            "card_content_type_versions",
             "analytics_preferences",
             "analytics_event_receipts",
             "free_access_batches",
@@ -61,12 +63,32 @@ def test_comment_migration_is_complete_and_frozen():
         assert comments[name]["columns"] == {
             c.name: c.comment
             for c in table.columns
-            if c.name
+            if not (name == "import_batches" and c.name == "removed_count")
+            and c.name
             not in {
                 "study_note",
                 "study_note_version_id",
                 "current_study_note_version_id",
             }
+            and not (
+                name
+                in {
+                    "cards",
+                    "card_drafts",
+                    "import_items",
+                    "listening_candidates",
+                    "learning_queues",
+                }
+                and c.name
+                in {
+                    "current_content_type_version_id",
+                    "published_content_type",
+                    "content_type",
+                    "type_origin",
+                    "type_raw",
+                    "duplicate_detail",
+                }
+            )
             and not (
                 name == "consents"
                 and c.name in {"confirmation_id", "source", "client_confirmed_at"}

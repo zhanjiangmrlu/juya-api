@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Date, ForeignKey, Integer, String
+from sqlalchemy import JSON, CheckConstraint, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base, UTCDateTime
@@ -28,7 +28,11 @@ class ReadingStart(Base):
 
 class LearningQueue(Base):
     __tablename__ = "learning_queues"
-    __table_args__ = {"comment": "用户本轮场景学习队列及来源快照"}
+    content_type: Mapped[str | None] = mapped_column(String(16), comment="待学来源分类快照")
+    __table_args__ = (
+        CheckConstraint("content_type IN ('illustrated','intensive')", name="ck_queue_type"),
+        {"comment": "用户本轮场景学习队列及来源快照"},
+    )
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=identifier, comment="记录内部标识"
     )

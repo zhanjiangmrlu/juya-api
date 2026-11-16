@@ -36,7 +36,7 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
     from juya_api.config import Settings
     from juya_api.content_models import Media
     from juya_api.database import Base
-    from juya_api.import_models import ImportBatch, ImportFile, ImportItem
+    from juya_api.import_models import ImportBatch, ImportFile
     from juya_api.import_service import batch_view
     from juya_api.job_models import Job
     from juya_api.models import Administrator
@@ -131,8 +131,14 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
                 )
             db.flush()
             for name in ["saved", "mixed"]:
-                db.add(
-                    ImportItem(
+                db.execute(
+                    previous.tables["import_items"]
+                    .insert()
+                    .values(
+                        readable=True,
+                        selected=True,
+                        parser_issues=[],
+                        revision=1,
                         id="item-" + name,
                         batch_id=name,
                         source_file_id="file-" + name,
@@ -185,8 +191,10 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
                 previous.tables["import_batches"].insert(),
                 {"id": "old-image", "admin_id": "admin", "mode": "docx", "created_at": created},
             )
-            batch = db.get(ImportBatch, "old-image")
-            assert batch.updated_at is None
+            assert (
+                db.scalar(select(ImportBatch.updated_at).where(ImportBatch.id == "old-image"))
+                is None
+            )
         before_round_trip = facts()
         command.downgrade(config, "0015")
         assert "updated_at" not in {

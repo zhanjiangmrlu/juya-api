@@ -1,0 +1,10 @@
+{
+  "apiHead": "904afb4",
+  "checks": [
+    "actual ZIP draft reaches scene preview and publication through UI",
+    "intensive without PDF saves candidate draft but UI blocks publication; existing published state retained",
+    "illustrated with existing PDF blocks until explicit removal, then actual publication succeeds",
+    "real listening API matched buy/bought with closing quote; UI accepts source and preview then publishes"
+  ],
+  "failures": []
+}

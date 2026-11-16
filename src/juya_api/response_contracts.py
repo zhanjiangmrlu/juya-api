@@ -7,7 +7,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .access_contracts import AuthorizationView, CurrentAccess, PolicyView
-from .content_contracts import SceneContent
+from .content_contracts import ContentType, SceneContent
 
 
 class PublicModel(BaseModel):
@@ -98,6 +98,9 @@ class StudyNoteDraft(PublicModel):
 
 
 class CardView(PublicModel):
+    draft_content_type: ContentType | None = None
+    published_content_type: ContentType | None = None
+    content_type: ContentType | None = None
     study_note: StudyNoteDraft
     published_study_note: StudyNoteMetadata | None = None
     free_revision: int = 1
@@ -117,12 +120,26 @@ class CardView(PublicModel):
     issues: list[FieldIssue]
 
 
-class AdminCardPage(Page[CardView]):
-    learning_policy: PolicyView | None = None
+class CatalogStatistics(PublicModel):
+    total: int
+    published: int
+    free: int
+    remaining: int
+
+
+class CatalogPage[T](Page[T]):
+    statistics: CatalogStatistics
+    all_statistics: CatalogStatistics
+    snapshot_at: str
     total_pages: int
 
 
+class AdminCardPage(CatalogPage[CardView]):
+    learning_policy: PolicyView | None = None
+
+
 class CardPreview(PublicModel):
+    content_type: ContentType | None = None
     study_note: StudyNoteDraft
     preview_id: str
     revision: int
@@ -139,6 +156,7 @@ class CardState(PublicModel):
 
 
 class CardBrief(PublicModel):
+    content_type: ContentType | None = None
     has_study_note: bool = False
     access: LearningPermission | None = None
     id: str
@@ -153,6 +171,8 @@ class CardBrief(PublicModel):
 
 
 class LearningCardPage(Page[CardBrief]):
+    content_types_ready: bool
+    type_published_total: int | None
     learning_access: CurrentAccess | None = None
     free_uncompleted_total: int | None = 0
     published_total: int
@@ -165,6 +185,7 @@ class ReadingPosition(PublicModel):
 
 
 class PublishedDetail(PublicModel):
+    content_type: ContentType | None = None
     study_note: StudyNoteMetadata | None = None
     access: LearningPermission | None = None
     audio_duration: float | None
@@ -179,6 +200,7 @@ class PublishedDetail(PublicModel):
 
 
 class PublishedPreview(PublicModel):
+    content_type: ContentType | None = None
     study_note: StudyNoteMetadata | None = None
     card_id: str
     version_id: str

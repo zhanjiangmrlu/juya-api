@@ -127,7 +127,8 @@ def test_word_candidates_do_not_match_substrings_and_manual_ranges_must_be_valid
     payload["dialogue"][0]["english"] = "The buyer bought a book."
     payload["vocabulary"] = [{"english": "buy", "meaning": "买"}]
     card = draft(admin, payload)
-    assert any(i["code"] == "source_required" for i in card["issues"])
+    assert card["content"]["vocabulary"][0]["source"]["quote"] == "bought"
+    assert card["issues"] == []
     payload["vocabulary"][0]["source"] = {
         "line_id": "line-1",
         "start": 10,

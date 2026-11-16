@@ -10,21 +10,26 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select, true
 from sqlalchemy.orm import Session
 
-from .content_contracts import SceneContent, StudyNoteChange
+from .content_contracts import ContentType, SceneContent, StudyNoteChange
 from .content_models import CardDraft, Media
 from .content_service import normalize, require_card, revision_matches
-from .dependencies import administrator, database, operation_key
+from .content_types import type_issues
+from .dependencies import administrator, database, operation_key, write_transaction
 from .errors import DomainError
+from .import_duplicates import DuplicatePage, paged
 from .import_models import ImportBatch, ImportFile, ImportItem
 from .import_service import (
     INVALID_SOURCE_ERRORS,
     batch_view,
+    classify_scene,
     confirmation,
     file_view,
     item_job,
     item_view,
+    live_card,
     owned_batch,
     resolve,
+    scene_receipt,
     touch_batch,
     validate_import_note_state,
     validate_source_media,
@@ -34,8 +39,9 @@ from .jobs import enqueue
 from .media_api import save_media
 from .models import Audit, identifier
 from .response_contracts import FieldIssue, StudyNoteDraft
+from .security import fingerprint
 from .storage import ObjectStorage
-from .study_notes import PDF_ERROR_MESSAGES
+from .study_notes import PDF_ERROR_MESSAGES, note_issues, project_selection
 from .transactions import operate
 
 
@@ -77,6 +83,9 @@ class ImportFileView(BaseModel):
 
 
 class ImportItemView(BaseModel):
+    content_type: ContentType | None = None
+    type_origin: str | None = None
+    type_raw: list[str] = Field(default_factory=list)
     study_note: StudyNoteDraft
     id: str
     revision: int
@@ -100,6 +109,7 @@ class ImportItemView(BaseModel):
 
 
 class ImportBatchView(BaseModel):
+    removed_count: int = 0
     id: str
     mode: str
     created_at: str
@@ -113,6 +123,10 @@ class ImportBatchView(BaseModel):
 
 
 class ImportConfirmation(BaseModel):
+    removed: int = 0
+    failed: int = 0
+    failed_files: int = 0
+    package_count: int = 0
     version: str
     count: int
     incomplete: int
@@ -123,6 +137,7 @@ class ImportConfirmation(BaseModel):
 
 
 class StageItem(BaseModel):
+    content_type: ContentType | None = None
     study_note: StudyNoteChange | None = None
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(ge=1)
@@ -155,6 +170,82 @@ class RemoveImportItem(BaseModel):
 class RemoveImportItems(BaseModel):
     model_config = ConfigDict(extra="forbid")
     items: list[RemoveImportItem] = Field(min_length=1, max_length=50)
+
+
+class TypeSelection(BaseModel):
+    items: list[RemoveImportItem] = Field(min_length=1, max_length=50)
+    content_type: ContentType
+    overwrite: bool = False
+
+
+class TypeApply(TypeSelection):
+    version: str = Field(min_length=64, max_length=64)
+
+
+class TypeChange(BaseModel):
+    id: str
+    revision: int
+    old_type: ContentType | None
+    new_type: ContentType
+    pdf_conflict: bool
+
+
+class TypePreview(BaseModel):
+    items: list[TypeChange]
+    count: int
+    version: str
+
+
+def type_preview(db, batch, body):
+    items = []
+    changes = []
+    seen = set()
+    for request in body.items:
+        row = db.get(ImportItem, request.id)
+        if (
+            not row
+            or row.batch_id != batch.id
+            or row.revision != request.revision
+            or row.id in seen
+        ):
+            raise DomainError(409, "import_changed", "候选范围或版本已变化，请重新核对")
+        seen.add(row.id)
+        if (
+            item_view(db, row)["state"] in {"duplicate", "saved", "saving", "unreadable"}
+            or (not row.content_type and row.type_raw)
+            or (row.content_type and not body.overwrite)
+            or row.content_type == body.content_type
+        ):
+            continue
+        target = live_card(db, row.target_card_id)
+        draft = db.get(CardDraft, target.id) if target else None
+        selected = project_selection(
+            db, draft.study_note if draft else None, row.study_note, target
+        )
+        conflict = bool(
+            type_issues(db, body.content_type, selected, target)
+            or note_issues(db, selected, target)
+        )
+        items.append(
+            {
+                "id": row.id,
+                "revision": row.revision,
+                "old_type": row.content_type,
+                "new_type": body.content_type,
+                "pdf_conflict": conflict,
+            }
+        )
+        changes.append(row)
+    version = fingerprint(
+        {
+            "batch": batch.id,
+            "items": items,
+            "selection": [i.model_dump() for i in body.items],
+            "type": body.content_type,
+            "overwrite": body.overwrite,
+        }
+    )
+    return {"items": items, "count": len(items), "version": version}, changes
 
 
 def require_removable(items):
@@ -229,7 +320,11 @@ def routes():
             filename="句芽英语-资料填写示例.zip",
         )
 
-    @router.get("/imports/{batch_id}", response_model=ImportBatchView)
+    @router.get(
+        "/imports/{batch_id}",
+        response_model=ImportBatchView,
+        dependencies=[Depends(write_transaction)],
+    )
     def read(
         batch_id: str,
         request: Request,
@@ -245,7 +340,9 @@ def routes():
                 raise DomainError(
                     409, "import_not_resumable", "该批次已失效或无权访问，请刷新待处理批次"
                 )
-            value = batch_view(db, batch, request.app.state.settings)
+            value = batch_view(
+                db, batch, request.app.state.settings, restore_duplicate_receipts=True
+            )
             if not value["resumable"]:
                 raise DomainError(
                     409,
@@ -253,7 +350,12 @@ def routes():
                     "该批次已处理完成或暂存资料不可恢复，请刷新列表；缺失原文件请重新选择上传",
                 )
             return value
-        return batch_view(db, owned_batch(db, batch_id, admin.id), request.app.state.settings)
+        return batch_view(
+            db,
+            owned_batch(db, batch_id, admin.id),
+            request.app.state.settings,
+            restore_duplicate_receipts=True,
+        )
 
     @router.delete("/imports/{batch_id}", response_model=DeletedImport)
     def delete_batch(
@@ -448,6 +550,7 @@ def routes():
                 if value
             }
             touch_batch(batch, request.app.state.clock, db=db, job_ids=removed_job_ids)
+            batch.removed_count += len(items)
             for item in items:
                 db.delete(item)
             db.flush()
@@ -509,6 +612,7 @@ def routes():
             if any(item.revision != requested[item.id] for item in items):
                 raise DomainError(409, "import_changed", "核对资料已变化，请刷新后重新选择移除范围")
             touch_batch(batch, request.app.state.clock, db=db)
+            batch.removed_count += len(items)
             for item in items:
                 db.delete(item)
             db.add(
@@ -637,6 +741,9 @@ def routes():
             job = item_job(db, item)
             if job and job.state in {"queued", "running", "retry"}:
                 raise DomainError(409, "import_saving", "本项正在保存，请稍后获取结果")
+            classify_scene(db, item)
+            if item_view(db, item)["state"] == "duplicate":
+                raise DomainError(409, "import_duplicate", "重复候选已跳过")
             if body.target_card_id:
                 if not body.update_confirmed or body.target_revision is None:
                     raise DomainError(
@@ -653,6 +760,9 @@ def routes():
                 db, batch, item, selection, body.target_card_id or item.saved_card_id
             )
             item.study_note = selection
+            if "content_type" in body.model_fields_set and body.content_type != item.content_type:
+                item.type_origin = "override" if item.content_type else "manual"
+                item.content_type = body.content_type
             item.content = content
             item.selected = body.selected
             item.target_card_id = body.target_card_id
@@ -678,6 +788,82 @@ def routes():
             body.model_dump(exclude_unset=True),
             now,
             execute,
+        )
+
+    @router.get(
+        "/imports/{batch_id}/duplicates",
+        response_model=DuplicatePage,
+        dependencies=[Depends(write_transaction)],
+    )
+    def duplicates(
+        batch_id: str,
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=100),
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        batch = owned_batch(db, batch_id, admin.id)
+        details = []
+        for row in db.scalars(
+            select(ImportItem)
+            .where(ImportItem.batch_id == batch.id)
+            .order_by(ImportItem.position, ImportItem.id)
+        ):
+            if row.duplicate_detail:
+                details.append(row.duplicate_detail)
+            else:
+                value = item_view(db, row, restore_duplicate_receipt=True)
+                if row.duplicate_detail:
+                    details.append(row.duplicate_detail)
+                elif value["state"] == "duplicate":
+                    details.append(
+                        scene_receipt(
+                            db,
+                            row,
+                            "existing_content",
+                            "scene_card",
+                            value["suggested_target_id"] or row.saved_card_id,
+                        )
+                    )
+        return paged(db, batch, details, page, limit)
+
+    @router.post("/imports/{batch_id}/content-types/preview", response_model=TypePreview)
+    def preview_types(
+        batch_id: str,
+        body: TypeSelection,
+        admin=Depends(administrator),
+        db: Session = Depends(database, scope="function"),
+    ):
+        batch = owned_batch(db, batch_id, admin.id)
+        return type_preview(db, batch, body)[0]
+
+    @router.post("/imports/{batch_id}/content-types/apply", response_model=ImportBatchView)
+    def apply_types(
+        batch_id: str,
+        body: TypeApply,
+        request: Request,
+        admin=Depends(administrator),
+        key=Depends(operation_key),
+        db: Session = Depends(database, scope="function"),
+    ):
+        now = request.app.state.clock()
+
+        def execute():
+            batch = owned_batch(db, batch_id, admin.id)
+            review, rows = type_preview(db, batch, body)
+            if review["version"] != body.version:
+                raise DomainError(409, "import_changed", "候选或附件已变化，请重新核对")
+            for row in rows:
+                row.type_origin = "override" if row.content_type else "manual"
+                row.content_type = body.content_type
+                row.revision += 1
+            if rows:
+                touch_batch(batch, now, db=db)
+            db.flush()
+            return batch_view(db, batch, request.app.state.settings)
+
+        return operate(
+            db, admin, "admin", key, "import.types:" + batch_id, body.model_dump(), now, execute
         )
 
     @router.get("/imports/{batch_id}/confirmation", response_model=ImportConfirmation)

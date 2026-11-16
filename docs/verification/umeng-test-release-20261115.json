@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-15",
+  "environment": "test",
+  "source_branch": "test",
+  "source_commit": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3",
+  "official_ci": {
+    "id": 43706417271,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/43706417271",
+    "counts": {
+      "passed": 853,
+      "skipped": 3
+    },
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "id": "1df1493248c9699778dad0603431296abfdfc27e93afad00dab5d15e1248dc48",
+      "image": "sha256:bf758fd0cf3c6ff497c4fffcbf3331b344afd9e63116a23dcbc38928801a01e9",
+      "started_at": "2026-11-15T11:36:17.215667876Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-api",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "id": "1f0d92431109e10dd1220c147a0bda89bc30c961850c82de3c5f9d580ee60c6c",
+      "image": "sha256:bf758fd0cf3c6ff497c4fffcbf3331b344afd9e63116a23dcbc38928801a01e9",
+      "started_at": "2026-11-15T11:36:49.67758564Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-dispatcher",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "id": "e24a810aa81d4bb5a02691ba410f703e2938996edfc8d5476d4afdf2a1654c1f",
+      "image": "sha256:bf758fd0cf3c6ff497c4fffcbf3331b344afd9e63116a23dcbc38928801a01e9",
+      "started_at": "2026-11-15T13:18:39.998047537Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 3,
+      "oom": false,
+      "project": "juya-rebuild-test-admin",
+      "service": "admin-worker",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    },
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "id": "c663591d630fec40d437f9a8398e1289f797c0e3fb42b4aacc0ba3c8bcea34cd",
+      "image": "sha256:bf758fd0cf3c6ff497c4fffcbf3331b344afd9e63116a23dcbc38928801a01e9",
+      "started_at": "2026-11-15T13:52:43.340441089Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-listening",
+      "service": "listening-worker",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "id": "d945d5aef6b01acf26090244aaa4481db0af8b3dff3f0581056d444e95df19e7",
+      "image": "sha256:e2194ab2eb51296e1acb8a69916291d6852dd314f087f85c324f648afe5650e8",
+      "started_at": "2026-11-15T13:51:48.421339308Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-api",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "id": "8b096eb9de0dfa44ae731b06f4aae2e62398f60e470d275fff241f9d9ade3e57",
+      "image": "sha256:e2194ab2eb51296e1acb8a69916291d6852dd314f087f85c324f648afe5650e8",
+      "started_at": "2026-11-15T13:52:05.569530536Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-dispatcher",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "id": "ee4180f1e4a7eb14ef135c1855de4fe0c8b35fcfed72fc5c67c5f2a5bb983b08",
+      "image": "sha256:e2194ab2eb51296e1acb8a69916291d6852dd314f087f85c324f648afe5650e8",
+      "started_at": "2026-11-15T13:52:06.120607036Z",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "project": "juya-rebuild-test-mini",
+      "service": "mini-worker",
+      "revision": "ecb1c8aeef540e6fe8452427f8cd484b45595fa3"
+    }
+  ],
+  "policy_version": "umeng-20261115-v3",
+  "analytics_available": true,
+  "database": {
+    "schema": "0028",
+    "contract": 3,
+    "tables": 60,
+    "all_original_fields_rows_preserved": true,
+    "database_restored": false,
+    "migration_executed": false
+  },
+  "backup_saved_locally_and_sha256_verified": true,
+  "readiness": [
+    {
+      "host": "test-api.juyayingyu.com",
+      "status": 200,
+      "environment": "test"
+    },
+    {
+      "host": "test-admin-api.juyayingyu.com",
+      "status": 200,
+      "environment": "test"
+    }
+  ],
+  "admin_frontend_changed": false,
+  "production_deployed": false,
+  "incident": {
+    "disk_pressure_observed": true,
+    "recovered": true,
+    "test_maintenance_removed": true,
+    "production_deployed": false,
+    "production_config_changed": false,
+    "protected_container_identities_and_images_unchanged": true,
+    "protected_automatic_restart_history": [
+      {
+        "name": "/juya-rebuild-production-admin-admin-worker-1",
+        "before_restarts": 0,
+        "after_restarts": 3,
+        "healthy_after": true
+      },
+      {
+        "name": "/juya-rebuild-production-mini-mini-worker-1",
+        "before_restarts": 0,
+        "after_restarts": 3,
+        "healthy_after": true
+      }
+    ]
+  },
+  "manual_umeng_reception_verification": "pending"
+}

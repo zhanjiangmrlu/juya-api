@@ -249,7 +249,7 @@ def test_zip_previous_may_keep_the_confirmed_targets_original_pdf_from_an_old_pa
     from .content_helpers import recording
     from .test_imports import document
 
-    raw, image, audio = document("历史目标"), picture(), recording()
+    raw, image, audio = document("历史目标", content_type="精读词汇"), picture(), recording()
     batch, _ = import_package(
         admin,
         "original.zip",
@@ -346,7 +346,7 @@ def historical_note_target(admin, *, published=True):
         admin,
         "history.zip",
         [
-            ("history/内容.docx", document("原目标")),
+            ("history/内容.docx", document("原目标", content_type="精读词汇")),
             ("history/场景图.png", picture()),
             ("history/完整音频.wav", recording()),
             ("history/A.pdf", pdf("history")),
@@ -544,7 +544,12 @@ def test_old_zip_review_inherits_only_current_target_note_and_keeps_omission(adm
     batch, item = import_package(admin, "old.zip", [("dir/内容.docx", document("新正文"))])
     path = f"/api/admin/v1/imports/{batch}/items/{item['id']}"
     for target in (pending, ready, None, pending):
-        body = {"revision": item["revision"], "content": ready["content"], "selected": True}
+        body = {
+            "revision": item["revision"],
+            "content": ready["content"],
+            "selected": True,
+            "content_type": "intensive" if target else "illustrated",
+        }
         if target:
             body.update(
                 target_card_id=target["id"],

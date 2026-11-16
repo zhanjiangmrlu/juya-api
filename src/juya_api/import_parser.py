@@ -12,7 +12,7 @@ from typing import Any
 from defusedxml import ElementTree as ET  # type: ignore[import-untyped]
 
 from .content_contracts import SceneContent
-from .content_service import normalize, source_candidates
+from .content_service import normalize
 from .errors import DomainError
 from .models import identifier
 from .zip_names import readable_zip_name
@@ -136,7 +136,7 @@ def parse_docx_section(name, elements):
             text = paragraph_text(element).strip()
             if text in {"场景对话", "重点词汇", "语块", "语块（选填）", "语块(选填)"}:
                 section = "语块" if text.startswith("语块") else text
-            elif not section and re.fullmatch(r"英文标题\s*[:：].*", text):
+            elif not section and re.fullmatch(r"(?:英文标题|内容类型)\s*[:：].*", text):
                 continue
             elif text:
                 raise DomainError(
@@ -189,7 +189,7 @@ def parse_docx_section(name, elements):
                         "phonetic": values.get("音标", ""),
                     }
                     current["vocabulary"].append(word)
-                    source_hints.append((current, word, values.get("对应英文原句", "")))
+                    source_hints.append((word, values.get("对应英文原句", "")))
                 else:
                     current["chunks"].append(
                         {
@@ -198,12 +198,9 @@ def parse_docx_section(name, elements):
                             "chinese": values["中文释义"],
                         }
                     )
-    for content, word, hint in source_hints:
+    for word, hint in source_hints:
         if hint:
-            lines = [line for line in content["dialogue"] if line["english"] == hint]
-            candidates = source_candidates(lines, word["english"])
-            if len(candidates) == 1:
-                word["source"] = candidates[0]
+            word["source_hint"] = hint
     try:
         return normalize(SceneContent.model_validate(current))
     except ValueError:
@@ -260,7 +257,38 @@ def parse_docx_items(data, *, card_limit=50):
                             "message": "英文标题存在冲突，请核对后填写确认值",
                         }
                     )
-                results.append({"content": content, "readable": True, "issues": issues})
+                raw = [
+                    match.group(1).strip()
+                    for element in elements
+                    if element.tag == W + "p"
+                    and (
+                        match := re.fullmatch(
+                            r"内容类型\s*[:：](.*)", paragraph_text(element).strip()
+                        )
+                    )
+                ]
+                kind = (
+                    {"图解词汇": "illustrated", "精读词汇": "intensive"}.get(raw[0])
+                    if len(raw) == 1
+                    else None
+                )
+                if raw and not kind:
+                    issues.append(
+                        {
+                            "field": "content_type",
+                            "code": "content_type_unknown",
+                            "message": "请核对文件中的内容类型",
+                        }
+                    )
+                results.append(
+                    {
+                        "content": content,
+                        "readable": True,
+                        "issues": issues,
+                        "content_type": kind,
+                        "type_raw": raw,
+                    }
+                )
             except DomainError as error:
                 # Show only a bounded title for an unreadable card; retain the original source file.
                 results.append(

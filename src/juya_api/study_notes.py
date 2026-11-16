@@ -223,7 +223,15 @@ def note_issues(db, selection, card=None):
             }
         ]
     selected = effective_media_id(db, selection, card)
-    if selected and not ready_pdf(db, selected):
+    inherited_invalid = False
+    if selection["action"] == "keep" and card and card.current_study_note_version_id:
+        version = db.get(CardStudyNoteVersion, card.current_study_note_version_id)
+        inherited_invalid = (
+            not version
+            or version.card_id != card.id
+            or bool(version.media_id and not ready_pdf(db, version.media_id))
+        )
+    if inherited_invalid or (selected and not ready_pdf(db, selected)):
         return [
             {
                 "field": "study_note",
@@ -280,13 +288,18 @@ def selection_view(db, selection, card=None, *, candidate_file_ids=None):
     }
 
 
-def candidate_fingerprint(db, draft, card):
+def candidate_fingerprint(db, draft, card, content):
     """Bind preview to the PDF decision as well as body content, even when body is unchanged."""
     from .security import fingerprint
 
     return fingerprint(
         {
-            "content": draft.payload,
+            "content": content,
+            "content_type": draft.content_type,
+            "revision": draft.revision,
+            "body_version": card.current_version_id,
+            "note_version": card.current_study_note_version_id,
+            "type_version": card.current_content_type_version_id,
             "study_note": draft.study_note,
             "effective_media_id": effective_media_id(db, draft.study_note, card),
         }
@@ -301,7 +314,9 @@ def publish_note(db, card, draft, now):
         if card.current_study_note_version_id
         else None
     )
-    if (existing.media_id if existing else None) == media_id:
+    if (not card.current_study_note_version_id and not media_id) or (
+        existing and existing.card_id == card.id and existing.media_id == media_id
+    ):
         return False
     medium = ready_pdf(db, media_id)
     from .media_api import media_view

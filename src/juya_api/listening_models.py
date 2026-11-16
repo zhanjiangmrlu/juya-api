@@ -344,6 +344,7 @@ class ListeningImport(Base):
 
 class ListeningCandidate(Base):
     __tablename__ = "listening_candidates"
+    duplicate_detail: Mapped[dict | None] = mapped_column(JSON, comment="重复判定及来源快照")
     __table_args__ = {"comment": "听读导入候选、校验问题及保存去重结果"}
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=identifier, comment="记录内部标识"

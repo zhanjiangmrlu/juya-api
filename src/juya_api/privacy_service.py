@@ -58,8 +58,15 @@ def versions(request):
 
 
 def client_transport_ready(request):
-    """Keep the incompatible SDK closed regardless of legacy transport configuration."""
-    return False
+    """Authorize the test SDK only with explicit config and the expanded publication."""
+    settings = request.app.state.settings
+    current = versions(request)
+    return (
+        settings.environment == "test"
+        and settings.analytics_client_transport_enabled
+        and current.get("privacy") == "umeng-20261115-v3"
+        and current.get("analytics") == "umeng-20261115-v3"
+    )
 
 
 def validate_confirmation(request, confirmation):
@@ -161,7 +168,7 @@ def preference_view(row, request):
         scope_version=row.scope_version if row else "",
         revision=row.revision if row else 0,
         updated_at=timestamp(row.updated_at) if row else None,
-        collecting=False,
+        collecting=None if enabled and client_transport_ready(request) else False,
     )
 
 

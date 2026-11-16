@@ -214,7 +214,7 @@ def test_legacy_configuration_writes_are_gone(admin):
 def test_unconfirmed_words_and_changed_body_can_be_saved_as_drafts(admin):
     """Source review must not prevent saving a body edit or unfinished vocabulary."""
     owner = category(admin)
-    row = article(admin, owner["id"], [{**vocabulary()[0], "source": None}])
+    row = article(admin, owner["id"], [{**vocabulary()[0], "english": "unmatched", "source": None}])
     result = admin.post(
         A + f"/articles/{row['id']}/publish", json={"revision": row["revision"]}, headers=key()
     )
@@ -364,8 +364,10 @@ def test_template_word_table_resolves_unique_quote_and_keeps_ambiguous_senses_se
     ambiguous, _ = parse_docx(stream.getvalue())
     words = ambiguous["vocabulary"]
     assert len(words) == 2 and words[0]["id"] != words[1]["id"]
-    assert all(word["source"]["quote"] == "Take a break." for word in words)
-    assert all(word["source"]["word_start"] == 7 for word in words)
+    assert all(
+        word["source"] is None and word["source_reason"] == "source_sense_conflict"
+        for word in words
+    )
 
 
 def test_unconfirmed_docx_source_hint_is_retained_and_distinguishes_staging_identity():
@@ -598,7 +600,9 @@ def test_legacy_hint_candidate_classification_and_direct_publication_preserve_pr
     assert refreshed["revision"] == batch["revision"] + 1
     assert refreshed["candidates"][0]["state"] == "complete"
     assert refreshed["candidates"][0]["errors"] == []
-    assert refreshed["candidates"][0]["payload"]["vocabulary"][0]["source"] is None
+    assert refreshed["candidates"][0]["payload"]["vocabulary"][0]["source"]["word"] == "rest"
+    with system["sessions"]() as db:
+        assert db.get(ListeningCandidate, candidate_id).payload["vocabulary"][0]["source"] is None
     assert admin.get(A + f"/imports/{batch['id']}").json()["revision"] == refreshed["revision"]
     stale = admin.post(
         A + f"/imports/{batch['id']}/save",
@@ -679,5 +683,7 @@ def test_legacy_hint_reclassification_preserves_other_missing_fields(admin, syst
     assert refreshed["revision"] == batch["revision"] + 1
     assert refreshed["candidates"][0]["state"] == "incomplete"
     assert refreshed["candidates"][0]["errors"] == ["title_zh:required_for_publish"]
-    assert refreshed["candidates"][0]["payload"]["vocabulary"][0]["source"] is None
+    assert refreshed["candidates"][0]["payload"]["vocabulary"][0]["source"]["word"] == "rest"
+    with system["sessions"]() as db:
+        assert db.get(ListeningCandidate, candidate_id).payload["vocabulary"][0]["source"] is None
     assert admin.get(A + f"/imports/{batch['id']}").json()["revision"] == refreshed["revision"]

@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "real admin login and 38-row catalog",
+    "strict page jump and ordinary selection committed after real response",
+    "cross-page free selection across actual server pages",
+    "real historical snapshot confirmation and separate enable; stable content retained",
+    "type statistics independent from title filter and genuine zero result",
+    "real listening statistics, server paging and final partial page",
+    "real guest H5 typed catalogs: 26 illustrated / 12 intensive"
+  ],
+  "failures": [],
+  "errors": [],
+  "api": "real local HTTP with owned SQLite fixture; media worker executed; external gateways isolated"
+}

@@ -57,9 +57,11 @@ def content(admin):
     }
 
 
-def draft(admin, payload=None):
+def draft(admin, payload=None, *, content_type="illustrated"):
     response = admin.post(
-        "/api/admin/v1/cards", json={"content": payload or content(admin)}, headers=key()
+        "/api/admin/v1/cards",
+        json={"content": payload or content(admin), "content_type": content_type},
+        headers=key(),
     )
     assert response.status_code == 201, response.text
     return response.json()

@@ -2,7 +2,17 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base, UTCDateTime, utc_now
@@ -11,7 +21,19 @@ from .models import identifier
 
 class Card(Base):
     __tablename__ = "cards"
-    __table_args__ = {"comment": "雅思词汇场景的稳定身份与发布状态"}
+    __table_args__ = (
+        Index("ix_card_type_listing", "published_content_type", "status", "deleted_at"),
+        CheckConstraint(
+            "published_content_type IN ('illustrated','intensive')", name="ck_card_published_type"
+        ),
+        {"comment": "雅思词汇场景的稳定身份与发布状态"},
+    )
+    current_content_type_version_id: Mapped[str | None] = mapped_column(
+        String(36), comment="当前不可变分类版本标识"
+    )
+    published_content_type: Mapped[str | None] = mapped_column(
+        String(16), comment="当前发布分类投影"
+    )
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=identifier, comment="记录内部标识"
     )
@@ -49,7 +71,13 @@ class Card(Base):
 
 class CardDraft(Base):
     __tablename__ = "card_drafts"
-    __table_args__ = {"comment": "场景当前可编辑草稿"}
+    __table_args__ = (
+        CheckConstraint("content_type IN ('illustrated','intensive')", name="ck_card_draft_type"),
+        {"comment": "场景当前可编辑草稿"},
+    )
+    content_type: Mapped[str | None] = mapped_column(
+        String(16), comment="草稿拟发布分类，空值待核对"
+    )
     card_id: Mapped[str] = mapped_column(
         ForeignKey("cards.id"), primary_key=True, comment="场景稳定标识，关联cards.id"
     )
@@ -114,6 +142,27 @@ class CardStudyNoteVersion(Base):
     published_at: Mapped[datetime] = mapped_column(
         UTCDateTime, comment="笔记版本发布时间（UTC，微秒精度）"
     )
+
+
+class CardContentTypeVersion(Base):
+    __tablename__ = "card_content_type_versions"
+    __table_args__ = (
+        UniqueConstraint("card_id", "number", name="uq_card_type_version"),
+        CheckConstraint("content_type IN ('illustrated','intensive')", name="ck_card_type_version"),
+        {"comment": "场景发布分类与不可变正文、笔记绑定"},
+    )
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=identifier, comment="分类版本标识"
+    )
+    card_id: Mapped[str] = mapped_column(ForeignKey("cards.id"), comment="所属场景")
+    number: Mapped[int] = mapped_column(Integer, comment="本卡分类版本序号")
+    content_type: Mapped[str] = mapped_column(String(16), comment="有效发布分类")
+    version_id: Mapped[str] = mapped_column(ForeignKey("card_versions.id"), comment="发布正文版本")
+    study_note_version_id: Mapped[str | None] = mapped_column(
+        ForeignKey("card_study_note_versions.id"), comment="发布笔记版本，含明确移除版本"
+    )
+    admin_id: Mapped[str] = mapped_column(ForeignKey("administrators.id"), comment="确认管理员")
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, comment="确认时间UTC")
 
 
 class Preview(Base):

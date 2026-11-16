@@ -8,10 +8,13 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from .access_service import access_context, free_uncompleted, learning_access, require_access
+from . import learning_features
+from .access_service import access_context, learning_access, require_access
+from .content_contracts import ContentType
 from .content_models import Card
 from .content_service import published_card
-from .dependencies import database, learner, operation_key
+from .content_types import ready
+from .dependencies import database, learner, operation_key, read_snapshot
 from .discovery_models import LearningQueue, LearningQueueItem
 from .errors import DomainError
 from .learning_models import Completion, DailyLearning, Favorite
@@ -25,6 +28,7 @@ QueueSource = Literal["learning_notes", "learning", "favorites", "records", "day
 
 class CreateLearningQueue(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    content_type: ContentType | None = None
     source: QueueSource
     card_id: str = Field(min_length=1, max_length=36)
     day: date | None = None
@@ -34,11 +38,14 @@ class CreateLearningQueue(BaseModel):
         """仅日期来源必须且允许携带所选打卡日期"""
         if (self.source == "day") != (self.day is not None):
             raise ValueError("日期队列必须提供来源日期，其他队列不传日期")
+        if self.content_type and self.source not in {"learning", "learning_notes"}:
+            raise ValueError("复习队列不能指定待学分类")
         return self
 
 
 class QueueCreated(BaseModel):
     id: str
+    content_type: ContentType | None = None
     source: QueueSource
     total: int
 
@@ -50,6 +57,7 @@ class QueueItemView(BaseModel):
 
 
 class QueuePage(BaseModel):
+    content_type: ContentType | None = None
     end_reason: Literal["round_complete", "free_complete"] = "round_complete"
     items: list[QueueItemView]
     total: int
@@ -57,9 +65,9 @@ class QueuePage(BaseModel):
     next_offset: int | None
 
 
-def source_ids(db, user_id, body):
+def source_ids(db, user_id, body, content_type=None):
     """按来源列表读取ID，学习列表免费优先；db 为会话，user_id 为本人，body 为来源条件"""
-    if body.source == "learning":
+    if body.source == "learning" or content_type:
         completed = select(Completion.card_id).where(Completion.user_id == user_id)
         # 当前卡可能刚在其他设备完成，保留它以便重查状态后继续后续队列
         query = (
@@ -71,6 +79,16 @@ def source_ids(db, user_id, body):
             )
             .order_by(Card.is_free.desc(), Card.sort_order, Card.id)
         )
+        if content_type:
+            context = access_context(db, user_id, db.info["now"])
+            if (
+                not learning_features.LEARNING_AUTHORIZATION_ENABLED
+                or context["authorization"]["status"] != "active"
+            ):
+                query = query.where(Card.is_free.is_(True))
+            query = query.where(
+                Card.published_content_type == content_type, Card.id.not_in(completed)
+            )
     elif body.source == "learning_notes":
         query = (
             select(Card.id)
@@ -114,6 +132,8 @@ def queue_eligible(db, queue, card_id, state):
         return False
     if not learning_access(db, queue.user_id, card_id, db.info["now"])["can_learn"]:
         return False
+    if queue.content_type:
+        return card.published_content_type == queue.content_type and not state["completed"]
     if queue.source == "learning_notes":
         return published_note(db, card) is not None
     if queue.source == "learning":
@@ -143,12 +163,19 @@ def routes():
         def execute():
             """在同一事务写入队列及从点击卡向后的所有稳定ID"""
             require_access(db, user.id, body.card_id, request.app.state.clock(), lock=True)
-            published_card(db, body.card_id)
-            ids = source_ids(db, user.id, body)
+            card, _ = published_card(db, body.card_id)
+            content_type = None
+            if body.source in {"learning", "learning_notes"}:
+                if ready(db, strict=True):
+                    content_type = body.content_type or card.published_content_type
+                elif body.content_type:
+                    raise DomainError(409, "queue_source_changed", "分类未就绪，请返回列表")
+            ids = source_ids(db, user.id, body, content_type)
             queue = LearningQueue(
                 user_id=user.id,
                 source=body.source,
                 day=body.day,
+                content_type=content_type,
                 created_at=now,
                 expires_at=now + timedelta(hours=24),
             )
@@ -161,7 +188,12 @@ def routes():
                 ]
             )
             db.flush()
-            return {"id": queue.id, "source": queue.source, "total": len(ids)}
+            return {
+                "content_type": content_type,
+                "id": queue.id,
+                "source": queue.source,
+                "total": len(ids),
+            }
 
         return operate(
             db,
@@ -169,12 +201,15 @@ def routes():
             "mini",
             key,
             "learning.queue.create",
-            body.model_dump(mode="json"),
+            body.model_dump(
+                mode="json",
+                exclude={"content_type"} if "content_type" not in body.model_fields_set else set(),
+            ),
             now,
             execute,
         )
 
-    @router.get("/{queue_id}", response_model=QueuePage)
+    @router.get("/{queue_id}", response_model=QueuePage, dependencies=[Depends(read_snapshot)])
     def read(
         queue_id: str,
         request: Request,
@@ -188,6 +223,10 @@ def routes():
         if not queue or queue.user_id != user.id:
             raise DomainError(404, "queue_missing", "未找到本次学习列表，请返回列表重新进入")
         now = request.app.state.clock()
+        if queue.source in {"learning", "learning_notes"} and ready(db, strict=True) != bool(
+            queue.content_type
+        ):
+            raise DomainError(409, "queue_source_changed", "分类来源已变化，请返回列表重新进入")
         if queue.expires_at <= now:
             raise DomainError(410, "queue_expired", "本次学习列表已过期，请返回列表重新进入")
         total = (
@@ -216,26 +255,22 @@ def routes():
                 }
             )
         context = access_context(db, user.id, now)
+        pending = select(Card.id).where(
+            Card.status == "published",
+            Card.deleted_at.is_(None),
+            Card.id.not_in(select(Completion.card_id).where(Completion.user_id == user.id)),
+        )
+        if queue.content_type:
+            pending = pending.where(Card.published_content_type == queue.content_type)
         free_complete = (
-            queue.source != "learning_notes"
+            (queue.content_type or queue.source != "learning_notes")
             and context["enabled"]
             and context["authorization"]["status"] != "active"
-            and free_uncompleted(db, user.id) == 0
-            and bool(
-                db.scalar(
-                    select(Card.id)
-                    .where(
-                        Card.status == "published",
-                        Card.deleted_at.is_(None),
-                        Card.id.not_in(
-                            select(Completion.card_id).where(Completion.user_id == user.id)
-                        ),
-                    )
-                    .limit(1)
-                )
-            )
+            and not db.scalar(pending.where(Card.is_free.is_(True)).limit(1))
+            and bool(db.scalar(pending.limit(1)))
         )
         return {
+            "content_type": queue.content_type,
             "end_reason": "free_complete" if free_complete else "round_complete",
             "items": items,
             "total": total,

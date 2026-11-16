@@ -44,7 +44,16 @@ def save_note(admin, card, change):
     result = admin.put(
         f"/api/admin/v1/cards/{card['id']}",
         headers=key(),
-        json={"revision": card["draft_revision"], "content": card["content"], "study_note": change},
+        json={
+            "revision": card["draft_revision"],
+            "content": card["content"],
+            "study_note": change,
+            "content_type": "intensive"
+            if change["action"] in {"set", "unresolved"}
+            else "illustrated"
+            if change["action"] == "remove"
+            else card["draft_content_type"],
+        },
     )
     assert result.status_code == 200, result.text
     return result.json()
@@ -286,6 +295,7 @@ def test_old_zip_update_omission_preserves_pdf_and_explicit_remove_changes_dedup
             "target_revision": updated["draft_revision"],
             "update_confirmed": True,
             "study_note": {"action": "remove"},
+            "content_type": "illustrated",
         },
     )
     assert remove.status_code == 200, remove.text
@@ -436,7 +446,7 @@ def test_zip_example_includes_optional_pdf_and_instructions(admin):
         assert "在咖啡店点单/学习笔记.pdf" in archive.namelist()
         assert archive.read("在咖啡店点单/学习笔记.pdf").startswith(b"%PDF-")
         instructions = archive.read("填写说明.txt").decode()
-        assert "PDF选填" in instructions and "每卡最多一份" in instructions
+        assert "图解不附PDF" in instructions and "精读须附一份有效PDF" in instructions
 
 
 def test_pdf_validation_rejects_encryption_and_exposes_actual_limit(admin, system):
@@ -649,7 +659,7 @@ def test_zip_pdf_only_update_reuses_canonical_body_and_does_not_enqueue_tts(admi
     from .test_imports import document
 
     base = [
-        ("scene/内容.docx", document("同正文换PDF")),
+        ("scene/内容.docx", document("同正文换PDF", content_type="精读词汇")),
         ("scene/场景图.png", picture()),
         ("scene/完整音频.wav", recording()),
     ]
@@ -764,9 +774,7 @@ def test_mysql_notes_count_page_and_flag_share_one_snapshot_during_removal(
 
     def after_count(connection, cursor, statement, parameters, context, executemany):
         is_count = "count(" in statement.lower() and "card_study_note_versions" in statement
-        is_rows = (
-            "SELECT cards.id, cards.status" in statement and "ORDER BY cards.is_free" in statement
-        )
+        is_rows = "cards.current_version_id" in statement and "ORDER BY cards.is_free" in statement
         if not fired and (is_count if pause_after == "count" else is_rows):
             fired.append(True)
 
