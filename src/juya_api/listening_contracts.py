@@ -27,6 +27,7 @@ class WordMeaning(Input):
 
 
 class VocabularySource(Input):
+    manual_english: str | None = Field(default=None, max_length=300, exclude_if=lambda v: v is None)
     start: int = Field(ge=0)
     end: int = Field(gt=0)
     quote: str = Field(min_length=1, max_length=10000)

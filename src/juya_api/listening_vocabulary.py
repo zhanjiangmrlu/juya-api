@@ -62,7 +62,25 @@ def resolve_vocabulary_sources(payload):
                 )
         return choices, bool(rows)
 
-    resolve_words(payload.get("vocabulary", []), candidates)
+    def manual_source(word):
+        """Validate a manual sentence and codepoint fragment without inflection rules."""
+        source = word.get("source")
+        if (
+            not source
+            or not source.get("confirmed")
+            or normalized_quote(source.get("manual_english") or "")
+            != normalized_quote(word["english"])
+            or not word["english"].strip()
+        ):
+            return None
+        if (source["start"], source["end"], source["quote"]) not in spans:
+            return None
+        if not source["start"] <= source["word_start"] < source["word_end"] <= source["end"]:
+            return None
+        actual = payload["body_en"][source["word_start"] : source["word_end"]]
+        return dict(source) if actual.strip() and actual == source["word"] else None
+
+    resolve_words(payload.get("vocabulary", []), candidates, manual_source)
 
 
 def vocabulary_errors(payload):

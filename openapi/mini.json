@@ -16117,6 +16117,19 @@
       },
       "Source": {
         "properties": {
+          "manual_english": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "人工确认的词条英文",
+            "description": "仅人工选择当前正文片段时填写。服务端核验此值与词条英文一致，并核验原文及坐标；自动来源不填写。"
+          },
           "line_id": {
             "type": "string",
             "maxLength": 64,
@@ -16976,6 +16989,19 @@
       },
       "VocabularySource": {
         "properties": {
+          "manual_english": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "人工确认的词条英文",
+            "description": "仅人工选择当前正文片段时填写。服务端核验此值与词条英文一致，并核验原文及坐标；自动来源不填写。"
+          },
           "start": {
             "type": "integer",
             "minimum": 0.0,

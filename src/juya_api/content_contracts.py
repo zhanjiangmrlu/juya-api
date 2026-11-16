@@ -15,6 +15,7 @@ class Dialogue(BaseModel):
 
 
 class Source(BaseModel):
+    manual_english: str | None = Field(default=None, max_length=300, exclude_if=lambda v: v is None)
     line_id: str = Field(max_length=64)
     start: int = Field(ge=0)
     end: int = Field(gt=0)

@@ -240,6 +240,27 @@ TOKEN = re.compile(r"(?<!\w)[A-Za-z]+(?:['’‘\-‑][A-Za-z]+)*(?!\w)")
 AMBIGUOUS = {"better", "best", "saw", "found", "left", "felt"}
 
 
+def possessive_base(token):
+    """Remove a possessive suffix for matching, retaining original source spans."""
+    contractions = {
+        "it",
+        "he",
+        "she",
+        "that",
+        "there",
+        "here",
+        "what",
+        "who",
+        "where",
+        "when",
+        "why",
+        "how",
+        "let",
+    }
+    base = token.removesuffix("'s")
+    return base if base not in contractions else token
+
+
 def matching_spans(text, english):
     """Compare full tokens bidirectionally, always yielding offsets in original text."""
     term = normalized_quote(english).strip()
@@ -253,16 +274,33 @@ def matching_spans(text, english):
         return
     for match in TOKEN.finditer(text):
         actual = normalized_quote(match.group()).replace("‑", "-")
-        if actual == term or actual in word_forms(term) or term in word_forms(actual):
+        base, target = possessive_base(actual), possessive_base(term)
+        if base == target or base in word_forms(target) or target in word_forms(base):
             yield match.span()
 
 
-def resolve_words(words, candidates):
+def resolve_words(words, candidates, manual_source):
     """Keep a validated explicit position; competing senses without evidence need review."""
     positions: dict[tuple, list] = {}
     for word in words:
         hint = word.get("source_hint", "")
         old = word.get("source")
+        manual = bool(old and old.get("manual_english") is not None)
+        if manual:
+            chosen = manual_source(word)
+            word["source"] = chosen
+            word.pop("source_reason", None)
+            if chosen is None:
+                word["source_reason"] = "source_manual_invalid"
+                continue
+            position = (
+                normalized_quote(word["english"]),
+                chosen.get("line_id"),
+                chosen.get("word_start", chosen["start"]),
+                chosen.get("word_end", chosen["end"]),
+            )
+            positions.setdefault(position, []).append((word, True, True))
+            continue
         choices, hint_exists = candidates(word)
         chosen = next(
             (
@@ -278,8 +316,8 @@ def resolve_words(words, candidates):
             for c in choices
             if hint
             or (
-                normalized_quote(word["english"]) not in AMBIGUOUS
-                and normalized_quote(c.get("word", c["quote"])) not in AMBIGUOUS
+                possessive_base(normalized_quote(word["english"])) not in AMBIGUOUS
+                and possessive_base(normalized_quote(c.get("word", c["quote"]))) not in AMBIGUOUS
             )
         ]
         chosen = chosen or next(iter(reliable), None)
@@ -292,7 +330,7 @@ def resolve_words(words, candidates):
                 chosen.get("word_start", chosen["start"]),
                 chosen.get("word_end", chosen["end"]),
             )
-            positions.setdefault(position, []).append((word, bool(hint) or has_position))
+            positions.setdefault(position, []).append((word, bool(hint) or has_position, False))
         else:
             word["source_reason"] = (
                 "source_hint_conflict"
@@ -302,13 +340,13 @@ def resolve_words(words, candidates):
                 else "source_unmatched"
             )
     for group in positions.values():
-        senses = {word.get("meaning", "").strip() for word, _ in group}
+        senses = {word.get("meaning", "").strip() for word, _, _ in group}
         if len(senses) < 2:
             continue
         supported = {
-            word.get("meaning", "").strip() for word, has_evidence in group if has_evidence
+            word.get("meaning", "").strip() for word, has_evidence, _ in group if has_evidence
         }
-        for word, _ in group:
-            if supported != {word.get("meaning", "").strip()}:
+        for word, _, manual in group:
+            if not manual and supported != {word.get("meaning", "").strip()}:
                 word["source"] = None
                 word["source_reason"] = "source_sense_conflict"

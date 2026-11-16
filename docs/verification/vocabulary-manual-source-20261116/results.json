@@ -1,0 +1,20 @@
+{
+  "checks": [
+    {
+      "check": "possessive auto matches and unknown row is visibly red",
+      "color": {
+        "background": "rgb(255, 243, 240)",
+        "border": "rgb(173, 79, 50)",
+        "foreground": "rgb(173, 79, 50)"
+      }
+    },
+    {
+      "check": "real scene manual selection survives server preview, save, reload and confirmation publication"
+    },
+    {
+      "check": "real listening sentence stays selectable after server preview; explicit manual word survives save, reopen and publication"
+    }
+  ],
+  "errors": [],
+  "scope": "real isolated local HTTP, actual media worker and Chrome; not WeChat device or remote test deployment"
+}

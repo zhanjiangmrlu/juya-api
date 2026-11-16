@@ -387,3 +387,7 @@ Git本次不包含Windows数据库、媒体、账号、.env、.private、Token�
 真实test的15张有效历史卡分类清单已提交用户确认，尚未归类或启用；content_types_ready=false。等待明确确认后再按真实快照提交，不按PDF静默回填。真实微信/iOS/Android仍未验；远端后台未做账号登录业务操作，不把本地隔离HTTP或Mock证据当成该验收。
 
 学习授权、内置查词及动态听读高亮继续暂停；场景释义与音标选填。完整契约见docs/implementation/chg0043-0045-contract.md，执行取舍见[决策记录](docs/verification/chg0043-0045-decisions.md)。生产未部署，本地原配置和账号资料不随Git提交。
+
+## 2026-11-16 所有格与人工来源验收修复
+
+本轮补充名词所有格自动匹配、自动未知时可人工选择真实正文片段、红色待补提示；场景/听读共用人工确认依据manual_english，保持各自原始坐标制。无需schema迁移，双OpenAPI与前端契约同步。实现与真实HTTP/Chrome、独立审阅及最终验证见[修复记录](docs/verification/vocabulary-manual-source-20261116.md)。后台功能5ade9d5、小程序契约ad10a06；本次小程序运行代码未改不重复上传。按当前会话用户要求在最终门禁后直接更新测试环境，实际发布完成以前不称已上线。

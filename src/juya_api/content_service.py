@@ -55,6 +55,30 @@ def normalize(content: SceneContent) -> dict:
     return resolved_scene(value)
 
 
+def manual_scene_source(word, dialogue):
+    """Accept an administrator selection only for this term and a real UTF-16 fragment."""
+    source = word.get("source")
+    if (
+        not source
+        or normalized_quote(source.get("manual_english") or "") != normalized_quote(word["english"])
+        or not word["english"].strip()
+    ):
+        return None
+    for line in dialogue:
+        if line["id"] != source["line_id"]:
+            continue
+        encoded = line["english"].encode("utf-16-le")
+        if not 0 <= source["start"] < source["end"] <= len(encoded) // 2:
+            return None
+        try:
+            quote = encoded[source["start"] * 2 : source["end"] * 2].decode("utf-16-le")
+        except UnicodeDecodeError:
+            return None
+        if quote.strip() and quote == source["quote"]:
+            return dict(source)
+    return None
+
+
 def resolved_scene(payload):
     value = {**payload, "vocabulary": [dict(word) for word in payload.get("vocabulary", [])]}
 
@@ -66,7 +90,9 @@ def resolved_scene(payload):
             for line in value["dialogue"]
         )
 
-    resolve_words(value["vocabulary"], candidates)
+    resolve_words(
+        value["vocabulary"], candidates, lambda word: manual_scene_source(word, value["dialogue"])
+    )
     for word in value["vocabulary"]:
         if not word.get("source_hint"):
             word.pop("source_hint", None)
@@ -138,10 +164,15 @@ def validate_publication(db, content: dict) -> list[dict]:
                 valid = (
                     bool(source["quote"])
                     and quote == source["quote"]
-                    and any(
-                        s["start"] == source["start"] and s["end"] == source["end"]
-                        for s in source_candidates(
-                            [lines[source["line_id"]]], word["english"], word.get("source_hint", "")
+                    and (
+                        manual_scene_source(word, [lines[source["line_id"]]]) is not None
+                        or any(
+                            s["start"] == source["start"] and s["end"] == source["end"]
+                            for s in source_candidates(
+                                [lines[source["line_id"]]],
+                                word["english"],
+                                word.get("source_hint", ""),
+                            )
                         )
                     )
                     and source["end"] * 2 <= len(encoded)
