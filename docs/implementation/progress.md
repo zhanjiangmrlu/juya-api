@@ -586,3 +586,8 @@ API独立审阅第1轮已修复短元音双写拼写、同位置义项冲突、�
 ## 2026-11-16 release合并与小程序生产包上传
 
 三仓test均合入release并推送，API e1d8390/后台d5dd2d4/mini634841a；仅文档冲突，业务代码与test一致。API971/58环境跳过及静态/OpenAPI检查、后台378/check/build、小程序905/check通过。标准生产流程已上传1.0.2/106，记录52f0fb1同步release，生产OSS0新增/13复用。未部署生产API或站点、未迁移生产库；生产cards缺新版分类元数据，新分类需配套升级才能使用。体验版用户手动切换，真机未验，详见[上传记录](https://github.com/zhanjiangmrlu/juya-miniapp/blob/release/docs/verification/chg0043-0045-production-upload-20261116.md)。
+
+
+## 2026-11-16 CHG0043—0045 生产部署
+
+用户明确授权保留原数据配置后，release API e1d8390/后台d63e6f3完成生产发布；官方CI1026/3、7服务healthy/0restart/无OOM、12非目标容器保持。停写备份SQLgzip69892365B/raw116778826B，服务器/本地SHA、10配置文件及Nginx副本校验后才迁移0028→0029/3；原60表全部原列/行数/值hash保持，新分类表空。78安装/51公网资源SHA、31生产资源与权限检查含实际PDF401通过。流量已恢复且gate关闭；生产原生test专用finalize被保护拒绝、无副作用，改生产versions+manifest/健康/配置/备份核验封存，不改环境或清理安装/镜像。历史分类readyfalse不自动回填，须后台人工确认启用；生产统计false，微信1.0.2/106不重传。见[生产报告](https://github.com/zhanjiangmrlu/juya-api/blob/release/docs/verification/chg0043-0045-production-release-20261116.md)。
