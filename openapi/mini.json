@@ -675,7 +675,7 @@
           "协议与可选统计"
         ],
         "summary": "接收已获许可的分析事件",
-        "description": "验证账号许可、五类事件及持久去重，不修改学习成绩。仅新版披露和显式测试配置允许客户端SDK发送；accepted表示授权成功，不代表友盟已接收。",
+        "description": "验证账号许可、五类事件及持久去重，不修改学习成绩。仅匹配当前环境的新版披露和显式配置允许客户端SDK发送；accepted表示授权成功，不代表友盟已接收。",
         "operationId": "receive_api_mini_v1_analytics_events_post",
         "requestBody": {
           "content": {
@@ -15338,8 +15338,8 @@
         "properties": {
           "analytics_available": {
             "type": "boolean",
-            "title": "测试统计授权是否可用",
-            "description": "仅完整披露且显式启用测试客户端SDK授权时为true；不代表当前设备已开始采集。",
+            "title": "当前环境统计授权是否可用",
+            "description": "仅当前环境披露版本匹配且显式启用客户端SDK授权时为true；仍需用户独立明确同意，不代表当前设备已开始采集。",
             "default": false
           },
           "mode": {

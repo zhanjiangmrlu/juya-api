@@ -459,12 +459,12 @@ def test_configured_release_documents_are_readable_anonymously_without_creating_
         assert db.scalar(select(func.count()).select_from(User)) == 0
 
 
-def test_client_sdk_test_transport_cannot_be_enabled_in_production(system):
-    """The new test capability cannot implicitly turn on an existing production service."""
-    import pytest
-    from pydantic import ValidationError
+def test_production_transport_is_explicit_and_requires_production_disclosure(system, mini):
+    """Production config alone cannot substitute for current disclosure and manual permission."""
+    from pathlib import Path
 
     from juya_api.config import Settings
+    from juya_api.privacy_service import load_documents
 
     values = {
         **system["settings"].model_dump(),
@@ -474,5 +474,54 @@ def test_client_sdk_test_transport_cannot_be_enabled_in_production(system):
         "wechat_app_secret": "fixture",
         "analytics_client_transport_enabled": True,
     }
-    with pytest.raises(ValidationError, match="not enabled for production"):
-        Settings.model_validate(values)
+    configured = Settings.model_validate(values)
+    system["mini"].app.state.settings = configured
+    for version in ["umeng-20261115-v3", "umeng-20261117-v4"]:
+        settings = configured.model_copy(
+            update={
+                "privacy_documents_path": Path(__file__).parents[1]
+                / f"src/juya_api/policies/{version}.json"
+            }
+        )
+        system["mini"].app.state.privacy_documents = load_documents(settings)
+        assert mini.get(P + "/privacy/policies").json()["analytics_available"] is (
+            version.endswith("v4")
+        )
+    catalog = mini.get(P + "/privacy/policies").json()
+    current = {d["kind"]: d["version"] for d in catalog["documents"]}
+    agreed = confirmation()
+    agreed.update(privacy_version=current["privacy"], terms_version=current["terms"])
+    assert (
+        mini.post(
+            P + "/me/agreements", json=agreed, headers={"Idempotency-Key": str(uuid4())}
+        ).status_code
+        == 200
+    )
+    assert mini.get(P + "/me/privacy").json()["analytics"]["enabled"] is False
+    event = {
+        "event_id": str(uuid4()),
+        "event": "page_enter",
+        "occurred_at": system["time"][0].isoformat(),
+        "consent_revision": 1,
+        "properties": {"page_path": "pages/home/index"},
+    }
+    assert mini.post(P + "/analytics/events", json=event).status_code == 403
+    allowed = mini.put(
+        P + "/me/analytics-preference",
+        json={"enabled": True, "scope_version": current["analytics"], "expected_revision": 0},
+        headers={"Idempotency-Key": str(uuid4())},
+    )
+    assert allowed.status_code == 200
+    assert mini.post(P + "/analytics/events", json=event).status_code == 200
+    off = mini.put(
+        P + "/me/analytics-preference",
+        json={"enabled": False, "scope_version": "", "expected_revision": 1},
+        headers={"Idempotency-Key": str(uuid4())},
+    )
+    assert off.status_code == 200
+    event["event_id"] = str(uuid4())
+    assert mini.post(P + "/analytics/events", json=event).status_code == 403
+    system["mini"].app.state.settings = configured.model_copy(
+        update={"analytics_client_transport_enabled": False}
+    )
+    assert mini.get(P + "/privacy/policies").json()["analytics_available"] is False

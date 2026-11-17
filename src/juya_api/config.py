@@ -69,8 +69,6 @@ class Settings(BaseSettings):
         if self.image_role and self.worker_role and self.image_role != self.worker_role:
             raise ValueError("Worker role must match the image role")
         if self.environment == "production":
-            if self.analytics_client_transport_enabled:
-                raise ValueError("client statistics transport is not enabled for production")
             if not self.database_url.startswith("mysql+pymysql://"):
                 raise ValueError("production requires MySQL")
             if not self.cookie_secure or self.storage_backend != "oss":
