@@ -1,0 +1,354 @@
+{
+  "status": "success",
+  "verified_at_utc": "2026-11-17T14:50:12.279533+00:00",
+  "environment": "test",
+  "api_commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe",
+  "admin_commit": "027c27f8155011866b3d0961d717d0a97c5c1def",
+  "rollout_id": "20261117T142959-0be77ddb",
+  "state": "complete",
+  "migration": {
+    "contract": 3,
+    "revision": [
+      "0030"
+    ]
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+    }
+  ],
+  "protected_containers": 12,
+  "protected_containers_unchanged": true,
+  "nginx_restored_exactly": true,
+  "original_data_verified_before_open": true,
+  "original_tables": 61,
+  "backup": {
+    "bytes": 7444345,
+    "sha256": "572ee2d6bcf0d2335fc96e32d6fbf2a51f6f4bbfbf73d3af6d97118650b09021",
+    "uncompressed_bytes": 13479234,
+    "uncompressed_sha256": "5e440bfccc439f4bdd7fe33b20bef94fd091b9783b8805b1794ab27701364f77"
+  },
+  "backup_offhost_verified": true,
+  "web": {
+    "release_id": "20261117T143012-027c27f81550-648bb6",
+    "verified_files": 78
+  },
+  "releases": {
+    "seal-admin": {
+      "current": "/opt/juya/rebuild/test/juya-admin-api/releases/20261117T143003-f6f99292d1a6-ed226c",
+      "mode": "test",
+      "previous": "/opt/juya/rebuild/test/juya-admin-api/releases/20261117T102135-2d96747876ad-39dd36"
+    },
+    "seal-mini": {
+      "current": "/opt/juya/rebuild/test/juya-miniapp-api/releases/20261117T143008-f6f99292d1a6-b78fdb",
+      "mode": "test",
+      "previous": "/opt/juya/rebuild/test/juya-miniapp-api/releases/20261117T102139-2d96747876ad-829d7b"
+    }
+  },
+  "image_runtime_probes": [
+    {
+      "project": "juya-admin-api",
+      "image": "sha256:0a8b2dc06416dd0770d8a46c6801116862ea4cb13b8d66262fb58546ac96617b",
+      "result": {
+        "cases": [
+          {
+            "mode": "RGB",
+            "oriented": false,
+            "input_bytes": 7692451,
+            "output_bytes": 2140256,
+            "format": "WEBP",
+            "dimensions": [
+              1600,
+              1600
+            ],
+            "main_quality_calls": [
+              90
+            ]
+          },
+          {
+            "mode": "RGBA",
+            "oriented": false,
+            "input_bytes": 10254265,
+            "output_bytes": 4731506,
+            "format": "WEBP",
+            "dimensions": [
+              1600,
+              1600
+            ],
+            "main_quality_calls": [
+              90
+            ]
+          },
+          {
+            "mode": "RGB",
+            "oriented": true,
+            "input_bytes": 2486027,
+            "output_bytes": 1260352,
+            "format": "WEBP",
+            "dimensions": [
+              1000,
+              1600
+            ],
+            "main_quality_calls": [
+              90
+            ]
+          }
+        ],
+        "small_unchanged": true
+      }
+    },
+    {
+      "project": "juya-miniapp-api",
+      "image": "sha256:78e39320afde95ee43e8d2e72d11520b7a251efd4a4962ab2020bfd9742a6084",
+      "result": {
+        "cases": [
+          {
+            "mode": "RGB",
+            "oriented": false,
+            "input_bytes": 7692451,
+            "output_bytes": 2140256,
+            "format": "WEBP",
+            "dimensions": [
+              1600,
+              1600
+            ],
+            "main_quality_calls": [
+              90
+            ]
+          },
+          {
+            "mode": "RGBA",
+            "oriented": false,
+            "input_bytes": 10254265,
+            "output_bytes": 4731506,
+            "format": "WEBP",
+            "dimensions": [
+              1600,
+              1600
+            ],
+            "main_quality_calls": [
+              90
+            ]
+          },
+          {
+            "mode": "RGB",
+            "oriented": true,
+            "input_bytes": 2486027,
+            "output_bytes": 1260352,
+            "format": "WEBP",
+            "dimensions": [
+              1000,
+              1600
+            ],
+            "main_quality_calls": [
+              90
+            ]
+          }
+        ],
+        "small_unchanged": true
+      }
+    }
+  ],
+  "official_ci": {
+    "run": 44092646419,
+    "passed": 1049,
+    "skipped": 3,
+    "seconds": 1606.15
+  },
+  "upload_policy": {
+    "threshold_bytes": 1048576,
+    "webp_quality": 90,
+    "preserve_oriented_dimensions": true,
+    "output_over_1MiB_allowed": true,
+    "historical_media_rewritten": false
+  },
+  "http": [
+    {
+      "url": "https://test-admin.juyayingyu.com",
+      "status": 200
+    },
+    {
+      "url": "https://test-admin-api.juyayingyu.com/health/ready",
+      "status": 200
+    },
+    {
+      "url": "https://test-api.juyayingyu.com/health/ready",
+      "status": 200
+    }
+  ],
+  "live_acceptance": {
+    "coverage": "Real TEST HTTP flows; no browser or native device claim",
+    "six_flows_passed": true,
+    "checks": [
+      {
+        "flow": "scene-create",
+        "source_size": 7691680,
+        "stored_size": 2140968,
+        "dimensions": [
+          1600,
+          1600
+        ],
+        "alpha_checked": false,
+        "orientation_checked": false,
+        "stored_over_1MiB": true,
+        "passed": true
+      },
+      {
+        "flow": "scene-edit-old-small-original",
+        "source_size": 28948,
+        "stored_size": 28948,
+        "dimensions": [
+          120,
+          80
+        ],
+        "alpha_checked": false,
+        "orientation_checked": false,
+        "stored_over_1MiB": false,
+        "passed": true
+      },
+      {
+        "flow": "scene-edit",
+        "source_size": 8766926,
+        "stored_size": 2108344,
+        "dimensions": [
+          1600,
+          1600
+        ],
+        "alpha_checked": true,
+        "orientation_checked": false,
+        "stored_over_1MiB": true,
+        "passed": true
+      },
+      {
+        "flow": "scene-batch-zip",
+        "source_size": 7692569,
+        "stored_size": 2140618,
+        "dimensions": [
+          1600,
+          1600
+        ],
+        "alpha_checked": false,
+        "orientation_checked": false,
+        "stored_over_1MiB": true,
+        "passed": true
+      },
+      {
+        "flow": "listening-create",
+        "source_size": 8768695,
+        "stored_size": 2108340,
+        "dimensions": [
+          1600,
+          1600
+        ],
+        "alpha_checked": true,
+        "orientation_checked": false,
+        "stored_over_1MiB": true,
+        "passed": true
+      },
+      {
+        "flow": "listening-edit-old-small-original",
+        "source_size": 28948,
+        "stored_size": 28948,
+        "dimensions": [
+          120,
+          80
+        ],
+        "alpha_checked": false,
+        "orientation_checked": false,
+        "stored_over_1MiB": false,
+        "passed": true
+      },
+      {
+        "flow": "listening-edit",
+        "source_size": 2486854,
+        "stored_size": 1260574,
+        "dimensions": [
+          1000,
+          1600
+        ],
+        "alpha_checked": false,
+        "orientation_checked": true,
+        "stored_over_1MiB": true,
+        "passed": true
+      },
+      {
+        "flow": "listening-batch-zip-parsed",
+        "source_size": 7692557,
+        "stored_size": 2140870,
+        "dimensions": [
+          1600,
+          1600
+        ],
+        "alpha_checked": false,
+        "orientation_checked": false,
+        "stored_over_1MiB": true,
+        "passed": true
+      },
+      {
+        "flow": "listening-batch-zip",
+        "source_size": 7692557,
+        "stored_size": 2140870,
+        "dimensions": [
+          1600,
+          1600
+        ],
+        "alpha_checked": false,
+        "orientation_checked": false,
+        "stored_over_1MiB": true,
+        "passed": true
+      }
+    ],
+    "own_drafts_soft_deleted": 6,
+    "scene_batch_deleted": true,
+    "saved_listening_batch_receipts_retained": 1,
+    "media_and_audit_retained_by_supported_api": true,
+    "logged_out": true
+  },
+  "production_application_deployed": false
+}
