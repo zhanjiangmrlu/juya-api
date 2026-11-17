@@ -1,0 +1,151 @@
+{
+  "status": "success",
+  "verified_at_utc": "2026-11-17T10:59:11.675489+00:00",
+  "environment": "test",
+  "api_commit": "2d96747876ad869062494a84b10cb56eac306177",
+  "admin_commit": "027c27f8155011866b3d0961d717d0a97c5c1def",
+  "rollout_id": "20261117T102131-17b32c19",
+  "state": "complete",
+  "migration": {
+    "contract": 3,
+    "revision": [
+      "0030"
+    ]
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-test-listening-listening-worker-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-worker-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-dispatcher-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    },
+    {
+      "name": "/juya-rebuild-test-mini-mini-api-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-dispatcher-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-worker-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    },
+    {
+      "name": "/juya-rebuild-test-admin-admin-api-1",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false,
+      "commit": "2d96747876ad869062494a84b10cb56eac306177"
+    }
+  ],
+  "protected_containers": 12,
+  "protected_containers_unchanged": true,
+  "nginx_restored_exactly": true,
+  "original_data_verified_before_open": true,
+  "original_tables": 61,
+  "backup": {
+    "bytes": 7257828,
+    "sha256": "5d6eb3be444f5252685217fd4aec260171de6bc7c255a31a389f84357547cd49",
+    "uncompressed_bytes": 13121915,
+    "uncompressed_sha256": "45c180dd36d381471b8740e9e9ab9f7be8c2b64eddfbbf78eaf03a0a7c2e4656"
+  },
+  "backup_offhost_verified": true,
+  "web": {
+    "release_id": "20261117T102143-027c27f81550-1476d0",
+    "verified_files": 78
+  },
+  "releases": {
+    "seal-admin": {
+      "current": "20261117T102135-2d96747876ad-39dd36",
+      "mode": "test",
+      "previous": "20261116T124959-fd2550862d2b-ad1ed0"
+    },
+    "seal-mini": {
+      "current": "20261117T102139-2d96747876ad-829d7b",
+      "mode": "test",
+      "previous": "20261116T125003-fd2550862d2b-6f456f"
+    }
+  },
+  "cache_eviction": {
+    "entries": [
+      {
+        "project": "juya-admin-api",
+        "image_ref": "juya-admin-api:e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+        "id": "sha256:1a913d02b8934014a624f2aeaaf7142513c38e7a8647f5b1b82b7b21520b23d1",
+        "archive_sha256": "fb9bf2585529295608086933b305d74b774969ba535b7798dd5815b2baae2047"
+      },
+      {
+        "project": "juya-miniapp-api",
+        "image_ref": "juya-miniapp-api:e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+        "id": "sha256:42c3248cfc164f7bb1448e3ea46954d06dfb0806d5e32f858253e4ebfb48e48c",
+        "archive_sha256": "93353f52340b91d69860a01d0b3a65a37be451ff9d441db6ed636379423cefd7"
+      }
+    ],
+    "free_before": 7837483008,
+    "free_after": 10244014080,
+    "all_19_containers_unchanged": true,
+    "current_previous_and_reload_archives_preserved": true,
+    "reload_archives_preserved": true
+  },
+  "image_runtime_probes": [
+    {
+      "project": "juya-admin-api",
+      "image": "sha256:02a3ee7de1ac69ffc356ce66ecfdad95b3b35ec5c58aec2cbb6ee44208a06807",
+      "result": {
+        "input_bytes": 7692451,
+        "output_bytes": 790112,
+        "format": "WEBP",
+        "dimensions": [
+          1175,
+          1175
+        ],
+        "small_unchanged": true
+      }
+    },
+    {
+      "project": "juya-miniapp-api",
+      "image": "sha256:8566ac15671150b5bd93a2fb55aecee8e174f71a4f5ee88bcf6e203737aee906",
+      "result": {
+        "input_bytes": 7692451,
+        "output_bytes": 790112,
+        "format": "WEBP",
+        "dimensions": [
+          1175,
+          1175
+        ],
+        "small_unchanged": true
+      }
+    }
+  ],
+  "official_ci": {
+    "run": 44058861952,
+    "passed": 1049,
+    "skipped": 3,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/44058861952"
+  }
+}

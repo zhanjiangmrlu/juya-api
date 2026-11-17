@@ -58,14 +58,17 @@ def versions(request):
 
 
 def client_transport_ready(request):
-    """Authorize the test SDK only with explicit config and the expanded publication."""
+    """Authorize each environment only with explicit config and its current publication."""
     settings = request.app.state.settings
     current = versions(request)
+    scope = {"test": "umeng-20261115-v3", "production": "umeng-20261117-v4"}.get(
+        settings.environment
+    )
     return (
-        settings.environment == "test"
+        scope is not None
         and settings.analytics_client_transport_enabled
-        and current.get("privacy") == "umeng-20261115-v3"
-        and current.get("analytics") == "umeng-20261115-v3"
+        and current.get("privacy") == scope
+        and current.get("analytics") == scope
     )
 
 

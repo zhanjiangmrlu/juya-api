@@ -64,6 +64,7 @@ def test_comment_migration_is_complete_and_frozen():
             c.name: c.comment
             for c in table.columns
             if not (name == "import_batches" and c.name == "removed_count")
+            and not (name == "media" and c.name == "source_sha256")
             and c.name
             not in {
                 "study_note",

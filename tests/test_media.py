@@ -195,8 +195,8 @@ def test_unfinished_media_cannot_be_saved_as_a_candidate_reference(admin):
     assert admin.get("/api/admin/v1/cards").json()["total"] == 0
 
 
-def test_admin_list_thumbnail_parameter_reduces_bytes_without_changing_original(admin, monkeypatch):
-    """The list URL returns fewer real bytes; the same original URL stays lossless."""
+def test_admin_list_thumbnail_parameter_reduces_bytes_below_normalized_image(admin, monkeypatch):
+    """List delivery stays smaller than the bounded WebP content image."""
     import io
     import random
 
@@ -245,7 +245,9 @@ def test_admin_list_thumbnail_parameter_reduces_bytes_without_changing_original(
     assert partial.headers["content-range"] == f"bytes 0-15/{len(small.content)}"
     invalid_range = admin.get(path + "?thumbnail=list", headers={"Range": "bytes=999999-"})
     assert invalid_range.status_code == 416
-    assert admin.get(f"/api/admin/v1/media/{image['id']}").content == original
+    normalized = admin.get(f"/api/admin/v1/media/{image['id']}")
+    assert normalized.headers["content-type"] == "image/webp"
+    assert Image.open(io.BytesIO(normalized.content)).size == (1024, 1536)
     assert admin.get(path).content == regular.content
     assert admin.get(path + "?thumbnail=unbounded").status_code == 422
     assert admin.get(f"/api/admin/v1/media/{image['id']}?thumbnail=list").status_code == 422

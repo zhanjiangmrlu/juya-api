@@ -59,8 +59,8 @@ class PolicyCatalog(BaseModel):
     model_config = ConfigDict(title="公开协议目录")
     analytics_available: bool = Field(
         default=False,
-        title="测试统计授权是否可用",
-        description="仅完整披露且显式启用测试客户端SDK授权时为true；不代表当前设备已开始采集。",
+        title="当前环境统计授权是否可用",
+        description="仅当前环境披露版本匹配且显式启用客户端SDK授权时为true；仍需用户独立明确同意，不代表当前设备已开始采集。",
     )
     mode: Literal["legacy", "published"] = Field(
         title="协议运行模式", description="材料不完整时保持legacy必要登录，不启用新协议确认。"

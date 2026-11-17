@@ -21,6 +21,7 @@ from .content_service import (
 )
 from .database import naive_utc, timestamp
 from .errors import DomainError
+from .image_processing import media_source_hash, normalize_admin_image
 from .import_models import ImportBatch, ImportFile, ImportIdentity, ImportItem
 from .import_parser import checked_archive, member_bytes, parse_docx_items
 from .job_models import Job
@@ -113,7 +114,7 @@ def content_hash(db, content, study_note=None):
     lines = {line["id"]: index for index, line in enumerate(value["dialogue"])}
     for field in ["image_id", "audio_id"]:
         medium = db.get(Media, value[field]) if value[field] else None
-        value[field] = medium.sha256 if medium else None
+        value[field] = media_source_hash(medium)
     for group in ["dialogue", "vocabulary", "chunks"]:
         for row in value[group]:
             row.pop("id", None)
@@ -263,7 +264,7 @@ def object_key(db, item):
     return fingerprint(
         {
             "source": item.source_identity,
-            "image": image.sha256 if image else None,
+            "image": media_source_hash(image),
             "audio": audio.sha256 if audio else None,
         }
     )
@@ -865,6 +866,10 @@ def prepare_parse(settings, sessions, job, *, clock):
                 file_id = str(uuid5(NAMESPACE_URL, source["id"] + ":" + member.filename))
                 try:
                     body = member_bytes(archive, member.filename, limit)
+                    source_sha = hashlib.sha256(body).hexdigest()
+                    source_size = len(body)
+                    if kind == "image":
+                        body = normalize_admin_image(body)
                 except DomainError as error:
                     entry = {
                         "id": file_id,
@@ -882,6 +887,8 @@ def prepare_parse(settings, sessions, job, *, clock):
                         if kind == "study_note"
                         else "archive_member_limit"
                         if error.code == "archive_limit"
+                        else error.code
+                        if error.code == "image_invalid"
                         else "archive_member_invalid",
                     }
                     prepared_files.append(entry)
@@ -891,14 +898,18 @@ def prepare_parse(settings, sessions, job, *, clock):
                     continue
                 sha = hashlib.sha256(body).hexdigest()
                 key = f"{settings.environment}/imports/{file_id}/{sha}"
-                storage.put(key, body, "application/octet-stream")
+                storage.put(
+                    key, body, "image/webp" if sha != source_sha else "application/octet-stream"
+                )
                 entry = {
                     "id": file_id,
                     "name": name,
                     "kind": kind,
                     "storage_key": key,
-                    "size": len(body),
-                    "sha256": sha,
+                    "size": source_size,
+                    "sha256": source_sha,
+                    "stored_size": len(body),
+                    "stored_sha256": sha,
                     "media_id": str(uuid5(NAMESPACE_URL, file_id + ":media"))
                     if kind in {"image", "audio", "study_note"}
                     else None,
@@ -994,6 +1005,8 @@ def prepare_parse(settings, sessions, job, *, clock):
                 continue
             values = dict(value)
             media_id = values.pop("media_id")
+            stored_size = values.pop("stored_size", values["size"])
+            stored_sha = values.pop("stored_sha256", values["sha256"])
             if media_id:
                 medium = Media(
                     id=media_id,
@@ -1003,8 +1016,9 @@ def prepare_parse(settings, sessions, job, *, clock):
                     state="processing",
                     storage_key=values["storage_key"],
                     content_type="application/octet-stream",
-                    size=values["size"],
-                    sha256=values["sha256"],
+                    size=stored_size,
+                    sha256=stored_sha,
+                    source_sha256=values["sha256"] if stored_sha != values["sha256"] else None,
                     created_at=row.updated_at,
                 )
                 db.add(medium)
