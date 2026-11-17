@@ -205,7 +205,11 @@ def test_0030_preserves_existing_media_and_matches_model(tmp_path, monkeypatch, 
         pytest.skip("Dedicated MySQL required")
     engine = create_engine(url, hide_parameters=True)
     if backend == "mysql":
-        assert engine.url.database == "juya_verify" and engine.url.host == "localhost"
+        assert engine.url.database == "juya_verify" and engine.url.host in {
+            "localhost",
+            "127.0.0.1",
+            "::1",
+        }
         metadata = MetaData()
         metadata.reflect(engine)
         metadata.drop_all(engine)
