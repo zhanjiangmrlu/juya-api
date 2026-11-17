@@ -8,6 +8,7 @@ from .audio_processing import playback_mp3
 from .content_models import Media
 from .database import timestamp
 from .errors import DomainError
+from .image_processing import normalize_admin_image
 from .media_api import decoded_audio, decoded_image, playback_medium
 from .media_permissions import require_bound_bearer
 from .models import MiniSession, identifier
@@ -19,6 +20,9 @@ def save_media(db, settings, owner_id, kind, data, name, now):
     limit = (settings.audio_limit_mb if kind == "audio" else settings.image_limit_mb) * 1024 * 1024
     if not data or len(data) > limit:
         raise DomainError(413, "upload_limit", "文件为空或超过当前上传限制")
+    source_sha = hashlib.sha256(data).hexdigest()
+    if kind == "image":
+        data = normalize_admin_image(data)
     storage = ObjectStorage(settings)
     media_id = identifier()
     checksum = hashlib.sha256(data).hexdigest()
@@ -30,6 +34,7 @@ def save_media(db, settings, owner_id, kind, data, name, now):
         "kind": kind,
         "state": "ready",
         "sha256": checksum,
+        "source_sha256": source_sha if checksum != source_sha else None,
         "size": len(data),
         "storage_key": key,
         "created_at": now,

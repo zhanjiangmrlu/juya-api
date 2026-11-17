@@ -210,6 +210,9 @@ class Media(Base):
     content_type: Mapped[str] = mapped_column(String(80), comment="媒体MIME类型")
     size: Mapped[int] = mapped_column(Integer, comment="文件大小（字节）")
     sha256: Mapped[str] = mapped_column(String(64), index=True, comment="文件原始字节的SHA-256摘要")
+    source_sha256: Mapped[str | None] = mapped_column(
+        String(64), index=True, comment="图片转换前原始文件SHA-256；空值使用sha256"
+    )
     width: Mapped[int | None] = mapped_column(Integer, comment="图片宽度（像素）；空表示不适用")
     height: Mapped[int | None] = mapped_column(Integer, comment="图片高度（像素）；空表示不适用")
     duration: Mapped[float | None] = mapped_column(

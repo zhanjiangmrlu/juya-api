@@ -31,6 +31,7 @@ from .dependencies import (
     write_transaction,
 )
 from .errors import DomainError
+from .image_processing import normalize_admin_image
 from .job_models import Job
 from .jobs import enqueue
 from .media_permissions import require_bound_bearer, require_resource_login, summary_thumbnail
@@ -286,11 +287,16 @@ def save_media(
         and PurePosixPath(original_name).suffix.lower() not in {".mp3", ".m4a", ".wav", ".aac"}
     ):
         raise DomainError(422, "audio_format_unsupported", "仅支持 MP3、M4A、WAV、AAC 完整音频")
+    source_sha = hashlib.sha256(data).hexdigest()
+    if role == "admin" and kind == "image":
+        data = normalize_admin_image(data)
     storage = ObjectStorage(settings)
     media_id = identifier()
     checksum = hashlib.sha256(data).hexdigest()
     storage_key = f"{settings.environment}/media/{media_id}/{checksum}"
-    storage.put(storage_key, data, "application/octet-stream")
+    storage.put(
+        storage_key, data, "image/webp" if checksum != source_sha else "application/octet-stream"
+    )
     medium = Media(
         id=media_id,
         owner_kind=role,
@@ -302,6 +308,7 @@ def save_media(
         content_type="application/octet-stream",
         size=len(data),
         sha256=checksum,
+        source_sha256=source_sha if checksum != source_sha else None,
         created_at=now,
     )
     db.add(medium)

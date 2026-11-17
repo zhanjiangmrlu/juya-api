@@ -61,7 +61,7 @@ def test_additive_study_note_migration_preserves_legacy_body_and_contract(
         assert (
             db.scalar(text("SELECT value FROM setting_counters WHERE name='schema_contract'")) == 3
         )
-        assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0029"
+        assert db.scalar(text("SELECT version_num FROM alembic_version")) == "0030"
     with engine.connect() as db:
         assert db.execute(
             text(

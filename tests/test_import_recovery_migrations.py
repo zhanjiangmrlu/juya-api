@@ -127,7 +127,7 @@ def test_fresh_import_timestamp_is_nullable_and_matches_runtime_metadata(tmp_pat
 def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activity(
     tmp_path, monkeypatch
 ):
-    from juya_api.content_models import CardVersion, Media
+    from juya_api.content_models import CardVersion
     from juya_api.import_models import ImportFile
     from juya_api.job_models import Job
     from juya_api.learning_models import Completion
@@ -229,8 +229,11 @@ def test_import_timestamp_upgrade_retains_business_and_backfills_recorded_activi
                 )
             )
         db.flush()
-        db.add(
-            Media(
+        # Seed the historical table shape, independently of current ORM additions.
+        db.execute(
+            metadata.tables["media"]
+            .insert()
+            .values(
                 id="media",
                 owner_kind="admin",
                 owner_id="admin",

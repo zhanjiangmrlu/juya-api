@@ -19,6 +19,7 @@ from .content_models import Media
 from .database import timestamp
 from .dependencies import administrator, database, operation_key, write_transaction
 from .errors import DomainError
+from .image_processing import media_source_hash
 from .import_duplicates import DuplicatePage, paged, receipt
 from .import_parser import W, checked_archive, member_bytes, paragraph_text, xml_document
 from .listening_api import mutate_timeline, page_view
@@ -506,7 +507,7 @@ def source_hash(db, payload):
     normalized = {**payload}
     for name in ["audio_id", "image_id"]:
         medium = db.get(Media, payload.get(name)) if payload.get(name) else None
-        normalized[name] = medium.sha256 if medium else None
+        normalized[name] = media_source_hash(medium)
     return fingerprint(canonical_payload(normalized))
 
 
@@ -741,7 +742,10 @@ def parse_package(db, settings, batch, name, data, now):
                         Media.owner_kind == "listening",
                         Media.owner_id == batch.id,
                         Media.kind == kind,
-                        Media.sha256 == sha,
+                        (
+                            (Media.source_sha256 == sha)
+                            | ((Media.source_sha256.is_(None)) & (Media.sha256 == sha))
+                        ),
                     )
                     .limit(1)
                 )
