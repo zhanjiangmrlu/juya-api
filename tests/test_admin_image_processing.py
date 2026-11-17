@@ -30,7 +30,7 @@ def test_at_or_below_threshold_is_byte_identical(length):
 
 
 @pytest.mark.parametrize("mode", ["RGB", "RGBA"])
-def test_large_image_is_real_bounded_webp_with_quality_at_least_80(mode, monkeypatch):
+def test_large_image_preserves_dimensions_with_quality_at_least_90(mode, monkeypatch):
     from juya_api.image_processing import normalize_admin_image
 
     raw = noisy_image(mode)
@@ -38,22 +38,20 @@ def test_large_image_is_real_bounded_webp_with_quality_at_least_80(mode, monkeyp
     qualities = []
 
     def record_save(image, target, format=None, **options):
-        if format == "WEBP":
+        if format == "WEBP" and image.size == (1600, 1600):
             qualities.append(options["quality"])
         return save(image, target, format, **options)
 
     monkeypatch.setattr(Image.Image, "save", record_save)
     result = normalize_admin_image(raw)
-    assert len(result) <= 1048576
-    assert min(qualities) >= 80
+    assert len(result) > 1048576
+    assert min(qualities) >= 90
     with Image.open(io.BytesIO(result)) as image:
         assert image.format == "WEBP"
-        assert image.width < 1600
-        assert image.width == image.height
+        assert image.size == (1600, 1600)
         if mode == "RGBA":
             assert image.mode == "RGBA"
             assert image.getchannel("A").getextrema() == (0, 255)
-    assert normalize_admin_image(result) == result
 
 
 def test_exif_orientation_applied_before_metadata_removed():
@@ -84,7 +82,7 @@ def test_single_upload_stores_webp_but_retains_source_identity(admin, system, do
     from juya_api.content_models import Media
     from juya_api.storage import ObjectStorage
 
-    raw = noisy_image(size=(1000, 1000))
+    raw = noisy_image(size=(1600, 1600))
     if domain == "scene":
         path = "/api/admin/v1/media?kind=image"
     else:
@@ -100,7 +98,8 @@ def test_single_upload_stores_webp_but_retains_source_identity(admin, system, do
     with system["sessions"]() as db:
         medium = db.get(Media, media_id)
         assert medium.content_type == "image/webp"
-        assert medium.size <= 1048576
+        assert (medium.width, medium.height) == (1600, 1600)
+        assert medium.size > 1048576
         assert medium.source_sha256 == hashlib.sha256(raw).hexdigest()
         stored = ObjectStorage(system["settings"]).read(medium.storage_key)
         assert medium.sha256 == hashlib.sha256(stored).hexdigest()
@@ -124,7 +123,7 @@ def test_import_images_are_normalized_and_cross_package_duplicates_stay_duplicat
     from .test_listening import A, post
     from .test_listening_imports import document as listening_document
 
-    raw = noisy_image(size=(1000, 1000))
+    raw = noisy_image(size=(1600, 1600))
     doc = scene_document("同一张卡") if domain == "scene" else listening_document("同一篇文章")
     if domain == "scene":
         batch = admin.post("/api/admin/v1/imports", headers=key(), json={"mode": mode}).json()
@@ -184,7 +183,9 @@ def test_import_images_are_normalized_and_cross_package_duplicates_stay_duplicat
         medium = images[0]
         assert medium.source_sha256 == hashlib.sha256(raw).hexdigest()
         stored = ObjectStorage(system["settings"]).read(medium.storage_key)
-        assert len(stored) == medium.size <= 1048576
+        assert len(stored) == medium.size
+        assert Image.open(io.BytesIO(stored)).size == (1600, 1600)
+        assert medium.size > 1048576
         assert hashlib.sha256(stored).hexdigest() == medium.sha256
         assert Image.open(io.BytesIO(stored)).format == "WEBP"
 
@@ -244,7 +245,8 @@ def test_large_webp_is_recompressed_and_invalid_animated_input_rejected():
     output = io.BytesIO()
     image.save(output, "WEBP", lossless=True)
     assert len(output.getvalue()) > 1048576
-    assert len(normalize_admin_image(output.getvalue())) <= 1048576
+    converted = normalize_admin_image(output.getvalue())
+    assert Image.open(io.BytesIO(converted)).size == (1600, 1600)
     animation = io.BytesIO()
     image.save(
         animation,

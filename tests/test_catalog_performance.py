@@ -217,7 +217,7 @@ def test_listening_thumbnail_is_small_and_rechecks_scope_before_cached_range(
     assert int(head.headers["content-length"]) == len(small.content)
     normalized = admin.get(f"/api/admin/v1/media/{medium['id']}")
     assert normalized.headers["content-type"] == "image/webp"
-    assert len(normalized.content) <= 1048576
+    assert Image.open(io.BytesIO(normalized.content)).size == (1024, 1536)
     assert (
         mini.get(
             M + f"/articles/{row['id']}/media/{medium['id']}",

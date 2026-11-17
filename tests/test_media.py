@@ -247,7 +247,7 @@ def test_admin_list_thumbnail_parameter_reduces_bytes_below_normalized_image(adm
     assert invalid_range.status_code == 416
     normalized = admin.get(f"/api/admin/v1/media/{image['id']}")
     assert normalized.headers["content-type"] == "image/webp"
-    assert len(normalized.content) <= 1048576
+    assert Image.open(io.BytesIO(normalized.content)).size == (1024, 1536)
     assert admin.get(path).content == regular.content
     assert admin.get(path + "?thumbnail=unbounded").status_code == 422
     assert admin.get(f"/api/admin/v1/media/{image['id']}?thumbnail=list").status_code == 422
