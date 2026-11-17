@@ -34,7 +34,6 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
         publication_models,
     )
     from juya_api.config import Settings
-    from juya_api.content_models import Media
     from juya_api.database import Base
     from juya_api.import_models import ImportBatch, ImportFile
     from juya_api.import_service import batch_view
@@ -96,8 +95,11 @@ def test_mysql_historical_import_upgrade_and_old_image_insert_survive_round_trip
                     )
                 )
             db.flush()
-            db.add(
-                Media(
+            # Write the historical schema rather than columns added to the current ORM.
+            db.execute(
+                previous.tables["media"]
+                .insert()
+                .values(
                     id="medium",
                     owner_kind="admin",
                     owner_id="admin",
