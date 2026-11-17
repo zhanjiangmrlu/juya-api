@@ -1,0 +1,220 @@
+{
+  "status": "success",
+  "verified_at_utc": "2026-11-17T15:41:20.652009+00:00",
+  "projects": {
+    "juya-api": {
+      "release_source_commit": "30beb7d",
+      "artifact_source_commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe",
+      "official_ci_run": 44092646419,
+      "official_mysql_redis_passed": 1049,
+      "official_skipped": 3
+    },
+    "juya-admin": {
+      "release_source_commit": "75e2049",
+      "tests_passed": 378,
+      "files_verified": 78
+    },
+    "juya-miniapp": {
+      "release_source_commit": "b7ea07dcd30fc9bf382798aa6558d7ea97634f0c",
+      "upload_record_commit": "4f30e2eb17ccbca8ee4d7e60094122cddc1f52de",
+      "version": "1.0.3",
+      "version_code": 107,
+      "uploaded_at": "2026-11-17T15:41:53.924Z",
+      "official_receipt": {
+        "size": {
+          "total": 1537082,
+          "packages": [
+            {
+              "name": "TOTAL",
+              "size": 1537082
+            },
+            {
+              "name": "main",
+              "size": 946838
+            },
+            {
+              "name": "/sub-packages/account/",
+              "size": 44903
+            },
+            {
+              "name": "/sub-packages/feedback/",
+              "size": 93192
+            },
+            {
+              "name": "/sub-packages/listening/",
+              "size": 169930
+            },
+            {
+              "name": "/sub-packages/records/",
+              "size": 25287
+            },
+            {
+              "name": "/sub-packages/scenes/",
+              "size": 256932
+            }
+          ]
+        }
+      },
+      "tests_passed": 930,
+      "oss_created": 0,
+      "oss_reused": 13,
+      "experience_version_switched": false,
+      "submitted_for_review": false,
+      "formally_published": false
+    },
+    "juya-cli": {
+      "release_source_commit": "d117335",
+      "console_files_verified": 37,
+      "node_tests_passed": 68,
+      "python_tests_passed": 351,
+      "python_tests_skipped": 10,
+      "network_fix_commit": "aea03e2"
+    }
+  },
+  "server": {
+    "status": "success",
+    "rollout_id": "20261117T152504-3567635f",
+    "state": "complete",
+    "schema": {
+      "contract": 3,
+      "revision": [
+        "0030"
+      ]
+    },
+    "services": [
+      {
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-api",
+        "image": "sha256:78e39320afde95ee43e8d2e72d11520b7a251efd4a4962ab2020bfd9742a6084",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-dispatcher",
+        "image": "sha256:78e39320afde95ee43e8d2e72d11520b7a251efd4a4962ab2020bfd9742a6084",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-worker",
+        "image": "sha256:78e39320afde95ee43e8d2e72d11520b7a251efd4a4962ab2020bfd9742a6084",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-listening",
+        "service": "listening-worker",
+        "image": "sha256:0a8b2dc06416dd0770d8a46c6801116862ea4cb13b8d66262fb58546ac96617b",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-worker",
+        "image": "sha256:0a8b2dc06416dd0770d8a46c6801116862ea4cb13b8d66262fb58546ac96617b",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-dispatcher",
+        "image": "sha256:0a8b2dc06416dd0770d8a46c6801116862ea4cb13b8d66262fb58546ac96617b",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-api",
+        "image": "sha256:0a8b2dc06416dd0770d8a46c6801116862ea4cb13b8d66262fb58546ac96617b",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      }
+    ],
+    "protected_containers_unchanged": 12,
+    "original_tables": 61,
+    "original_data_verified_before_open": true,
+    "configuration_values_verified": true,
+    "nginx_restored_exactly": true,
+    "backup": {
+      "sql_bytes": 70994955,
+      "sql_sha256": "3a2cff8919b275bf6e213a7b628b718498a7633d9009d3bb6df4e3262723a1d5",
+      "sql_uncompressed_bytes": 119529527,
+      "sql_uncompressed_sha256": "8d3a07fb3a7dd3b50e9379ff1ea528edf0846948e5230a8a14187682e3527c90",
+      "config_bytes": 2704,
+      "config_sha256": "2cd6d37df499c6719d63b167b4b6c8f0efddb6ffb1cf123dc7739702c5e653ed",
+      "nginx_sha256": "eb60313f35a3938985339033582f3a2e89bc97c48333e428461b92aa3577b46a",
+      "offhost_verified": true
+    },
+    "web": {
+      "files_verified": 78,
+      "release_id": "20261117T150120-75e2049fa976-02bcb4"
+    },
+    "releases": {
+      "juya-admin-api": {
+        "current": "20261117T150111-f6f99292d1a6-9fc58e",
+        "previous": "20261116T144640-e1d8390fc152-863663",
+        "source_commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+      },
+      "juya-miniapp-api": {
+        "current": "20261117T150115-f6f99292d1a6-6effc0",
+        "previous": "20261116T145140-e1d8390fc152-c6fe90",
+        "source_commit": "f6f99292d1a69b0f285fe3d0ae11dbcea187febe"
+      }
+    },
+    "verified_at_utc": "2026-11-17T15:41:20.652009+00:00"
+  },
+  "public": {
+    "verified_at": "2026-11-17T15:41:20.691131+00:00",
+    "checks": [
+      {
+        "url": "https://admin-api.juyayingyu.com/health/ready",
+        "status": 200
+      },
+      {
+        "url": "https://api.juyayingyu.com/health/ready",
+        "status": 200
+      },
+      {
+        "url": "https://cli.juyayingyu.com/healthz",
+        "status": 200
+      }
+    ],
+    "privacy": {
+      "analytics_available": true,
+      "versions": {
+        "terms": "chg0040-20261110-v1",
+        "privacy": "umeng-20261117-v4",
+        "analytics": "umeng-20261117-v4"
+      },
+      "explicit_consent_required": true
+    },
+    "classification": {
+      "illustrated": 12,
+      "intensive": 200
+    },
+    "admin_index_sha256": "5c93f392348aeaac0bc9a30b8120617253edd54f333b5b3081589b110a2a4a3e"
+  },
+  "incidents": {
+    "space_gate_before_maintenance": true,
+    "identical_archives_deduplicated_bytes": 1012574398,
+    "first_backup_failed_before_migration": true,
+    "original_service_and_data_manually_recovered": true,
+    "backup_network_fix_reviewed_and_full_dump_checked_before_retry": true,
+    "first_native_journal_preserved_with_separate_manual_recovery_receipt": true,
+    "analytics_activation_verifier_image_id_mismatch_caused_config_rollback": true,
+    "analytics_activation_final_success": true
+  },
+  "not_verified": [
+    "iOS/Android real-device flow",
+    "Umeng actual event ingestion"
+  ]
+}
