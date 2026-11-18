@@ -9780,6 +9780,150 @@
             "description": "服务暂不可用，请稍后重试"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "主题听读学习"
+        ],
+        "summary": "通过请求体查询同分类下一篇听读文章",
+        "description": "通过请求体传递冻结队列凭证，避免分类文章增多导致地址过长；逐篇复核本人权限，仅查询而不写入学习完成记录。",
+        "operationId": "next_article_from_body_api_mini_v1_listening_articles__article_id__next_post",
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "听读文章标识",
+              "description": "业务听读文章的 ID，区别于文章的发布版本 ID。"
+            },
+            "description": "业务听读文章的 ID，区别于文章的发布版本 ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NextArticleInput"
+              }
+            }
+          },
+          "description": "请求数据，字段说明和必填约束见下方数据结构。"
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextArticle"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求不符合业务规则"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "尚未登录，或登录凭证已失效"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "当前身份无权执行该操作"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源不存在，或当前身份不可访问"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "状态、版本或幂等请求发生冲突，请按错误码处理"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "资源或功能已不可用"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求参数校验失败，或业务内容不符合要求"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务器暂未完成请求，请按错误信息处理"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "服务暂不可用，请稍后重试"
+          }
+        }
       }
     },
     "/api/mini/v1/listening/articles/{article_id}/progress": {
@@ -15028,6 +15172,24 @@
           "ended"
         ],
         "title": "分类内下一篇听读文章"
+      },
+      "NextArticleInput": {
+        "properties": {
+          "queue_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "听读队列凭据",
+            "description": "服务端签发的分类连续学习凭据，读取下一篇时按原值携带。"
+          }
+        },
+        "type": "object",
+        "title": "分类内下一篇听读文章查询请求"
       },
       "OperationResponse": {
         "properties": {

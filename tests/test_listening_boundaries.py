@@ -6,7 +6,9 @@ from tests.content_helpers import key, picture
 from tests.test_listening import A, M, article, policy, post, publish, topic
 
 
-def test_frozen_queue_survives_admin_reorder(admin, mini):
+@pytest.mark.parametrize("method", ["GET", "POST"])
+def test_frozen_queue_survives_admin_reorder(admin, mini, method):
+    """method 两种查询方式都沿用进入文章时冻结的顺序，不受后台重排影响"""
     t = topic(admin)
     rows = [publish(admin, article(admin, t["id"], str(n))) for n in range(3)]
     policy(admin, 3)
@@ -23,7 +25,11 @@ def test_frozen_queue_survives_admin_reorder(admin, mini):
         },
     )
     assert changed.status_code == 200
-    result = mini.get(M + f"/articles/{rows[0]['id']}/next", params={"queue_token": token}).json()
+    from tests.test_listening_next import next_response
+
+    response = next_response(mini, rows[0]["id"], token, method)
+    assert response.status_code == 200, response.text
+    result = response.json()
     assert result["article"]["id"] == rows[1]["id"]
 
 

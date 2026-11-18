@@ -559,6 +559,7 @@ SCHEMA_TITLES: dict[str, str] = {
     "MediaTicketInput": "听读媒体访问票据请求",
     "MixedDay": "所选日期的场景与听读学习记录",
     "NextArticle": "分类内下一篇听读文章",
+    "NextArticleInput": "分类内下一篇听读文章查询请求",
     "OperationResponse": "幂等操作查询结果",
     "OrderInput": "听读文章排序请求",
     "OrderResult": "听读文章排序结果",
