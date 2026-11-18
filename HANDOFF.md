@@ -1,6 +1,8 @@
-# 2026-11-18 大分类下一篇长地址修复（仅本地待发布）
+# 2026-11-18 大分类下一篇生产发布完成
 
-新增只读 POST 下一篇接口，冻结队列通过 JSON 正文传递，保留旧 GET；小程序切 POST，并将下一篇页面队列改为绑定会话与目标文章的一次性内存交接，兼容旧页面参数。402篇真实签发队列经8KB模拟网关验证、新旧权限/顺序边界、25KB前端队列及失败重试通过；隔离MySQL20项、小程序934测试/check/微信无上传构建通过。API完整SQLite1007通过/59环境条件跳过、ruff/格式/mypy通过，独立审查无待修问题，详见API docs/verification/listening-next-large-category-20261118.md。未提交、推送、部署、上传或修改真实数据；生效须先API后小程序，旧包仍可能414，真机未验。
+生产双 API 与独立听读 Worker 等 7 服务 healthy、0 restart；61 原表原字段/行数/值摘要和双份备份核验，0030/contract3 无迁移，12 非目标容器及原配置保持。真实生产 322 篇/17592B 队列的 POST 与重试均 200、返回同一下一篇，完成事实不变；旧长 GET 仍 414，需新版客户端。
+
+微信生产包 **1.0.4 / 108** 已上传并推送成功记录，**体验版用户自行切换，未提审或正式发布**。官方 API MySQL/Redis 1063/3 跳过、小程序934/check/正式构建通过，真机未验。详见 [生产发布验收](https://github.com/zhanjiangmrlu/juya-api/blob/release/docs/verification/listening-next-production-release-20261118.md)。下方未部署/未上传为历史阶段。
 
 ---
 

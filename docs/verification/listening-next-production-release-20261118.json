@@ -1,0 +1,143 @@
+{
+  "api_source": "a2b3dbb07d3baead5965a87193ba3483b3ef4230",
+  "wechat_source": "5d4a479591f48ef0cabca0000fba392acc1f9770",
+  "wechat_record_commit": "0be3e29552ce902c6ce8b9e48171972e5ed235ae",
+  "official_ci": {
+    "run_id": 44312692108,
+    "job_id": 134830644199,
+    "passed": 1063,
+    "skipped": 3,
+    "mysql_redis": true
+  },
+  "rollout": {
+    "status": "success",
+    "rollout_id": "20261118T141939-11418803",
+    "state": "complete",
+    "schema": {
+      "contract": 3,
+      "revision": [
+        "0030"
+      ]
+    },
+    "services": [
+      {
+        "project": "juya-rebuild-production-listening",
+        "service": "listening-worker",
+        "image": "sha256:70e16a99b20f5ab64ce62544d8060e619ec462f983045929cc39d4a97bd312b1",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-worker",
+        "image": "sha256:0453df425ae561e1e8f10c5d86569e8ddb349813720c1fcb78e27b8620b3f990",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-dispatcher",
+        "image": "sha256:0453df425ae561e1e8f10c5d86569e8ddb349813720c1fcb78e27b8620b3f990",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-mini",
+        "service": "mini-api",
+        "image": "sha256:0453df425ae561e1e8f10c5d86569e8ddb349813720c1fcb78e27b8620b3f990",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-dispatcher",
+        "image": "sha256:70e16a99b20f5ab64ce62544d8060e619ec462f983045929cc39d4a97bd312b1",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-worker",
+        "image": "sha256:70e16a99b20f5ab64ce62544d8060e619ec462f983045929cc39d4a97bd312b1",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "project": "juya-rebuild-production-admin",
+        "service": "admin-api",
+        "image": "sha256:70e16a99b20f5ab64ce62544d8060e619ec462f983045929cc39d4a97bd312b1",
+        "health": "healthy",
+        "status": "running",
+        "restarts": 0
+      }
+    ],
+    "protected_containers_unchanged": 12,
+    "original_tables": 61,
+    "original_data_verified_before_open": true,
+    "configuration_values_verified": true,
+    "nginx_restored_exactly": true,
+    "backup": {
+      "sql_bytes": 71908042,
+      "sql_sha256": "a0b0af02b382d1b34292b78c42dc552ed12ca033cff187f5c0bd00e0f373d5ae",
+      "sql_uncompressed_bytes": 121835792,
+      "sql_uncompressed_sha256": "0fce3ba52bcf71d9168e476b230439cf097386d1922db7ade806fa4f00f3e187",
+      "config_bytes": 2703,
+      "config_sha256": "9ec72622d929eed2d89a2cea401ef0aa343292841479412da57225950ddd65d4",
+      "nginx_sha256": "eb60313f35a3938985339033582f3a2e89bc97c48333e428461b92aa3577b46a",
+      "offhost_verified": true
+    },
+    "web": {
+      "files_verified": 78,
+      "release_id": "20261118T141956-68e8447a0362-a3b282"
+    },
+    "releases": {
+      "juya-admin-api": {
+        "current": "20261118T141948-a2b3dbb07d3b-cee63f",
+        "previous": "20261117T150111-f6f99292d1a6-9fc58e",
+        "source_commit": "a2b3dbb07d3baead5965a87193ba3483b3ef4230"
+      },
+      "juya-miniapp-api": {
+        "current": "20261118T141952-a2b3dbb07d3b-ee426b",
+        "previous": "20261117T150115-f6f99292d1a6-6effc0",
+        "source_commit": "a2b3dbb07d3baead5965a87193ba3483b3ef4230"
+      }
+    },
+    "verified_at_utc": "2026-11-18T14:37:47.811121+00:00"
+  },
+  "next_article": {
+    "category_articles": 322,
+    "queue_token_bytes": 17592,
+    "post_url_bytes": 73,
+    "post_status": 200,
+    "repeat_post_status": 200,
+    "same_next_article": true,
+    "next_article_returned": true,
+    "ended": false,
+    "legacy_long_get_status": 414,
+    "legacy_short_get_status": 200,
+    "anonymous_post_status": 401,
+    "completion_facts_unchanged": true,
+    "existing_session_used": true,
+    "database_writes": false
+  },
+  "wechat": {
+    "version": "1.0.4",
+    "versionCode": 108,
+    "sourceCommit": "5d4a479591f48ef0cabca0000fba392acc1f9770",
+    "uploadedAt": "2026-11-18T14:40:30.548Z",
+    "total_bytes": 1537624,
+    "main_bytes": 947136,
+    "production_assets_new": 0,
+    "production_assets_reused": 13
+  },
+  "experience_version_changed": false,
+  "wechat_review_submitted": false,
+  "wechat_formally_published": false,
+  "real_device_verified": false
+}
