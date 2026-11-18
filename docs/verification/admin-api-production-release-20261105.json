@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-05",
+  "status": "deployed_and_verified",
+  "environment": "production",
+  "source": {
+    "admin": "c81aa8eb0e06024923c5f14292d6adfab9a75744",
+    "api_release_merge": "ca5dfc73cc19a487831f284847d700db09242607",
+    "api_runtime": "b2744ec24702d39781280cf56632b33dd3aedc2a",
+    "api_runtime_equals_release_except_documentation": true
+  },
+  "validation": {
+    "admin_check": "passed",
+    "admin_unit_tests": 286,
+    "admin_production_build": "passed",
+    "api_local_static_checks": "passed",
+    "api_official_ci_run": 41962855704,
+    "api_ci_passed": 644,
+    "api_ci_skipped": 3,
+    "official_role_images_verified": true,
+    "admin_all_installed_files_hash_match": true,
+    "admin_public_entry_hash_match": true,
+    "api_public_health": {
+      "admin": {
+        "status": 200,
+        "environment": "production"
+      },
+      "mini": {
+        "status": 200,
+        "environment": "production"
+      }
+    },
+    "public_boundaries": {
+      "admin/docs": 404,
+      "admin/openapi.json": 404,
+      "mini/docs": 404,
+      "mini/openapi.json": 404,
+      "anonymous_admin": 401,
+      "anonymous_mini": 401,
+      "admin_rejects_mini_route": 404,
+      "mini_rejects_admin_route": 404
+    },
+    "production_services_healthy": 7,
+    "production_service_restarts": 0,
+    "production_service_oom": false,
+    "schema_revision": "0025",
+    "schema_contract": 3,
+    "database_migration": false,
+    "test_and_infrastructure_unchanged": true,
+    "cli_unchanged": true,
+    "asr_submissions_unchanged": true,
+    "pending_asr_jobs": 0,
+    "external_configuration_unchanged": true
+  },
+  "releases": [
+    {
+      "project": "juya-admin-api",
+      "release_id": "20261105T143636-b2744ec24702-cd3c95",
+      "commit": "b2744ec24702d39781280cf56632b33dd3aedc2a"
+    },
+    {
+      "project": "juya-miniapp-api",
+      "release_id": "20261105T144325-b2744ec24702-1375ad",
+      "commit": "b2744ec24702d39781280cf56632b33dd3aedc2a"
+    },
+    {
+      "project": "juya-admin",
+      "release_id": "20261105T142452-c81aa8eb0e06-9b205a",
+      "commit": "c81aa8eb0e06024923c5f14292d6adfab9a75744",
+      "public_hashes_match": true
+    }
+  ],
+  "scope_limits": [
+    "未读取生产文章正文、账号资料或故障日志",
+    "未触发腾讯云识别",
+    "本轮未重新上传小程序或切换体验版",
+    "手机锁屏后所有页面失败此前未复现，不将发布等同于已修复该问题"
+  ]
+}

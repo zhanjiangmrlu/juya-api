@@ -1,0 +1,334 @@
+{
+  "status": "success",
+  "verified_at_utc": "2026-11-16T15:33:15.646801+00:00",
+  "environment": "production",
+  "api_commit": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+  "admin_commit": "d63e6f39a6f912fd581b109d838c77d98cf1e5c3",
+  "api_releases": {
+    "juya-admin-api": {
+      "current": "20261116T144640-e1d8390fc152-863663",
+      "previous": "20261112T075431-5c9cb5ac2697-dcf0eb",
+      "bundle_sha256": "8e078f64268ad1fee00bb50981e96774014bce528c5f3f5372dd4ba1c7c5b2cf"
+    },
+    "juya-miniapp-api": {
+      "current": "20261116T145140-e1d8390fc152-c6fe90",
+      "previous": "20261112T080036-5c9cb5ac2697-b69a82",
+      "bundle_sha256": "8f64177e405140e547a7a5fcecad44a641267e45bd53ce0d90a513f8562d1172"
+    }
+  },
+  "web": {
+    "status": "success",
+    "commit": "d63e6f39a6f912fd581b109d838c77d98cf1e5c3",
+    "release_id": "20261116T142902-d63e6f39a6f9-d71a5b",
+    "previous_release_id": "20261111T121624-b13666720196-e9ff3d",
+    "installed_files_sha256_verified": 78,
+    "public_index_and_js_sha256_verified": 51,
+    "api": "https://admin-api.juyayingyu.com",
+    "protected_containers_unchanged": 12
+  },
+  "state": {
+    "preflight_complete": true,
+    "backup_complete": true,
+    "migration_complete": true,
+    "deploy_complete": true,
+    "verified": true,
+    "resumed": true,
+    "finalized": true,
+    "gate_active": false
+  },
+  "services": [
+    {
+      "name": "/juya-rebuild-production-admin-admin-api-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-dispatcher-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-admin-admin-worker-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-listening-listening-worker-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-api-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-dispatcher-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "name": "/juya-rebuild-production-mini-mini-worker-1",
+      "revision": "e1d8390fc1521eb0976d37ddbd75065dc05cae24",
+      "health": "healthy",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "protected_container_count": 12,
+  "protected_containers_exactly_unchanged": true,
+  "production_finalization_mode": "production-verification-only",
+  "native_test_retention_performed": false,
+  "api_installed_versions_images_backups_preserved": true,
+  "nginx_restored_exactly": true,
+  "original_configuration_retained_except_listening_image": true,
+  "resource_smoke": {
+    "pdf_existing_publication_available": true,
+    "pdf_real_production_probe": "passed",
+    "checks": [
+      {
+        "check": "scene-list-page-1",
+        "status": 200
+      },
+      {
+        "check": "scene-list-page-2",
+        "status": 200
+      },
+      {
+        "check": "scene-list-page-3",
+        "status": 200
+      },
+      {
+        "check": "scene-list-page-4",
+        "status": 200
+      },
+      {
+        "check": "scene-list-page-5",
+        "status": 200
+      },
+      {
+        "check": "free-scene-detail",
+        "status": 200
+      },
+      {
+        "check": "guest-scene-audio",
+        "status": 401
+      },
+      {
+        "check": "guest-scene-pdf",
+        "status": 401
+      },
+      {
+        "check": "guest-scene-pronunciation-GET",
+        "status": 401
+      },
+      {
+        "check": "guest-scene-pronunciation-POST",
+        "status": 401
+      },
+      {
+        "check": "free-scene-image-ticket",
+        "status": 200
+      },
+      {
+        "check": "free-scene-image",
+        "status": 200
+      },
+      {
+        "check": "nonfree-scene-detail",
+        "status": 403
+      },
+      {
+        "check": "listening-list-page-1",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-2",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-3",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-4",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-5",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-6",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-7",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-8",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-9",
+        "status": 200
+      },
+      {
+        "check": "listening-list-page-10",
+        "status": 200
+      },
+      {
+        "check": "nonfree-listening-detail",
+        "status": 403
+      },
+      {
+        "check": "free-listening-detail",
+        "status": 200
+      },
+      {
+        "check": "guest-listening-audio-ticket",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-audio-GET",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-audio-HEAD",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-audio-GET-range",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-pronunciation-GET",
+        "status": 401
+      },
+      {
+        "check": "guest-listening-pronunciation-POST",
+        "status": 401
+      }
+    ],
+    "count": 31,
+    "permission_version_updated": true,
+    "lookup_paused": true,
+    "protected_resources_require_login": true,
+    "free_text_and_scene_picture_open": true,
+    "no_login_or_content_mutation_requested": true
+  },
+  "category_probes": [
+    {
+      "category": "illustrated",
+      "metadata_present": true,
+      "ready": false
+    },
+    {
+      "category": "intensive",
+      "metadata_present": true,
+      "ready": false
+    }
+  ],
+  "policy_probe": {
+    "published": true,
+    "analytics_available": false
+  },
+  "official_ci": {
+    "run_id": 43884003473,
+    "quality_counts": {
+      "passed": 1026,
+      "skipped": 3
+    }
+  },
+  "listening_config_only_image_changed": true,
+  "database": {
+    "schema_before": [
+      "0028"
+    ],
+    "schema_after": [
+      "0029"
+    ],
+    "contract": 3,
+    "original_business_tables": 60,
+    "business_tables_after": 61,
+    "columns_counts_value_fingerprints_equal_during_maintenance": true,
+    "content_types_ready_during_maintenance": false,
+    "classification_versions_during_maintenance": 0,
+    "migration_performed": true,
+    "backup_bytes": 69892365,
+    "backup_sha256": "5094c0bba38f9e872335aae8f5cacc9957aeea2f4abaa0e5ec0a73be5afb98c5",
+    "backup_uncompressed_sha256": "bc7494a3560e1587cf2e0501a07d9f5d9c4926ba191ab0ec00752bddd5879ed3",
+    "config_backup_sha256": "a1e07b010b05b98783b0426e95d63a55089666147911d6862f9afa489a2c48d3",
+    "config_files_verified": 10,
+    "local_backup_identical": true,
+    "backup_uncompressed_bytes": 116778826,
+    "nginx_original_sha256": "eb60313f35a3938985339033582f3a2e89bc97c48333e428461b92aa3577b46a",
+    "config_backup_bytes": 2765
+  },
+  "feature_probes": {
+    "juya-admin-api": {
+      "synthetic_checks": [
+        "scene:possessive:vine's",
+        "scene:possessive:vine’s",
+        "scene:manual-cacti",
+        "scene:unresolved-cacti",
+        "scene:invalid-manual",
+        "scene:ambiguous-possessive",
+        "listening:possessive:vine's",
+        "listening:possessive:vine’s",
+        "listening:manual-cacti",
+        "listening:unresolved-cacti",
+        "listening:invalid-manual",
+        "listening:ambiguous-possessive"
+      ],
+      "passed": 12,
+      "database_engine_created": false,
+      "real_content_mutated": false
+    },
+    "juya-miniapp-api": {
+      "synthetic_checks": [
+        "scene:possessive:vine's",
+        "scene:possessive:vine’s",
+        "scene:manual-cacti",
+        "scene:unresolved-cacti",
+        "scene:invalid-manual",
+        "scene:ambiguous-possessive",
+        "listening:possessive:vine's",
+        "listening:possessive:vine’s",
+        "listening:manual-cacti",
+        "listening:unresolved-cacti",
+        "listening:invalid-manual",
+        "listening:ambiguous-possessive"
+      ],
+      "passed": 12,
+      "database_engine_created": false,
+      "real_content_mutated": false
+    }
+  },
+  "public_ready_probes": [
+    {
+      "host": "admin-api.juyayingyu.com",
+      "service": "admin",
+      "status": 200
+    },
+    {
+      "host": "api.juyayingyu.com",
+      "service": "mini",
+      "status": 200
+    }
+  ],
+  "maintenance_public_probes_count": 7
+}

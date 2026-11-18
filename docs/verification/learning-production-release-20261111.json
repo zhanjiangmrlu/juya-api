@@ -1,0 +1,249 @@
+{
+  "environment": "production",
+  "api_source": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+  "admin_source": "b136667201962d666d95db897fbe9face915b344",
+  "ci": {
+    "run_id": 43019486687,
+    "url": "https://github.com/zhanjiangmrlu/juya-api/actions/runs/43019486687",
+    "commit": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (admin, juya-admin-api)",
+        "conclusion": "success"
+      },
+      {
+        "name": "images (mini, juya-miniapp-api)",
+        "conclusion": "success"
+      }
+    ],
+    "quality_counts": {
+      "passed": 834,
+      "skipped": 3
+    }
+  },
+  "services": [
+    {
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-api",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-dispatcher",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-production-admin",
+      "service": "admin-worker",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-production-listening",
+      "service": "listening-worker",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-api",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-dispatcher",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    },
+    {
+      "project": "juya-rebuild-production-mini",
+      "service": "mini-worker",
+      "health": "healthy",
+      "revision": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "restarts": 0,
+      "oom": false
+    }
+  ],
+  "data": {
+    "schema": "0028",
+    "contract": 3,
+    "tables": 56,
+    "all_original_fields_rows_preserved": true,
+    "new_empty_tables": 4,
+    "database_restored": false
+  },
+  "migration_executed": true,
+  "backup": {
+    "database": "juya_production",
+    "bytes": 43983666,
+    "sha256": "48c044e17de2bcfe59ad0b47aae67a57bcf0059769ee3d981d5e372553db1f23",
+    "tables": 57,
+    "gzip_integrity": true,
+    "dump_completion_marker": true,
+    "all_original_tables_present": true,
+    "automatically_restored": false
+  },
+  "off_server_backup_verified": true,
+  "configuration_backup_verified": true,
+  "protected_containers_unchanged": 12,
+  "admin_installed_files_matching": 73,
+  "public_admin_assets": {
+    "source": "b136667201962d666d95db897fbe9face915b344",
+    "public_files_verified": 69,
+    "hashes_match": true
+  },
+  "public_postcheck": {
+    "readiness": {
+      "admin": 200,
+      "mini": 200
+    },
+    "guest": {
+      "scene": {
+        "summaries": 10,
+        "details": [
+          {
+            "free": true,
+            "status": 200
+          }
+        ]
+      },
+      "listening": {
+        "summaries": 50,
+        "details": [
+          {
+            "free": true,
+            "status": 200
+          },
+          {
+            "free": false,
+            "status": 403
+          }
+        ]
+      },
+      "home_and_notes": 200
+    },
+    "auth": {
+      "admin-private": 401,
+      "mini-private": 401,
+      "privacy-private": 401,
+      "admin-other-role": 404,
+      "mini-other-role": 404,
+      "free-batch-private": 401
+    },
+    "policies": {
+      "terms": {
+        "status": 200,
+        "version": "chg0040-20261110-v1"
+      },
+      "privacy": {
+        "status": 200,
+        "version": "chg0041-20261111-v2"
+      },
+      "analytics": {
+        "status": 200,
+        "version": "chg0041-20261111-v2"
+      }
+    },
+    "resources": {},
+    "admin_openapi_matches": true,
+    "admin_public_openapi_status": 404,
+    "mini_openapi_matches": true,
+    "mini_public_openapi_status": 404,
+    "runtime": {
+      "healthy_services": 7,
+      "source": "e6d3d9dd59b3939a1bc7812fad4f5324f14e3045",
+      "protected_containers_unchanged": true,
+      "policy_probe": {
+        "active_accounts_checked": 2,
+        "access_checks": 9,
+        "authorization_and_dictionary_disabled": true,
+        "analytics_receiver_disabled": true
+      },
+      "maintenance_removed": true
+    },
+    "status": "verified"
+  },
+  "browser_smoke": {
+    "pages": [
+      {
+        "path": "/cards",
+        "titleVisible": true,
+        "apiStatus": 200,
+        "freeModeEntryVisible": true
+      },
+      {
+        "path": "/listening",
+        "titleVisible": true,
+        "apiStatus": 200,
+        "freeModeEntryVisible": true
+      },
+      {
+        "path": "/users",
+        "titleVisible": true,
+        "apiStatus": 200
+      },
+      {
+        "path": "/statistics",
+        "titleVisible": true,
+        "apiStatus": 200
+      },
+      {
+        "path": "/feedback",
+        "titleVisible": true,
+        "apiStatus": 200
+      }
+    ],
+    "pageErrors": [],
+    "businessWrites": false,
+    "sessionClosed": true,
+    "status": "verified"
+  },
+  "maintenance_removed": true,
+  "retention": {
+    "finalized_projects": ["juya-admin-api", "juya-miniapp-api", "juya-admin"],
+    "retained_current_and_previous": true,
+    "database_backups_and_business_assets_untouched": true
+  },
+  "local_checks": {
+    "api_sqlite": {
+      "passed": 777,
+      "skipped": 60
+    },
+    "api_swagger_with_node": 5,
+    "api_ruff_format_mypy_openapi": true,
+    "admin_tests": 322,
+    "admin_check_build": true
+  },
+  "recovery_review": {
+    "important_findings_fixed": 1,
+    "data_mismatch_retains_maintenance": true,
+    "red_green_recovery_decision_verified": true,
+    "legacy_web_rollback_guarded": true
+  },
+  "miniapp": {
+    "new_upload_this_task": false,
+    "existing_production_package": "1.0.2",
+    "versionCode": 104,
+    "experience_version_switched": false
+  },
+  "contact_history_cleanup_executed": false
+}
