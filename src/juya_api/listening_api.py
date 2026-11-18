@@ -1218,6 +1218,21 @@ def mini_routes():
             "category_id": row.category_id,
         }
 
+    @router.post("/articles/{article_id}/next", response_model=C.NextArticle)
+    def next_article_from_body(
+        article_id: str,
+        body: C.NextArticleInput,
+        request: Request,
+        user=Depends(learner),
+        db: Session = Depends(database, scope="function"),
+    ):
+        """通过正文查询下一篇，避免分类队列增长导致请求地址过长
+
+        article_id 为当前文章，body 提供冻结队列凭证，request 提供服务端配置和时钟
+        user 为已认证学习账号，db 为当前只读查询会话
+        """
+        return next_article(article_id, request, body.queue_token, user, db)
+
     @router.put("/articles/{article_id}/progress", response_model=C.Progress)
     def progress(
         article_id: str,

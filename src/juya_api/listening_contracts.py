@@ -264,6 +264,10 @@ class Home(BaseModel):
     statistics: Statistics | None
 
 
+class NextArticleInput(BaseModel):
+    queue_token: str | None = None
+
+
 class NextArticle(BaseModel):
     category_id: str
     article: Summary | None
